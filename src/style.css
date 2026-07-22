@@ -1,0 +1,222 @@
+:root { color-scheme: dark;
+  --bg:#0a0b0e; --card:#14161b; --ink:#ece7da; --muted:#9099a6; --line:#272b34;
+  --accent:#d4af37; --accent2:#d4af37; --bad:#e05252;
+  --chip:#1d2129; --chipOn:#d4af37;
+  --goldSoft:#1c1810; --goldLine:#4a3d1a;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:14px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.35);
+  --shadow-md:0 6px 20px rgba(0,0,0,.35);
+  --shadow-gold:0 0 0 1px rgba(212,175,55,.15), 0 8px 24px rgba(212,175,55,.08);
+}
+input, select { background:#1d2129; color:var(--ink); }
+* { box-sizing:border-box; }
+/* Tipografia mono para leitura de números — tabelas, odds, inputs, EV/stake */
+input, .ob, .oddval, .stat .val, .best, .dec, .time,
+table.odds td, table.log td.num {
+  font-family:'JetBrains Mono','Fira Code',monospace;
+}
+body { margin:0; background:var(--bg); color:var(--ink);
+  font:14px/1.55 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; }
+.wrap { max-width:940px; margin:0 auto; padding:32px 24px 56px; }
+@media (max-width:600px) { .wrap { padding:20px 14px 40px; } }
+
+h1 { font-size:26px; margin:0; font-weight:800; letter-spacing:3px; color:var(--accent);
+     text-transform:uppercase; text-shadow:0 0 18px rgba(212,175,55,.25);
+     display:flex; align-items:baseline; gap:10px; }
+h1 small { display:block; font-size:10.5px; letter-spacing:2.2px; color:var(--muted); font-weight:500; margin-top:5px; }
+.sub { color:var(--muted); font-size:12px; margin-top:6px; }
+header.top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;
+             padding-bottom:20px; margin-bottom:20px; border-bottom:1px solid var(--line); }
+
+.datenav { display:flex; align-items:center; gap:6px; }
+.datenav button { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:var(--radius-sm);
+                   padding:7px 12px; cursor:pointer; font-size:14px; transition:background .15s, border-color .15s; }
+.datenav button:hover { background:#1b1e25; border-color:#3a3f4c; }
+.datenav .cur { font-weight:600; min-width:132px; text-align:center; font-size:13px; }
+
+/* ===== Painel de configuração (banca/perfil/APIs) ===== */
+.panel { background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg);
+         padding:16px 18px; margin:0 0 20px; box-shadow:var(--shadow-sm); }
+
+.settings { display:flex; gap:18px; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+.settings label { display:flex; align-items:center; gap:6px; }
+.settings input[type=number] { width:96px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--radius-sm); }
+.settings select { padding:6px 8px; border:1px solid var(--line); border-radius:var(--radius-sm); }
+
+.leaguehdr { margin:26px 0 10px; font-weight:700; font-size:12.5px; letter-spacing:.6px; text-transform:uppercase; color:var(--accent2); }
+.leaguehdr:first-child { margin-top:4px; }
+
+.card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md); margin-bottom:10px; overflow:hidden;
+        border-left:4px solid var(--line); box-shadow:var(--shadow-sm); transition:box-shadow .15s, transform .15s; }
+.card:hover { box-shadow:var(--shadow-md); }
+.card.val-good { border-left-color:#6dd18e; }
+.card.val-derived { border-left-color:#4a9de0; }
+.card.val-marginal { border-left-color:#e0a530; }
+.card.val-none { border-left-color:var(--line); }
+.row { display:flex; align-items:center; gap:14px; padding:14px 16px; cursor:pointer; }
+.row:hover { background:#191d24; }
+.time { width:54px; text-align:center; font-weight:600; font-size:12px; color:var(--accent2); flex-shrink:0; }
+.teams { flex:1; min-width:0; }
+.tline { display:flex; align-items:center; gap:7px; padding:2px 0; }
+.tname { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.form { font-size:10px; letter-spacing:1.2px; color:var(--muted); margin-left:4px; flex-shrink:0; }
+.form b { color:var(--accent); } .form i { color:var(--bad); font-style:normal; }
+.oddsmini { display:flex; gap:5px; flex-shrink:0; }
+.ob { background:var(--chip); border-radius:var(--radius-sm); padding:4px 7px; font-size:11px; text-align:center; min-width:46px; }
+.ob small { display:block; color:var(--muted); font-size:9px; }
+.detail { border-top:1px solid var(--line); padding:16px; display:none; background:#101216; }
+.detail.open { display:block; }
+.detail h4 { margin:14px 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+.detail h4:first-child { margin-top:0; }
+
+table.odds { width:100%; border-collapse:collapse; font-size:12px; }
+table.odds th, table.odds td { border-bottom:1px solid var(--line); padding:7px 8px; text-align:right; }
+table.odds th:first-child, table.odds td:first-child { text-align:left; }
+table.odds th { color:var(--muted); font-weight:500; font-size:11px; }
+.kv { font-size:12px; color:var(--muted); line-height:1.6; }
+.btns { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+.btn { border:none; border-radius:var(--radius-sm); padding:9px 14px; cursor:pointer; font-size:12px; font-weight:600;
+       transition:background .15s, filter .15s, transform .05s; }
+.btn:active { transform:translateY(1px); }
+.btn.ai { background:var(--accent); color:#141414; }
+.btn.copy { background:var(--chip); color:var(--ink); border:1px solid var(--line); }
+.btn.copy:hover { background:#232732; border-color:#3a3f4c; }
+.aiout { margin-top:12px; background:var(--goldSoft); border:1px solid var(--goldLine); border-radius:var(--radius-md); padding:14px 16px; font-size:13px; line-height:1.6; white-space:pre-wrap; display:none; }
+.aiout.show { display:block; }
+.note { font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6; }
+.cmp { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+.cmp select { padding:7px; border:1px solid var(--line); border-radius:var(--radius-sm); font-size:12px; max-width:200px; }
+.cmp label.h { font-size:11px; color:var(--muted); display:flex; flex-direction:column; gap:3px; }
+.cmp input { width:70px; padding:7px; border:1px solid var(--line); border-radius:var(--radius-sm); font-size:12px; }
+.cmpout { margin-top:10px; font-size:12px; background:#12151c; border:1px solid #2a3040; border-radius:var(--radius-md); padding:12px 14px; display:none; }
+.cmpout.show { display:block; }
+/* Em telemóveis estreitos, 3 inputs de odds + select + 2 botões apertam-se demasiado no genérico
+   @media 600px do .wrap — abaixo de 480px o comparador empilha-se por completo. */
+@media (max-width:480px) {
+  .cmp { flex-direction:column; align-items:stretch; }
+  .cmp select, .cmp input, .cmp label.h { max-width:none; width:100%; }
+}
+.best { color:var(--accent); font-weight:700; }
+.dec { font-size:11px; margin-top:5px; }
+.dec.bet { color:var(--accent); font-weight:600; }
+.dec.no { color:var(--muted); }
+.decbox { background:var(--goldSoft); border:1px solid var(--accent); border-radius:var(--radius-md); padding:14px 16px; font-size:12px; margin-bottom:8px; line-height:1.7; }
+.decbox.no { background:#14161b; border-color:var(--line); }
+/* Segunda oportunidade (mercados de golos): tom azul distinto do dourado da decisão principal —
+   sobretudo importante quando a principal já mostrou "não apostar" logo acima, para não parecer
+   "mais do mesmo" depois de uma caixa cinzenta. */
+.decbox.derived { background:#0f1c26; border-color:#4a9de0; }
+.decbox.derived .best { color:#5fb8f5; }
+details.adv { margin-top:14px; }
+details.adv summary { cursor:pointer; font-size:12px; color:var(--muted); font-weight:600; }
+details.adv[open] summary { margin-bottom:10px; }
+/* Marcador (▼) do <details> visível: herda color:var(--muted) do texto do summary e fica quase
+   invisível no fundo escuro — ::marker muda só o triângulo, não o texto ao lado. */
+details.adv summary::marker { color:var(--accent); font-size:1.15em; }
+details.adv summary::-webkit-details-marker { color:var(--accent); }
+.status { text-align:center; color:var(--muted); padding:36px 0; }
+.banner { background:var(--goldSoft); border:1px solid var(--goldLine); border-radius:var(--radius-md); padding:10px 14px; font-size:12px; color:#d9c37a; margin-bottom:14px; line-height:1.6; }
+footer { margin-top:32px; font-size:11px; color:var(--muted); border-top:1px solid var(--line); padding-top:16px; line-height:1.7; }
+
+/* ===== Navegação por abas ===== */
+.tabs { display:flex; gap:6px; margin:0 0 18px; border-bottom:1px solid var(--line); }
+.tab { border:none; background:none; color:var(--muted); padding:10px 16px; cursor:pointer; font-size:13px; font-weight:600;
+       border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
+.tab:hover { color:var(--ink); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab .badge { display:inline-block; background:var(--chip); color:var(--muted); border-radius:10px;
+              font-size:10px; padding:1px 6px; margin-left:6px; font-weight:700; }
+
+/* ===== Botão registar aposta ===== */
+.logbtn { border:1px solid var(--goldLine); background:var(--goldSoft); color:var(--accent); border-radius:var(--radius-sm);
+          padding:8px 14px; cursor:pointer; font-size:12px; font-weight:700; margin-top:10px; transition:.15s; }
+.logbtn:hover { background:#241f12; }
+.logbtn.done { border-color:#2f6b3f; background:#12211a; color:#6dd18e; cursor:default; }
+.logbtn.halted { border-color:var(--line); background:#181a20; color:var(--muted); cursor:not-allowed; opacity:.65; }
+
+/* ===== Painel de resultados (P&L) ===== */
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:20px; }
+.stat { background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md); padding:14px 16px; box-shadow:var(--shadow-sm); max-width:260px; }
+/* O bloco de destaque (Lucro/Prejuízo + CLV, ver renderLog em main.ts) quer os cards a preencher
+   a coluna toda — só o grid genérico de estatísticas menores fica limitado em ecrãs largos. */
+.stats-headline .stat { max-width:none; }
+.stat .lbl { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+.stat .val { font-size:23px; font-weight:800; margin-top:5px; }
+.stat .val.pos { color:#6dd18e; } .stat .val.neg { color:var(--bad); } .stat .val.neu { color:var(--ink); }
+.stat .sub2 { font-size:10px; color:var(--muted); margin-top:3px; }
+
+table.log { width:100%; border-collapse:collapse; font-size:12px; margin-top:6px; }
+table.log th, table.log td { border-bottom:1px solid var(--line); padding:10px 8px; text-align:left; vertical-align:middle; }
+table.log th { color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+table.log td.num { text-align:right; font-variant-numeric:tabular-nums; }
+.pill { display:inline-block; border-radius:var(--radius-sm); padding:3px 9px; font-size:11px; font-weight:700; font-family:inherit; cursor:pointer; border:1px solid var(--line); background:var(--chip); color:var(--muted); transition:opacity .15s; }
+.pill.win { background:#12211a; border-color:#2f6b3f; color:#6dd18e; }
+.pill.loss { background:#25151a; border-color:#5a2b2b; color:#e88; }
+.pill.void { background:#1a1d24; border-color:var(--line); color:var(--muted); }
+.pill.pend { background:var(--goldSoft); border-color:var(--goldLine); color:var(--accent); }
+/* ===== Modo Papel: linhas distinguidas por borda tracejada, sem se misturarem com o P&L real ===== */
+tr.paper-row td { border-top:1px dashed var(--accent); border-bottom:1px dashed var(--accent); background:rgba(212,175,55,.04); }
+/* ===== Registo automático: opacidade reduzida — amostra não enviesada, fora do P&L real ===== */
+tr.auto-row td { opacity:.6; }
+
+.settle { display:flex; gap:5px; }
+.settle .pill { opacity:.5; } .settle .pill.on { opacity:1; }
+.delx { color:var(--muted); cursor:pointer; font-size:15px; padding:0 5px; border:none; background:none; font-family:inherit; transition:color .15s; }
+.delx:hover { color:var(--bad); }
+.empty { text-align:center; color:var(--muted); padding:48px 0; line-height:1.8; }
+.warnbox { background:#1e1512; border:1px solid #5a3a1a; border-radius:var(--radius-md); padding:12px 14px; font-size:12px; color:#e0b080; margin-bottom:16px; line-height:1.6; }
+.fchip { display:block; margin-top:4px; font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:#c99; background:#2a1a1a; border:1px solid #5a3030; border-radius:4px; padding:1px 4px; text-align:center; }
+
+/* ===== Comparador melhorado ===== */
+.oddgrid { margin-top:10px; }
+.oddrow { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px; border-radius:var(--radius-sm);
+          border:1px solid var(--line); background:#12151c; margin-bottom:6px; transition:border-color .15s; }
+.oddrow.best { border-color:var(--accent); background:var(--goldSoft);
+               box-shadow:0 0 14px rgba(212,175,55,.25), inset 0 0 20px rgba(212,175,55,.06); }
+.oddrow .house { font-weight:700; }
+.oddrow .oddval { font-variant-numeric:tabular-nums; font-weight:700; }
+.oddrow .evtag { font-size:11px; color:var(--muted); }
+.oddrow.best .evtag { color:var(--accent); }
+
+/* ===== Definições de APIs externas ===== */
+#apiSettings { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+#apiSettings summary { cursor:pointer; font-size:12px; color:var(--muted); font-weight:600; }
+#apiSettings summary::marker { color:var(--accent); font-size:1.15em; }
+#apiSettings summary::-webkit-details-marker { color:var(--accent); }
+#apiSettings .settings { margin-top:10px; }
+
+/* ===== Toasts ===== */
+.toastwrap { position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:8px; z-index:9999; max-width:300px; }
+.toast { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:var(--radius-md);
+         padding:11px 15px; font-size:12px; color:var(--ink); box-shadow:0 6px 20px rgba(0,0,0,.4);
+         opacity:0; transform:translateY(12px); transition:opacity .25s ease, transform .25s ease; }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.success { border-left-color:#6dd18e; }
+.toast.error { border-left-color:var(--bad); }
+.toast.info { border-left-color:var(--accent); }
+
+/* ===== Filtros rápidos ===== */
+.quickfilters { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }
+.filterbtn { border:1px solid var(--line); background:var(--chip); color:var(--muted); border-radius:20px;
+             padding:6px 14px; font-size:11.5px; font-weight:600; cursor:pointer; transition:background .15s, border-color .15s, color .15s; }
+.filterbtn:hover { border-color:#3a3f4c; color:var(--ink); }
+.filterbtn.active { background:var(--goldSoft); border-color:var(--accent); color:var(--accent); }
+
+/* ===== Modo Focus: esconde dicas/explicações, mas NÃO avisos de risco (.warnbox) — amostra
+   pequena, viés de calibração e jogo amigável são informação de risco, não só texto explicativo. */
+body.focus-mode .note, body.focus-mode .kv, body.focus-mode .banner,
+body.focus-mode footer { display:none !important; }
+
+/* ===== Barra de progresso da calibração (gamificação) ===== */
+.calibbar { margin-top:10px; height:8px; border-radius:6px; background:#1a1d24; overflow:hidden; }
+.calibbar-fill { height:100%; border-radius:6px; background:linear-gradient(90deg, var(--goldLine), var(--accent)); transition:width .4s ease; }
+
+/* ===== Ícones inline (ver src/icons.ts) — acompanham a baseline do texto ao lado ===== */
+.ic { vertical-align:-2px; margin-right:4px; flex-shrink:0; }
+
+/* ===== Acessibilidade: foco visível consistente em todos os controlos interativos ===== */
+button:focus-visible, input:focus-visible, select:focus-visible, .filterbtn:focus-visible,
+.tab:focus-visible, .pill:focus-visible, .delx:focus-visible {
+  outline:2px solid var(--accent); outline-offset:2px;
+}
