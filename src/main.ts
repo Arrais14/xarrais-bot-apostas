@@ -8,7 +8,7 @@ import * as api from "./api";
 import { LS } from "./storage";
 import { PRELOADED } from "./data";
 import {
-  BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CARD_ODDS_TICK_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
+  BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
   CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
   MODEL_BLEND_W, MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, SETTLE_REMINDER_H, STAKE_CAP_FRAC,
   STOP_LOSS_DRAWDOWN_FRAC
@@ -622,11 +622,14 @@ function renderInner(): void {
 function card(g: Game): string {
   const t = g.dt.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
   const o = g.o;
+  // A caixinha 1/X/2 mostra sempre a odd de referência (g.o) — é a odd real avaliada pela decisão
+  // abaixo (dec.od vem da mesma fonte). A Pinnacle/"sharp" NUNCA aparece aqui: é só um input para
+  // calcular a probabilidade justa, não uma odd onde se aposta — misturar as duas confundia mais
+  // do que ajudava (dois números diferentes lado a lado a description a mesma coisa).
   const mini = o ? '<div class="oddsmini" data-gid="' + g.id + '">'
     + '<div class="ob"><small>1</small>' + fmt2(o.h) + "</div>"
     + '<div class="ob"><small>X</small>' + fmt2(o.d) + "</div>"
-    + '<div class="ob"><small>2</small>' + fmt2(o.a) + "</div>"
-    + '<span class="odds-fresh"></span></div>' : "";
+    + '<div class="ob"><small>2</small>' + fmt2(o.a) + "</div></div>" : "";
   const dec = getDecision(g);
   autoRegisterIfEnabled(g, dec);
   let valClass = "val-none";   // cinzento: sem aposta/dados
@@ -642,42 +645,27 @@ function card(g: Game): string {
     const score = api.getFinalScore(g);
     if (score) scoreHint = '<div class="kv">' + icon("check") + ' Resultado: ' + score.home + "-" + score.away + " — abre o jogo para confirmar</div>";
   }
+  // Nota de frescura: quando a Pinnacle já refrescou pelo menos uma vez para este jogo, a decisão
+  // acima (EV/probabilidade) já reflete isso — este texto só explica PORQUÊ pode ter mudado sozinha.
+  const freshTs = cardOddsFreshness.get(g.id);
+  const freshNote = freshTs ? '<div class="kv" style="margin-top:2px">' + icon("refresh") + ' Modelo (Pinnacle) atualizado ' + freshLabel(freshTs) + '</div>' : "";
   return '<div class="card ' + valClass + '"><div class="row" onclick="toggle(\'' + g.id + '\')">'
     + '<div class="time">' + t + (g.friendly ? '<span class="fchip">amigável</span>' : "") + "</div>"
     + '<div class="teams">'
     + '<div class="tline"><span class="tname">' + esc(g.h.n) + "</span>" + formHtml(g.h.f) + "</div>"
     + '<div class="tline"><span class="tname">' + esc(g.a.n) + "</span>" + formHtml(g.a.f) + "</div>"
-    + decLine + scoreHint
+    + decLine + freshNote + scoreHint
     + "</div>" + mini + "</div>"
     + '<div class="detail" id="d' + g.id + '"></div></div>';
 }
 
-// ===== Refresco periódico das odds do card fechado (Pinnacle/sharp) — só liga com Odds API key
-// configurada; cada visitante usa só a sua própria quota. Atualiza SÓ o .oddsmini via DOM direto
-// (não um re-render completo), como pedido. Nunca mostra erro: se o fetch falhar, o número fica
-// como estava e o indicador de frescura simplesmente envelhece. =====
-function updateCardFreshLabel(el: HTMLElement, gid: string): void {
-  const span = el.querySelector<HTMLElement>(".odds-fresh");
-  if (!span) return;
-  const ts = cardOddsFreshness.get(gid);
-  span.textContent = ts ? "· " + freshLabel(ts) : "";
-  if (ts) span.title = "Pinnacle, atualizado " + freshLabel(ts);
-}
-
-function patchCardOdds(gid: string, sharp: SharpQuote): void {
-  const el = document.querySelector<HTMLElement>('.oddsmini[data-gid="' + gid + '"]');
-  if (!el) return;
-  const obs = el.querySelectorAll(".ob");
-  if (obs[0]) obs[0].innerHTML = "<small>1</small>" + fmt2(sharp.h);
-  if (obs[1]) obs[1].innerHTML = "<small>X</small>" + fmt2(sharp.d);
-  if (obs[2]) obs[2].innerHTML = "<small>2</small>" + fmt2(sharp.a);
-  updateCardFreshLabel(el, gid);
-}
-
+// ===== Refresco periódico da probabilidade "sharp" (Pinnacle) dos jogos visíveis — só liga com
+// Odds API key configurada; cada visitante usa só a sua própria quota. Não faz nenhum patch manual
+// do DOM: fetchLiveOdds já dispara onSharpResult (ver bootstrapInner) sempre que encontra uma odd
+// Pinnacle nova, que já faz um render() completo — decisão, EV, stake e a nota de frescura acima
+// ficam todos coerentes entre si automaticamente, em vez de sobrepor só um número solto. =====
 async function refreshCardOdds(g: Game): Promise<void> {
-  await api.fetchLiveOdds(g);           // efeito secundário: atualiza a cache "sharp" se a Pinnacle vier na resposta
-  const sharp = api.getSharpOdds(g);
-  if (sharp) { cardOddsFreshness.set(g.id, Date.now()); patchCardOdds(g.id, sharp); }
+  await api.fetchLiveOdds(g);
 }
 
 function stopCardOddsTimer(): void {
@@ -689,14 +677,10 @@ function startCardOddsTimer(): void {
   cardOddsTimer = setInterval(() => {
     document.querySelectorAll<HTMLElement>(".oddsmini[data-gid]").forEach(el => {
       const gid = el.dataset.gid as string;
-      updateCardFreshLabel(el, gid);
-      const last = cardOddsFreshness.get(gid);
-      if (!last || Date.now() - last >= CARD_ODDS_REFRESH_MS) {
-        const g = games.find(x => x.id === gid);
-        if (g) void refreshCardOdds(g);
-      }
+      const g = games.find(x => x.id === gid);
+      if (g) void refreshCardOdds(g);
     });
-  }, CARD_ODDS_TICK_MS);
+  }, CARD_ODDS_REFRESH_MS);
 }
 
 function toggle(id: string): void {
@@ -1248,6 +1232,7 @@ function bootstrapInner(): void {
   // Quando a odd sharp (Pinnacle) chega em segundo plano (ver api.getSharpOdds), o EV e o no-vig
   // já mudaram para este jogo — re-renderiza e reabre o painel se estava aberto.
   api.setOnSharpResult((gameId) => {
+    cardOddsFreshness.set(gameId, Date.now());
     const d = document.getElementById("d" + gameId);
     const wasOpen = !!d && d.classList.contains("open");
     render();

@@ -65,9 +65,6 @@ header.top { display:flex; align-items:flex-start; justify-content:space-between
 .oddsmini { display:flex; gap:5px; flex-shrink:0; align-items:center; }
 .ob { background:var(--chip); border-radius:var(--radius-sm); padding:4px 7px; font-size:11px; text-align:center; min-width:46px; }
 .ob small { display:block; color:var(--muted); font-size:9px; }
-/* Indicador de frescura das odds ao vivo (card fechado) — texto discreto, só aparece depois do
-   primeiro refresco bem sucedido (ver refreshCardOdds em main.ts). */
-.odds-fresh { font-size:9px; color:var(--muted); white-space:nowrap; }
 .detail { border-top:1px solid var(--line); padding:16px; display:none; background:#101216; }
 .detail.open { display:block; }
 .detail h4 { margin:14px 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
