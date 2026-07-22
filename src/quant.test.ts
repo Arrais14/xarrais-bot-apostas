@@ -7,7 +7,7 @@ import {
   applyCalib, autoDecide, calibInfo, calibration, computeStake, lineMovement,
   modelProbs, noVig, stopLossStatus
 } from "./quant";
-import { EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY } from "./config";
+import { EV_MIN_ALT_SHARP, EV_MIN_ALT_SHARP_FRIENDLY, EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY } from "./config";
 import type { Bet, CalibInfo, DecisionContext, Game, StakeContext } from "./types";
 
 function makeGame(overrides: Partial<Game> = {}): Game {
@@ -115,22 +115,22 @@ describe("computeStake — Kelly fracionário, teto de 5%, corte por risco pende
   });
 });
 
-describe("autoDecide — baseline sharp obrigatória, threshold EV_MIN_SHARP, jogos amigáveis", () => {
+describe("autoDecide — baseline obrigatória (Pinnacle ou Betclic), thresholds por tier, jogos amigáveis", () => {
   // Fixa a probabilidade de mercado via "sharp" limpa: h=2.00 d=4.00 a=4.00 -> soma implícita
   // exatamente 1 (sem margem), logo no-vig = implícita: p.h=0.50, p.d=0.25, p.a=0.25 — e é
   // exatamente essa a probabilidade que modelProbs devolve (100% Pinnacle/no-vig) quando há sharp,
   // tornando o EV 100% calculável à mão.
-  const sharp = { h: 2.0, d: 4.0, a: 4.0 };
+  const sharp = { h: 2.0, d: 4.0, a: 4.0, tier: "sharp" as const };
   const ctx: DecisionContext = { calib: noCalib, stake: noRisk };
 
-  it("sem baseline sharp, devolve a mensagem de indisponibilidade e NUNCA bet:true — mesmo com odd 'boa'", () => {
-    // Odd de referência claramente vantajosa (2.30 vs 2.00 "justa") não importa: sem sharp não há
-    // probabilidade do modelo nenhuma para comparar — este é exatamente o bug do EV circular que
-    // esta correção elimina (nunca mais comparar a odd de referência com ela própria).
+  it("sem baseline nenhuma, devolve a mensagem de indisponibilidade e NUNCA bet:true — mesmo com odd 'boa'", () => {
+    // Odd de referência claramente vantajosa (2.30 vs 2.00 "justa") não importa: sem sharp nem
+    // alt não há probabilidade do modelo nenhuma para comparar — este é exatamente o bug do EV
+    // circular que esta correção elimina (nunca mais comparar a odd de referência com ela própria).
     const g = makeGame({ o: { h: 2.3, d: 3.0, a: 3.0 } });
     const dec = autoDecide(g, ctx, null);
     expect(dec.bet).toBe(false);
-    expect(dec.msg).toBe("Sem baseline sharp (Pinnacle) — decisão automática indisponível");
+    expect(dec.msg).toBe("Sem baseline sharp (Pinnacle) nem alternativa (Betclic) — decisão automática indisponível");
   });
 
   it("sem baseline sharp, dec.best fica undefined — garante que trackRejectedIfEnabled (main.ts) nunca regista uma 'não-aposta' para uma decisão apenas indisponível", () => {
@@ -152,7 +152,7 @@ describe("autoDecide — baseline sharp obrigatória, threshold EV_MIN_SHARP, jo
     // referência às escondidas.
     const oddsRef = { h: 2.0, d: 3.5, a: 3.8 };
     const g = makeGame({ o: oddsRef });
-    const dec = autoDecide(g, ctx, oddsRef);
+    const dec = autoDecide(g, ctx, { ...oddsRef, tier: "sharp" });
     const nv = noVig(oddsRef)!;
     const expectedEvH = nv.h * oddsRef.h - 1;
     expect(expectedEvH).toBeLessThan(0);
@@ -179,6 +179,38 @@ describe("autoDecide — baseline sharp obrigatória, threshold EV_MIN_SHARP, jo
     expect(decAmigavel.best?.ev).toBeCloseTo(0.04, 10);
     expect(decAmigavel.bet).toBe(false);
     expect(decAmigavel.msg).toMatch(/^Valor marginal/);
+  });
+
+  it("com tier 'alt' (Betclic, fallback), o mesmo EV de 4% NÃO chega — precisa de EV_MIN_ALT_SHARP (5%), mais exigente que com sharp", () => {
+    // Mesmo cenário do teste anterior (EV=4%, exatamente o mesmo cálculo), mas agora a quote vem
+    // marcada tier:"alt" — o limiar sobe de EV_MIN_SHARP (3%) para EV_MIN_ALT_SHARP (5%), por isso
+    // o EV de 4% deixa de bater o limiar (fica "valor marginal" em vez de "apostar").
+    expect(EV_MIN_ALT_SHARP).toBeGreaterThan(0.04);
+    const altSharp = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
+    const oddsCasa = { h: 2.08, d: 3.0, a: 3.0 };
+    const dec = autoDecide(makeGame({ o: oddsCasa, friendly: false }), ctx, altSharp);
+    expect(dec.bet).toBe(false);
+    expect(dec.msg).toMatch(/^Valor marginal/);
+    expect(dec.best?.ev).toBeCloseTo(0.04, 10);
+  });
+
+  it("com tier 'alt', um EV de 6% já bate o EV_MIN_ALT_SHARP (5%) e aposta", () => {
+    // fair(h)=2.00; odd de referência 6% acima -> 2.12. EV = 0.5*2.12-1 = 0.06.
+    expect(EV_MIN_ALT_SHARP).toBeLessThan(0.06);
+    const altSharp = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
+    const oddsCasa = { h: 2.12, d: 3.0, a: 3.0 };
+    const dec = autoDecide(makeGame({ o: oddsCasa, friendly: false }), ctx, altSharp);
+    expect(dec.bet).toBe(true);
+    expect(dec.ev).toBeCloseTo(0.06, 10);
+  });
+
+  it("com tier 'alt' e jogo amigável, precisa de EV_MIN_ALT_SHARP_FRIENDLY (9%) — 6% ainda não chega", () => {
+    expect(EV_MIN_ALT_SHARP_FRIENDLY).toBeGreaterThan(0.06);
+    const altSharp = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
+    const oddsCasa = { h: 2.12, d: 3.0, a: 3.0 };
+    const dec = autoDecide(makeGame({ o: oddsCasa, friendly: true }), ctx, altSharp);
+    expect(dec.bet).toBe(false);
+    expect(dec.best?.ev).toBeCloseTo(0.06, 10);
   });
 });
 
@@ -228,9 +260,9 @@ describe("calibration — compara probabilidades previstas com o que realmente a
   });
 });
 
-describe("modelProbs — no-vig puro da Pinnacle/\"sharp\", ÚNICO caminho suportado (sem heurística, sem fallback)", () => {
-  it("com sharp, devolve o no-vig da sharp, com heur=false, independentemente de forma/registo", () => {
-    const sharp = { h: 2.0, d: 4.0, a: 4.0 };   // no-vig limpo: h=0.5, d=0.25, a=0.25
+describe("modelProbs — no-vig puro da Pinnacle/Betclic, ÚNICOS caminhos suportados (sem heurística, sem fallback para g.o)", () => {
+  it("com sharp (tier Pinnacle), devolve o no-vig da sharp, com heur=false e tier propagado, independentemente de forma/registo", () => {
+    const sharp = { h: 2.0, d: 4.0, a: 4.0, tier: "sharp" as const };   // no-vig limpo: h=0.5, d=0.25, a=0.25
     const g = makeGame({
       h: { n: "Casa", f: "WWWWW", r: "10-0-0", s: null },
       a: { n: "Fora", f: "LLLLL", r: "0-0-10", s: null }
@@ -239,7 +271,15 @@ describe("modelProbs — no-vig puro da Pinnacle/\"sharp\", ÚNICO caminho supor
     expect(mp).not.toBeNull();
     expect(mp!.heur).toBe(false);
     expect(mp!.sharp).toBe(true);
+    expect(mp!.tier).toBe("sharp");
     expect(mp!.p).toEqual({ h: 0.5, d: 0.25, a: 0.25, margin: 0 });
+  });
+
+  it("com tier 'alt' (Betclic), propaga tier:'alt' no resultado", () => {
+    const alt = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
+    const g = makeGame();
+    const mp = modelProbs(g, alt);
+    expect(mp!.tier).toBe("alt");
   });
 
   it("SEM sharp, devolve null — nunca cai para o no-vig de g.o (elimina o bug do EV circular)", () => {

@@ -12,6 +12,14 @@ export const EV_MIN_FRIENDLY = 0.12;     // idem, reservado (par de EV_MIN para 
 // raramente passa de 3-5%, por isso um limiar de 8% deixava passar quase nenhum sinal.
 export const EV_MIN_SHARP = 0.03;            // EV mínimo com baseline sharp (jogos oficiais)
 export const EV_MIN_SHARP_FRIENDLY = 0.06;   // idem, jogos amigáveis (forma pouco fiável)
+
+// ===== EV mínimo COM baseline alternativa (Betclic, fallback quando falta a Pinnacle) =====
+// A Betclic é uma casa recreativa (margens tipicamente mais altas, sinal mais ruidoso que a
+// Pinnacle) — por isso exige-se mais EV para confiar no sinal, mas ainda menos que o antigo
+// EV_MIN/EV_MIN_FRIENDLY (calibrados para uma heurística sem nenhuma base de mercado real).
+export const EV_MIN_ALT_SHARP = 0.05;            // EV mínimo com baseline alternativa (jogos oficiais)
+export const EV_MIN_ALT_SHARP_FRIENDLY = 0.09;   // idem, jogos amigáveis
+
 export const CALIB_MIN_N = 30;           // nº mínimo de apostas resolvidas c/ prob. para ativar o shrinkage de calibração
 export const PENDING_RISK_FRAC = 0.15;   // % da banca em apostas por resolver a partir da qual reduzimos novas stakes
 export const SETTLE_REMINDER_H = 3;      // horas após o kickoff a partir das quais uma aposta pendente é "para liquidar"
@@ -50,8 +58,13 @@ export const CARD_ODDS_REFRESH_MS = 12 * 60_000;  // frequência real de um novo
 export const CMP_ODDS_TICK_MS = 15_000;           // idem, no comparador aberto (só 1 jogo de cada vez)
 export const CMP_ODDS_REFRESH_MS = 3 * 60_000;    // idem, pedido real (Betclic) no comparador aberto
 
-// ===== Casa de referência "sharp" para o no-vig (ver src/api.ts) =====
+// ===== Casas de referência "sharp"/alternativa para o no-vig (ver src/api.ts) =====
 // A Pinnacle normalmente exige o plano pago ("Business") da The-Odds-API; se a chave não tiver
-// acesso, a resposta simplesmente não traz este bookmaker e o modelo cai de volta para a odd
-// de referência (DraftKings/ESPN) pré-carregada — nunca bloqueia o resto da app.
+// acesso, a resposta simplesmente não traz este bookmaker. Nesse caso, api.extractSharpQuote tenta
+// ALT_SHARP_BOOKMAKER_KEY (Betclic — já confirmada disponível no plano gratuito, é a mesma casa
+// usada no preenchimento automático do comparador, AUTO_BOOKMAKER_KEYS.bc, na mesma resposta HTTP
+// — nenhum pedido extra). Só se NENHUMA das duas vier é que a decisão automática fica indisponível
+// (ver quant.autoDecide) — nunca se cai de volta para a odd de referência (isso reintroduziria o
+// bug do EV circular: comparar a odd de referência com ela própria).
 export const SHARP_BOOKMAKER_KEY = "pinnacle";
+export const ALT_SHARP_BOOKMAKER_KEY = "betclic_fr";

@@ -9,8 +9,8 @@ import { LS } from "./storage";
 import { PRELOADED } from "./data";
 import {
   BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
-  CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, EV_MIN_SHARP,
-  EV_MIN_SHARP_FRIENDLY, LINE_MOVEMENT_ALERT,
+  CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_ALT_SHARP, EV_MIN_ALT_SHARP_FRIENDLY,
+  EV_MIN_FRIENDLY, EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY, LINE_MOVEMENT_ALERT,
   PENDING_RISK_FRAC, SETTLE_REMINDER_H, SHARP_BOOKMAKER_KEY, STAKE_CAP_FRAC,
   STOP_LOSS_DRAWDOWN_FRAC
 } from "./config";
@@ -65,7 +65,17 @@ function getSharp(g: Game): SharpQuote | null {
 }
 // Nota de transparência: de onde veio a probabilidade de mercado usada no no-vig deste jogo.
 function marketSourceNote(g: Game): string {
-  return getSharp(g) ? " · mercado: Pinnacle (sharp)" : " · mercado: DraftKings/ESPN (referência)";
+  const s = getSharp(g);
+  if (!s) return " · mercado: DraftKings/ESPN (referência)";
+  return s.tier === "sharp" ? " · mercado: Pinnacle (sharp)" : " · mercado: Betclic (alternativa)";
+}
+// Limiar de EV que autoDecide() realmente usou para esta decisão — depende de qual baseline
+// respondeu (ver quant.ts): Pinnacle ("sharp", mais fiável) ou Betclic ("alt", fallback mais
+// ruidoso, limiar mais alto). Usado só para RE-MOSTRAR o mesmo limiar em texto (ex. "odd mínima
+// para valer a pena"); nunca para decidir — isso já foi feito em autoDecide.
+function evMinFor(g: Game, tier: "sharp" | "alt" | undefined): number {
+  if (tier === "alt") return g.friendly ? EV_MIN_ALT_SHARP_FRIENDLY : EV_MIN_ALT_SHARP;
+  return g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
 }
 function getDecision(g: Game): ModelDecision {
   return quant.autoDecide(g, buildDecisionContext(), getSharp(g));
@@ -226,14 +236,21 @@ function showToast(msg: string, type?: "success" | "error" | "info"): void {
   }, 3000);
 }
 
-// ===== Aviso único: a Odds API key do utilizador não dá acesso à Pinnacle (ver api.ts) =====
-// Sem isto, modelProbs() (src/quant.ts) nunca tem baseline sharp e o motor automático fica sempre
-// "indisponível" — este banner explica porquê, discreto e uma só vez (só desaparece se a chave for
-// trocada e a nova também não tiver acesso — nesse caso reaparece, ver resetSharpAvailability).
+// ===== Aviso: disponibilidade da Pinnacle e/ou Betclic (ver api.sharpDiagnostic) =====
+// "ok" (Pinnacle disponível): sem banner. "alt-only" (só Betclic): aviso leve — a app continua a
+// decidir sozinha, só com um sinal mais fraco e limiar de EV mais exigente (ver EV_MIN_ALT_SHARP).
+// "unavailable" (nenhuma das duas): aviso forte — modelProbs() nunca tem baseline e o motor
+// automático fica sempre indisponível. Discreto e uma só vez (só muda se a chave for trocada, ver
+// resetSharpAvailability).
 function sharpAvailabilityBanner(): string {
-  if (!LS.oddsApiKey || !api.isSharpBookmakerMissing()) return "";
-  return '<div class="warnbox">' + icon("alert") + ' A tua Odds API key não devolve odds Pinnacle (' + SHARP_BOOKMAKER_KEY + ') — o modo automático precisa delas para decidir (normalmente exige o plano pago da The-Odds-API). '
-    + 'Alternativa: define outra casa sharp em <code>SHARP_BOOKMAKER_KEY</code> (src/config.ts) se a tua chave tiver acesso a uma. Sem isso, as decisões automáticas ficam indisponíveis, mas o comparador manual continua a funcionar com a odd de referência como estimativa.</div>';
+  if (!LS.oddsApiKey) return "";
+  const diag = api.sharpDiagnostic();
+  if (diag === "ok") return "";
+  if (diag === "alt-only") {
+    return '<div class="banner">' + icon("alert") + ' A tua Odds API key não devolve odds Pinnacle (' + SHARP_BOOKMAKER_KEY + ') — o modo automático passa a usar a Betclic como baseline alternativa (sinal mais fraco, limiar de EV mais exigente aplicado automaticamente). Cada jogo mostra a origem usada no detalhe ("baseline: ...").</div>';
+  }
+  return '<div class="warnbox">' + icon("alert") + ' A tua Odds API key não devolve odds Pinnacle nem Betclic — o modo automático fica indisponível para todos os jogos (normalmente a Pinnacle exige o plano pago da The-Odds-API; confirma se a tua chave tem acesso a alguma das duas). '
+    + 'Alternativa: define outra casa em <code>ALT_SHARP_BOOKMAKER_KEY</code> (src/config.ts) se a tua chave tiver acesso a uma terceira casa. Sem isso, as decisões automáticas ficam indisponíveis, mas o comparador manual continua a funcionar com a odd de referência como estimativa.</div>';
 }
 
 // ===== Lembretes passivos: aparecem quando abres a app, nada de notificações push =====
@@ -853,10 +870,10 @@ function showModelBase(id: string): void {
 function derivedDecBox(g: Game, dec: ModelDecision): string {
   const d2 = dec.derived;
   if (!d2) return "";
-  // dec/d2 vêm de autoDecide() (quant.ts), que hoje só decide COM baseline sharp — por isso o
-  // limiar mostrado aqui tem de ser o mesmo que autoDecide usou (EV_MIN_SHARP), não o antigo
-  // EV_MIN/EV_MIN_FRIENDLY (reservado, nunca usado enquanto não houver um caminho sem sharp).
-  const evMin = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
+  // dec/d2 vêm de autoDecide() (quant.ts), que hoje só decide COM baseline (Pinnacle ou Betclic) —
+  // por isso o limiar mostrado aqui tem de ser o mesmo que autoDecide usou (ver evMinFor), não o
+  // antigo EV_MIN/EV_MIN_FRIENDLY (reservado, nunca usado enquanto não houver um caminho sem nenhuma baseline).
+  const evMin = evMinFor(g, getSharp(g)?.tier);
   const selKey2 = d2.bet ? ("D:" + (d2.bestKey as string)) : null;
   if (d2.bet) {
     const minOdd = (1 + evMin) / (d2.p as number);
@@ -915,7 +932,11 @@ function detailHtml(g: Game): string {
   info.push("🗓 " + g.dt.toLocaleString("pt-PT", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }));
   info.push(esc(g.h.n) + " — forma " + esc(g.h.f || "?") + ", V-E-D " + esc(g.h.r || "?") + (g.h.s ? ", ⚽ " + esc(g.h.s) : ""));
   info.push(esc(g.a.n) + " — forma " + esc(g.a.f || "?") + ", V-E-D " + esc(g.a.r || "?") + (g.a.s ? ", ⚽ " + esc(g.a.s) : ""));
-  info.push(sharpQ ? "📡 baseline: Pinnacle (sharp)" : "📡 baseline indisponível — sem odds Pinnacle para este jogo");
+  info.push(
+    !sharpQ ? "📡 baseline indisponível — sem odds Pinnacle nem Betclic para este jogo"
+      : sharpQ.tier === "sharp" ? "📡 baseline: Pinnacle (sharp)"
+        : "📡 baseline: Betclic (alternativa — sinal mais fraco que a Pinnacle, limiar de EV mais exigente)"
+  );
   let cmp = "";
   const opts = quant.buildOpts(g, buildDecisionContext().calib, sharpQ);
   if (opts.length) {
@@ -936,9 +957,9 @@ function detailHtml(g: Game): string {
   autoRegisterIfEnabled(g, dec);
   let decBox = "";
   if (dec.bet) {
-    // Mesma nota da derivedDecBox acima: dec vem de autoDecide(), que só decide COM sharp — o
-    // limiar mostrado tem de ser o mesmo (EV_MIN_SHARP), não o antigo EV_MIN/EV_MIN_FRIENDLY.
-    const evMinG = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
+    // Mesma nota da derivedDecBox acima: dec vem de autoDecide(), que decide com a baseline
+    // disponível (Pinnacle ou Betclic) — o limiar mostrado tem de ser o mesmo que ela usou.
+    const evMinG = evMinFor(g, sharpQ?.tier);
     const minOdd = (1 + evMinG) / (dec.p as number);
     const logged = storage.betAlreadyLogged(g.id, dec.bestKey);
     let extra = "";
@@ -954,11 +975,11 @@ function detailHtml(g: Game): string {
       + '</button>'
       + '</div>';
   } else {
-    const evMinG = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
+    const evMinG = evMinFor(g, sharpQ?.tier);
     decBox = '<div class="decbox no"><span style="font-size:15px"><b>' + icon("x") + ' NÃO APOSTAR — ' + esc(dec.msg) + "</b></span>"
       + (dec.best
           ? "<br>Melhor candidata: " + esc(dec.best.lbl) + " — só com odd ≥ <b>" + fmt2((1 + evMinG) / dec.best.p) + "</b> (ref. " + fmt2(dec.best.od) + ")."
-          : (!sharpQ ? '<br><span class="kv">Ativa isto configurando, no painel "APIs externas", uma Odds API key com acesso à Pinnacle (normalmente exige o plano pago da The-Odds-API).</span>' : ""))
+          : (!sharpQ ? '<br><span class="kv">Ativa isto configurando, no painel "APIs externas", uma Odds API key com acesso à Pinnacle ou à Betclic.</span>' : ""))
       + "</div>";
   }
   const decBox2 = derivedDecBox(g, dec);
@@ -997,7 +1018,7 @@ async function aiAnalyse(id: string): Promise<void> {
   const dec = getDecision(g);
   out.textContent = "A redigir análise…";
   const nv = quant.noVig(g.o);
-  const evMinG = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;   // dec vem de autoDecide(), que só decide COM sharp
+  const evMinG = evMinFor(g, getSharp(g)?.tier);   // dec vem de autoDecide(), com a baseline que estiver disponível
   const decTxt = dec.bet
     ? "APOSTAR " + (dec.stakeTxt as string) + " em " + (dec.lbl as string) + " @ " + fmt2(dec.od) + " (prob. modelo " + pct(dec.p) + ", EV +" + (100 * (dec.ev as number)).toFixed(1) + "%), na casa (Blockbet/Betano/Betclic) com a odd mais alta, mínimo " + fmt2((1 + evMinG) / (dec.p as number))
     : "NÃO APOSTAR (" + (dec.msg || "sem dados") + ")";

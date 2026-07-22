@@ -3,7 +3,7 @@
 // chamada) — quem invoca estas funções (main.ts) é que decide o que mostrar e quando re-renderizar.
 
 import type { Bet, FinalScore, Game, SharpQuote } from "./types";
-import { SETTLE_REMINDER_H, SHARP_BOOKMAKER_KEY } from "./config";
+import { ALT_SHARP_BOOKMAKER_KEY, SETTLE_REMINDER_H, SHARP_BOOKMAKER_KEY } from "./config";
 import { LS } from "./storage";
 
 // ===== Odds API (fetch automático — ver painel "APIs externas" na UI para a chave) =====
@@ -71,8 +71,8 @@ export type FetchOddsResult =
   | { ok: true; odds: Record<string, number> }
   | { ok: false; reason: string };
 
-function extractSharpQuote(match: ApiGame, g: Game): SharpQuote | null {
-  const bk = (match.bookmakers || []).find(b => b.key === SHARP_BOOKMAKER_KEY);
+function extractQuoteForBookmaker(match: ApiGame, g: Game, bkKey: string): { h: number; d: number; a: number } | null {
+  const bk = (match.bookmakers || []).find(b => b.key === bkKey);
   const h2h = bk && (bk.markets || []).find(m => m.key === "h2h");
   if (!h2h) return null;
   const homeOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(g.h.n));
@@ -82,7 +82,19 @@ function extractSharpQuote(match: ApiGame, g: Game): SharpQuote | null {
   return { h: homeOc.price, d: drawOc.price, a: awayOc.price };
 }
 
-// Cache da odd "sharp" (Pinnacle) por jogo — alimentada como efeito secundário de fetchLiveOdds
+// Tenta primeiro a Pinnacle (mais fiável); se a chave não tiver acesso, cai para a Betclic como
+// alternativa (ver ALT_SHARP_BOOKMAKER_KEY em config.ts — já vem na mesma resposta HTTP, nenhum
+// pedido extra). NUNCA cai para a odd de referência (g.o) — isso reintroduziria o bug do EV
+// circular (comparar a odd de referência com ela própria).
+function extractSharpQuote(match: ApiGame, g: Game): SharpQuote | null {
+  const primary = extractQuoteForBookmaker(match, g, SHARP_BOOKMAKER_KEY);
+  if (primary) return { ...primary, tier: "sharp" };
+  const alt = extractQuoteForBookmaker(match, g, ALT_SHARP_BOOKMAKER_KEY);
+  if (alt) return { ...alt, tier: "alt" };
+  return null;
+}
+
+// Cache da odd sharp/alternativa por jogo — alimentada como efeito secundário de fetchLiveOdds
 // (mesmo pedido HTTP, sem gastar quota extra da API) e lida de forma síncrona por getSharpOdds
 // (cache-or-trigger em segundo plano, mesmo padrão usado por getFinalScore mais abaixo).
 const sharpCache = new Map<string, SharpQuote>();
@@ -90,17 +102,23 @@ const sharpPending = new Set<string>();
 let onSharpResult: ((gameId: string) => void) | null = null;
 export function setOnSharpResult(cb: ((gameId: string) => void) | null): void { onSharpResult = cb; }
 
-// ===== Diagnóstico: a chave do utilizador dá acesso à Pinnacle (SHARP_BOOKMAKER_KEY)? =====
-// O plano gratuito da The-Odds-API normalmente não inclui a Pinnacle — sem ela, modelProbs()
-// (src/quant.ts) nunca tem baseline e o motor automático fica sempre indisponível, por desenho.
-// Fica true assim que um pedido bem sucedido casa o jogo mas NÃO traz o bookmaker sharp na
-// resposta — nunca volta a false sozinho (evita "piscar" entre pedidos); resetSharpAvailability()
-// é chamado quando a chave muda, para dar a uma chave nova a sua própria oportunidade.
-let sharpBookmakerMissing = false;
+// ===== Diagnóstico: a chave do utilizador dá acesso à Pinnacle e/ou à Betclic? =====
+// O plano gratuito da The-Odds-API normalmente não inclui a Pinnacle, mas costuma incluir a
+// Betclic (fallback — ver ALT_SHARP_BOOKMAKER_KEY). Só quando NENHUMA das duas vier é que
+// modelProbs() (src/quant.ts) fica sem baseline e o motor automático indisponível. Cada flag fica
+// true assim que um pedido bem sucedido casa o jogo mas não traz esse bookmaker na resposta —
+// nunca volta a false sozinho (evita "piscar" entre pedidos); resetSharpAvailability() é chamado
+// quando a chave muda, para dar a uma chave nova a sua própria oportunidade.
+let primaryMissing = false;
+let altMissing = false;
 let onSharpUnavailable: (() => void) | null = null;
 export function setOnSharpUnavailable(cb: (() => void) | null): void { onSharpUnavailable = cb; }
-export function isSharpBookmakerMissing(): boolean { return sharpBookmakerMissing; }
-export function resetSharpAvailability(): void { sharpBookmakerMissing = false; }
+export type SharpDiagnostic = "ok" | "alt-only" | "unavailable";
+export function sharpDiagnostic(): SharpDiagnostic {
+  if (!primaryMissing) return "ok";
+  return altMissing ? "unavailable" : "alt-only";
+}
+export function resetSharpAvailability(): void { primaryMissing = false; altMissing = false; }
 
 // Substitui a cópia manual da odd da Betclic no comparador (a única casa local confirmada nesta
 // API — ver AUTO_BOOKMAKER_KEYS). Se não houver chave, a liga não estiver mapeada, ou o jogo não
@@ -125,9 +143,11 @@ export async function fetchLiveOdds(g: Game): Promise<FetchOddsResult> {
   }
   const match = findApiGame(data, g);
   if (!match) return { ok: false, reason: "jogo-nao-encontrado" };
-  if (!(match.bookmakers || []).some(b => b.key === SHARP_BOOKMAKER_KEY)) {
-    if (!sharpBookmakerMissing) { sharpBookmakerMissing = true; onSharpUnavailable?.(); }
-  }
+  const bkKeys = new Set((match.bookmakers || []).map(b => b.key));
+  let diagChanged = false;
+  if (!bkKeys.has(SHARP_BOOKMAKER_KEY) && !primaryMissing) { primaryMissing = true; diagChanged = true; }
+  if (!bkKeys.has(ALT_SHARP_BOOKMAKER_KEY) && !altMissing) { altMissing = true; diagChanged = true; }
+  if (diagChanged) onSharpUnavailable?.();
   const sharp = extractSharpQuote(match, g);
   if (sharp) { sharpCache.set(g.id, sharp); onSharpResult?.(g.id); }
   const out: Record<string, number> = {};

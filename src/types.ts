@@ -64,7 +64,8 @@ export interface NoVigProbs {
 export interface ModelProbs {
   p: { h: number; d: number; a: number };
   heur: boolean;
-  sharp?: boolean;   // true quando o componente de mercado veio da Pinnacle, não do preload DraftKings/ESPN
+  sharp?: boolean;   // true quando o componente de mercado veio de uma casa sharp/alternativa (ver tier), não do preload DraftKings/ESPN
+  tier?: "sharp" | "alt";   // qual casa gerou o SharpQuote usado — "sharp" (Pinnacle) ou "alt" (Betclic, fallback) — ver quant.autoDecide
 }
 
 /** Variação percentual entre a odd de abertura e a atual (ver quant.lineMovement) — null quando
@@ -80,13 +81,15 @@ export interface FinalScore {
   away: number;
 }
 
-/** Odds 1X2 de uma casa "sharp" (Pinnacle) usadas como referência de mercado para o no-vig —
- * mesma forma que Odds, mas só o 1X2 (a The-Odds-API não devolve totais/handicaps da Pinnacle
+/** Odds 1X2 de uma casa sharp (Pinnacle) ou alternativa (Betclic, fallback quando falta a
+ * Pinnacle — ver ALT_SHARP_BOOKMAKER_KEY) usadas como referência de mercado para o no-vig —
+ * mesma forma que Odds, mas só o 1X2 (a The-Odds-API não devolve totais/handicaps destas casas
  * no mesmo pedido h2h que usamos aqui). */
 export interface SharpQuote {
   h: number;
   d: number;
   a: number;
+  tier: "sharp" | "alt";   // "sharp" = Pinnacle (mais fiável); "alt" = Betclic (fallback, sinal mais fraco)
 }
 
 export interface StakeInfo {

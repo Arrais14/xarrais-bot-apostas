@@ -11,8 +11,9 @@ import type {
   StakeInfo, StopLossStatus
 } from "./types";
 import {
-  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY, MIN_ODD,
-  PENDING_RISK_FRAC, STAKE_CAP_FRAC, STOP_LOSS_DRAWDOWN_FRAC, STOP_LOSS_WINDOW_DAYS
+  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, EV_MIN_ALT_SHARP, EV_MIN_ALT_SHARP_FRIENDLY,
+  EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY, MIN_ODD, PENDING_RISK_FRAC, STAKE_CAP_FRAC,
+  STOP_LOSS_DRAWDOWN_FRAC, STOP_LOSS_WINDOW_DAYS
 } from "./config";
 import { avgCLV } from "./storage";
 import { fmt2, num } from "./utils";
@@ -37,23 +38,24 @@ export function lineMovement(o: Odds | null | undefined): LineMovement {
   return { h, a };
 }
 
-// ===== Modelo automático: no-vig puro da Pinnacle/"sharp" — ÚNICO caminho suportado =====
+// ===== Modelo automático: no-vig puro da Pinnacle ou, em falta, da Betclic (alternativa) —
+// ÚNICOS caminhos suportados =====
 // A heurística forma+PPG que existia aqui foi removida a pedido explícito: o mercado (Pinnacle) já
 // é eficiente o suficiente para não valer a pena somar ruído de uma heurística simples de pontos/
 // forma por cima. O scaffolding de ML (ONNX) já tinha sido removido antes pelo mesmo motivo (nada
 // por trás validado).
-// SEM sharp, devolve-se null — nunca se cai para o no-vig da odd de referência (g.o, DraftKings/
-// ESPN). Essa era precisamente a odd que o motor de decisão depois compara para calcular o EV: usar
-// a MESMA odd como "probabilidade do modelo" e como "odd apostada" faz EV = −margem sempre,
-// garantindo "não apostar" em todos os jogos por construção (bug circular corrigido aqui). Sem
-// baseline sharp, autoDecide() produz uma decisão honesta de indisponibilidade em vez de um "sem
-// valor" enganoso — ver comparador manual (buildOpts) para o único sítio que ainda aceita a
-// referência como estimativa fraca, sinalizada como tal.
+// SEM nenhuma das duas, devolve-se null — nunca se cai para o no-vig da odd de referência (g.o,
+// DraftKings/ESPN). Essa era precisamente a odd que o motor de decisão depois compara para
+// calcular o EV: usar a MESMA odd como "probabilidade do modelo" e como "odd apostada" faz
+// EV = −margem sempre, garantindo "não apostar" em todos os jogos por construção (bug circular
+// corrigido aqui). Sem baseline, autoDecide() produz uma decisão honesta de indisponibilidade em
+// vez de um "sem valor" enganoso — ver comparador manual (buildOpts) para o único sítio que ainda
+// aceita a referência como estimativa fraca, sinalizada como tal.
 export function modelProbs(g: Game, sharp?: SharpQuote | null): ModelProbs | null {
   if (!sharp) return null;
   const nv = noVig({ h: sharp.h, d: sharp.d, a: sharp.a });
   if (!nv) return null;
-  return { p: nv, heur: false, sharp: true };
+  return { p: nv, heur: false, sharp: true, tier: sharp.tier };
 }
 
 // Usado por segmentedPerformancePanels (main.ts) para separar 1X2/handicap principal da segunda
@@ -295,10 +297,14 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
   const o = g.o;
   let dec: ModelDecision | null = null;
   const mp = modelProbs(g, sharp);
-  // mp só existe quando há baseline sharp (ver modelProbs) — por isso este é sempre o limiar
-  // "com sharp", mais baixo que EV_MIN/EV_MIN_FRIENDLY (reservados para um eventual caminho sem
-  // sharp que hoje não existe: sem baseline, a decisão é "indisponível", nunca uma comparação de EV).
-  const evMin = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
+  // mp só existe quando há baseline (ver modelProbs) — o limiar depende de qual: Pinnacle
+  // ("sharp", mais fiável, limiar mais baixo) ou Betclic ("alt", fallback mais ruidoso, limiar
+  // mais alto para compensar). EV_MIN/EV_MIN_FRIENDLY ficam reservados para um eventual caminho
+  // sem nenhuma das duas, que hoje não existe: sem baseline a decisão é "indisponível", nunca uma
+  // comparação de EV.
+  const evMin = mp?.tier === "alt"
+    ? (g.friendly ? EV_MIN_ALT_SHARP_FRIENDLY : EV_MIN_ALT_SHARP)
+    : (g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP);
   const calib = ctx.calib;
   if (o && mp) {
     const p = mp.p;
@@ -345,7 +351,7 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
   }
   if (!dec) {
     if (!o) dec = { bet: false, msg: "Sem odds — decisão indisponível", cands: [] };
-    else if (!sharp) dec = { bet: false, msg: "Sem baseline sharp (Pinnacle) — decisão automática indisponível", cands: [] };
+    else if (!sharp) dec = { bet: false, msg: "Sem baseline sharp (Pinnacle) nem alternativa (Betclic) — decisão automática indisponível", cands: [] };
     else dec = { bet: false, msg: "Dados insuficientes para decisão automática", cands: [] };
   }
 
