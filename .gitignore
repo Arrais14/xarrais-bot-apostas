@@ -2,3 +2,6 @@ node_modules/
 dist/
 tsconfig.tsbuildinfo
 *.local
+
+# Sensível — nunca commitar (ver aviso dentro do próprio ficheiro)
+VERCEL-RECOVERY-CODES.txt
