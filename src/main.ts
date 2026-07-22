@@ -8,7 +8,8 @@ import * as api from "./api";
 import { LS } from "./storage";
 import { PRELOADED } from "./data";
 import {
-  BACKUP_STALE_DAYS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
+  BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CARD_ODDS_TICK_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
+  CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
   MODEL_BLEND_W, MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, SETTLE_REMINDER_H, STAKE_CAP_FRAC,
   STOP_LOSS_DRAWDOWN_FRAC
 } from "./config";
@@ -26,6 +27,20 @@ let gameFilter: "all" | "value" | "hideFriendly" = "all";
 let currentOpts: Record<string, ReturnType<typeof quant.buildOpts>> = {};
 const aiCache = new Map<string, string>();
 let bankChart: unknown = null;
+
+// ===== Frescura de odds ao vivo — card fechado (Pinnacle) e comparador aberto (Betclic) =====
+// Só a data do último fetch BEM SUCEDIDO por jogo; se um pedido falhar, não se atualiza — o
+// indicador fica a envelhecer sozinho (nunca mostramos um erro que interrompa o resto da página).
+const cardOddsFreshness = new Map<string, number>();
+const cmpOddsFreshness = new Map<string, number>();
+let cardOddsTimer: ReturnType<typeof setInterval> | null = null;
+let cmpOddsTimer: ReturnType<typeof setInterval> | null = null;
+
+function freshLabel(ts: number | undefined): string {
+  if (!ts) return "";
+  const s = Math.round((Date.now() - ts) / 1000);
+  return s < 60 ? "há " + s + "s" : "há " + Math.round(s / 60) + " min";
+}
 
 // ===== Contexto de decisão: banca/perfil/risco pendente + calibração, recalculado por render =====
 // autoDecide é uma função pura — recalcular por chamada é barato para a escala desta app e evita
@@ -607,10 +622,11 @@ function renderInner(): void {
 function card(g: Game): string {
   const t = g.dt.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
   const o = g.o;
-  const mini = o ? '<div class="oddsmini">'
+  const mini = o ? '<div class="oddsmini" data-gid="' + g.id + '">'
     + '<div class="ob"><small>1</small>' + fmt2(o.h) + "</div>"
     + '<div class="ob"><small>X</small>' + fmt2(o.d) + "</div>"
-    + '<div class="ob"><small>2</small>' + fmt2(o.a) + "</div></div>" : "";
+    + '<div class="ob"><small>2</small>' + fmt2(o.a) + "</div>"
+    + '<span class="odds-fresh"></span></div>' : "";
   const dec = getDecision(g);
   autoRegisterIfEnabled(g, dec);
   let valClass = "val-none";   // cinzento: sem aposta/dados
@@ -636,11 +652,59 @@ function card(g: Game): string {
     + '<div class="detail" id="d' + g.id + '"></div></div>';
 }
 
+// ===== Refresco periódico das odds do card fechado (Pinnacle/sharp) — só liga com Odds API key
+// configurada; cada visitante usa só a sua própria quota. Atualiza SÓ o .oddsmini via DOM direto
+// (não um re-render completo), como pedido. Nunca mostra erro: se o fetch falhar, o número fica
+// como estava e o indicador de frescura simplesmente envelhece. =====
+function updateCardFreshLabel(el: HTMLElement, gid: string): void {
+  const span = el.querySelector<HTMLElement>(".odds-fresh");
+  if (!span) return;
+  const ts = cardOddsFreshness.get(gid);
+  span.textContent = ts ? "· " + freshLabel(ts) : "";
+  if (ts) span.title = "Pinnacle, atualizado " + freshLabel(ts);
+}
+
+function patchCardOdds(gid: string, sharp: SharpQuote): void {
+  const el = document.querySelector<HTMLElement>('.oddsmini[data-gid="' + gid + '"]');
+  if (!el) return;
+  const obs = el.querySelectorAll(".ob");
+  if (obs[0]) obs[0].innerHTML = "<small>1</small>" + fmt2(sharp.h);
+  if (obs[1]) obs[1].innerHTML = "<small>X</small>" + fmt2(sharp.d);
+  if (obs[2]) obs[2].innerHTML = "<small>2</small>" + fmt2(sharp.a);
+  updateCardFreshLabel(el, gid);
+}
+
+async function refreshCardOdds(g: Game): Promise<void> {
+  await api.fetchLiveOdds(g);           // efeito secundário: atualiza a cache "sharp" se a Pinnacle vier na resposta
+  const sharp = api.getSharpOdds(g);
+  if (sharp) { cardOddsFreshness.set(g.id, Date.now()); patchCardOdds(g.id, sharp); }
+}
+
+function stopCardOddsTimer(): void {
+  if (cardOddsTimer) { clearInterval(cardOddsTimer); cardOddsTimer = null; }
+}
+function startCardOddsTimer(): void {
+  stopCardOddsTimer();
+  if (!LS.oddsApiKey) return;   // sem chave própria, nem vale a pena agendar nada
+  cardOddsTimer = setInterval(() => {
+    document.querySelectorAll<HTMLElement>(".oddsmini[data-gid]").forEach(el => {
+      const gid = el.dataset.gid as string;
+      updateCardFreshLabel(el, gid);
+      const last = cardOddsFreshness.get(gid);
+      if (!last || Date.now() - last >= CARD_ODDS_REFRESH_MS) {
+        const g = games.find(x => x.id === gid);
+        if (g) void refreshCardOdds(g);
+      }
+    });
+  }, CARD_ODDS_TICK_MS);
+}
+
 function toggle(id: string): void {
   const d = document.getElementById("d" + id);
   if (!d) return;
-  if (d.classList.contains("open")) { d.classList.remove("open"); return; }
+  if (d.classList.contains("open")) { d.classList.remove("open"); stopCmpOddsTimer(); return; }
   document.querySelectorAll(".detail.open").forEach(x => x.classList.remove("open"));
+  stopCmpOddsTimer();   // só um jogo aberto de cada vez — nunca mais do que um intervalo do comparador ativo
   const g = games.find(x => x.id === id);
   if (!g) return;
   d.innerHTML = detailHtml(g);
@@ -656,6 +720,7 @@ function toggle(id: string): void {
     }
     prefillCmp(id);
     void autoFillOddsSilent(id);
+    startCmpOddsTimer(id);
   }
 }
 
@@ -777,10 +842,10 @@ function detailHtml(g: Game): string {
       + '<label class="h">Blockbet (manual)<input type="number" step="0.01" min="1" id="bb' + g.id + '" placeholder="odd"></label>'
       + '<label class="h">Betano (manual)<input type="number" step="0.01" min="1" id="bt' + g.id + '" placeholder="odd"></label>'
       + '<label class="h">Betclic<input type="number" step="0.01" min="1" id="bc' + g.id + '" placeholder="odd"></label>'
-      + '<button class="btn copy" onclick="autoFillOdds(\'' + g.id + '\', this)">' + icon("refresh") + ' Buscar Betclic automaticamente</button>'
+      + '<button class="btn copy" onclick="autoFillOdds(\'' + g.id + '\', this)">' + icon("refresh") + ' Atualizar agora</button>'
       + '<button class="btn copy" onclick="compareOdds(\'' + g.id + '\')">Calcular</button>'
       + "</div>"
-      + '<div class="kv" style="margin-top:4px">Blockbet e Betano não têm cobertura nesta Odds API — insere as odds à mão. Só a Betclic é preenchida automaticamente.</div>'
+      + '<div class="kv" style="margin-top:4px" id="cmpFresh' + g.id + '"></div>'
       + '<div class="cmpout" id="cmp' + g.id + '"></div>';
   }
   const dec = getDecision(g);
@@ -958,10 +1023,34 @@ async function performAutoFill(id: string): Promise<AutoFillResult> {
 // Ao abrir um jogo (ver toggle()), tenta preencher Betano/Betclic sozinho e recalcula — sem
 // mostrar erros: se falhar, os campos ficam com a odd de referência já pré-preenchida por
 // prefillCmp, e o utilizador pode sempre usar o botão manual abaixo para tentar de novo com feedback.
+// Reaproveitada também pelo timer periódico do comparador (startCmpOddsTimer) — mesma função,
+// chamada repetidamente enquanto o jogo estiver aberto, em vez de só uma vez.
 async function autoFillOddsSilent(id: string): Promise<void> {
   if (!LS.oddsApiKey) return;
   const res = await performAutoFill(id);
-  if (res.ok && res.filled) compareOdds(id);
+  if (res.ok && res.filled) { cmpOddsFreshness.set(id, Date.now()); compareOdds(id); }
+  updateCmpFreshLabel(id);
+}
+
+function updateCmpFreshLabel(id: string): void {
+  const el = document.getElementById("cmpFresh" + id);
+  if (!el) return;
+  const ts = cmpOddsFreshness.get(id);
+  el.innerHTML = icon("refresh") + ' A atualizar a Betclic automaticamente enquanto o jogo estiver aberto · Blockbet e Betano continuam manuais.'
+    + (ts ? " Última atualização: " + freshLabel(ts) + "." : "");
+}
+
+function stopCmpOddsTimer(): void {
+  if (cmpOddsTimer) { clearInterval(cmpOddsTimer); cmpOddsTimer = null; }
+}
+function startCmpOddsTimer(id: string): void {
+  stopCmpOddsTimer();
+  if (!LS.oddsApiKey) return;
+  cmpOddsTimer = setInterval(() => {
+    updateCmpFreshLabel(id);
+    const last = cmpOddsFreshness.get(id);
+    if (!last || Date.now() - last >= CMP_ODDS_REFRESH_MS) void autoFillOddsSilent(id);
+  }, CMP_ODDS_TICK_MS);
 }
 
 async function autoFillOdds(id: string, btn: HTMLButtonElement): Promise<void> {
@@ -983,7 +1072,7 @@ async function autoFillOdds(id: string, btn: HTMLButtonElement): Promise<void> {
     if (out) { out.classList.add("show"); out.innerHTML = '<div class="kv">' + icon("alert") + ' ' + (msgs[res.reason] || ("Sem odds automáticas (" + res.reason + ")")) + "</div>"; }
     return;
   }
-  if (res.filled) compareOdds(id);
+  if (res.filled) { cmpOddsFreshness.set(id, Date.now()); updateCmpFreshLabel(id); compareOdds(id); }
   else if (out) { out.classList.add("show"); out.innerHTML = '<div class="kv">' + icon("alert") + ' Jogo encontrado, mas nenhuma das 3 casas voltou na resposta — preenche manualmente.</div>'; }
 }
 
@@ -1079,8 +1168,13 @@ function switchTab(t: "games" | "log"): void {
   if (cmpHint) cmpHint.style.display = t === "games" ? "" : "none";
   const lv = document.getElementById("logview");
   if (lv) lv.style.display = t === "log" ? "" : "none";
-  if (t === "log") renderLog();
-  else render();   // reflete stakes/EV recalculados (calibração, risco pendente) após registar/liquidar apostas
+  if (t === "log") {
+    renderLog();
+    stopCardOddsTimer(); stopCmpOddsTimer();   // sem cards/comparador visíveis, não há nada para atualizar
+  } else {
+    render();   // reflete stakes/EV recalculados (calibração, risco pendente) após registar/liquidar apostas
+    startCardOddsTimer();
+  }
 }
 
 function updUnit(): void {
@@ -1120,7 +1214,10 @@ function bootstrapInner(): void {
   const aiProviderEl = document.getElementById("aiProviderSel") as HTMLSelectElement;
   const aiKeyEl = document.getElementById("aiKeyInput") as HTMLInputElement;
   oddsApiKeyEl.value = LS.oddsApiKey; aiProviderEl.value = LS.aiProvider; aiKeyEl.value = LS.aiKey;
-  oddsApiKeyEl.onchange = () => { LS.oddsApiKey = oddsApiKeyEl.value.trim(); };
+  oddsApiKeyEl.onchange = () => {
+    LS.oddsApiKey = oddsApiKeyEl.value.trim();
+    if (curTab === "games") startCardOddsTimer();   // liga/desliga o refresco consoante a chave ficou definida ou não
+  };
   aiProviderEl.onchange = () => { LS.aiProvider = aiProviderEl.value; aiCache.clear(); };
   aiKeyEl.onchange = () => { LS.aiKey = aiKeyEl.value.trim(); aiCache.clear(); };
 
@@ -1167,6 +1264,7 @@ function bootstrapInner(): void {
   });
 
   updUnit(); updLogCount(); render();
+  startCardOddsTimer();   // arranca já — o tab por defeito é "games"
 }
 
 // Expostas no window porque o HTML gerado dinamicamente usa onclick="..." inline (mesma
