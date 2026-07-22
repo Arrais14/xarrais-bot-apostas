@@ -4,11 +4,11 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  applyCalib, autoDecide, calibInfo, calibration, computeStake, lineMovement,
-  modelProbs, noVig, stopLossStatus
+  applyCalib, autoDecide, blendFormMarket, calibInfo, calibration, computeStake, lineMovement,
+  modelProbs, noVig, stopLossStatus, suggestModelWeights
 } from "./quant";
-import { EV_MIN_ALT_SHARP, EV_MIN_ALT_SHARP_FRIENDLY, EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY } from "./config";
-import type { Bet, CalibInfo, DecisionContext, Game, StakeContext } from "./types";
+import { EV_MIN, EV_MIN_FRIENDLY, RECALIB_MIN_N } from "./config";
+import type { Bet, CalibInfo, DecisionContext, Game, ModelInputsSnapshot, StakeContext } from "./types";
 
 function makeGame(overrides: Partial<Game> = {}): Game {
   return {
@@ -115,102 +115,57 @@ describe("computeStake — Kelly fracionário, teto de 5%, corte por risco pende
   });
 });
 
-describe("autoDecide — baseline obrigatória (Pinnacle ou Betclic), thresholds por tier, jogos amigáveis", () => {
+describe("autoDecide — seleção do melhor candidato, threshold de EV, jogos amigáveis", () => {
   // Fixa a probabilidade de mercado via "sharp" limpa: h=2.00 d=4.00 a=4.00 -> soma implícita
-  // exatamente 1 (sem margem), logo no-vig = implícita: p.h=0.50, p.d=0.25, p.a=0.25 — e é
-  // exatamente essa a probabilidade que modelProbs devolve (100% Pinnacle/no-vig) quando há sharp,
-  // tornando o EV 100% calculável à mão.
-  const sharp = { h: 2.0, d: 4.0, a: 4.0, tier: "sharp" as const };
+  // exatamente 1 (sem margem), logo no-vig = implícita: p.h=0.50, p.d=0.25, p.a=0.25.
+  // h.f="" força modelProbs a saltar a heurística forma+mercado (fpts("")=null) e devolver
+  // exatamente essa probabilidade de mercado, tornando o EV 100% calculável à mão.
+  const sharp = { h: 2.0, d: 4.0, a: 4.0 };
   const ctx: DecisionContext = { calib: noCalib, stake: noRisk };
 
-  it("sem baseline nenhuma, devolve a mensagem de indisponibilidade e NUNCA bet:true — mesmo com odd 'boa'", () => {
-    // Odd de referência claramente vantajosa (2.30 vs 2.00 "justa") não importa: sem sharp nem
-    // alt não há probabilidade do modelo nenhuma para comparar — este é exatamente o bug do EV
-    // circular que esta correção elimina (nunca mais comparar a odd de referência com ela própria).
+  it("escolhe o candidato com melhor EV e aposta quando o EV está bem acima do limiar", () => {
+    // odd local casa=2.30: EV = 0.50*2.30-1 = 0.15 (15%, >> EV_MIN=0.08)
+    // empate/fora a odd 3.00 com p=0.25: EV = 0.25*3.00-1 = -0.25 (bem pior) -> "1" tem de ganhar
     const g = makeGame({ o: { h: 2.3, d: 3.0, a: 3.0 } });
-    const dec = autoDecide(g, ctx, null);
+    const dec = autoDecide(g, ctx, sharp);
+    expect(dec.bestKey).toBe("1");
+    expect(dec.bet).toBe(true);
+    expect(dec.ev).toBeCloseTo(0.15, 10);
+    expect(dec.p).toBeCloseTo(0.5, 10);
+    // stake: b=1.3; kf=(1.3*0.5-0.5)/1.3=0.15/1.3≈0.115385; frac=kf*0.25≈0.0288462 (< cap 5%)
+    expect(dec.stakeFrac).toBeCloseTo(0.115385 * 0.25, 4);
+  });
+
+  it("EV positivo mas abaixo do limiar (EV_MIN) fica marcado como 'valor marginal', não aposta", () => {
+    // odd local casa=2.10: EV = 0.50*2.10-1 = 0.05 (5%, < EV_MIN=0.08 mas > 0)
+    const g = makeGame({ o: { h: 2.1, d: 3.0, a: 3.0 } });
+    const dec = autoDecide(g, ctx, sharp);
     expect(dec.bet).toBe(false);
-    expect(dec.msg).toBe("Sem baseline sharp (Pinnacle) nem alternativa (Betclic) — decisão automática indisponível");
+    expect(dec.msg).toMatch(/^Valor marginal/);
+    expect(dec.best?.k).toBe("1");
   });
 
-  it("sem baseline sharp, dec.best fica undefined — garante que trackRejectedIfEnabled (main.ts) nunca regista uma 'não-aposta' para uma decisão apenas indisponível", () => {
-    // trackRejectedIfEnabled só grava quando `dec.best` existe (ver main.ts: "if (dec.bet || !dec.best) return;").
-    // A "indisponibilidade" não passa por nenhum candidato avaliado (cands fica [] antes de sequer
-    // se calcular EV), logo dec.best nunca é definido neste caminho — a não-aposta nunca é
-    // confundida com uma rejeição real por EV insuficiente, o que poluiria as estatísticas.
-    const g = makeGame({ o: { h: 2.3, d: 3.0, a: 3.0 } });
-    const dec = autoDecide(g, ctx, null);
-    expect(dec.best).toBeUndefined();
-    expect(dec.cands).toEqual([]);
-  });
-
-  it("sharp igual à odd de referência: EV negativo em todas as seleções (≈ −margem), não aposta", () => {
-    // sharp === g.o (mesmas odds) -> nv(sharp) é o mesmo no-vig de g.o, logo EV = nv.h*o.h - 1 =
-    // 1/S - 1 = -margem/(1+margem) para TODAS as seleções (a mesma álgebra que causava o bug
-    // circular) — a diferença agora é que isto só acontece quando o utilizador tem sharp de
-    // verdade e ela calha a bater com a referência, não porque falta a Pinnacle e se cai para a
-    // referência às escondidas.
-    const oddsRef = { h: 2.0, d: 3.5, a: 3.8 };
-    const g = makeGame({ o: oddsRef });
-    const dec = autoDecide(g, ctx, { ...oddsRef, tier: "sharp" });
-    const nv = noVig(oddsRef)!;
-    const expectedEvH = nv.h * oddsRef.h - 1;
-    expect(expectedEvH).toBeLessThan(0);
-    expect(expectedEvH).toBeCloseTo(-nv.margin / (1 + nv.margin), 10);
+  it("EV negativo (odd abaixo da odd justa) não aposta e não guarda 'valor marginal'", () => {
+    // odd local casa=1.90: EV = 0.50*1.90-1 = -0.05
+    const g = makeGame({ o: { h: 1.9, d: 3.0, a: 3.0 } });
+    const dec = autoDecide(g, ctx, sharp);
     expect(dec.bet).toBe(false);
     expect(dec.msg).toBe("Não apostar — sem valor às odds de referência");
   });
 
-  it("sharp que torna a odd de referência 4% acima da justa: aposta com EV_MIN_SHARP=0.03; não aposta se amigável (limiar 6%)", () => {
-    // fair(h) = 1/nv.h = 2.00 (a partir do sharp acima); odd de referência 4% acima -> 2.08.
-    // EV = nv.h*2.08 - 1 = 0.5*2.08-1 = 0.04 exatamente (4%), acima de EV_MIN_SHARP (3%) mas
-    // abaixo de EV_MIN_SHARP_FRIENDLY (6%) — o mesmo EV muda de decisão consoante friendly.
-    expect(EV_MIN_SHARP).toBeLessThan(0.04);
-    expect(EV_MIN_SHARP_FRIENDLY).toBeGreaterThan(0.04);
-    const oddsCasa = { h: 2.08, d: 3.0, a: 3.0 };
+  it("jogo amigável exige um limiar de EV mais alto (EV_MIN_FRIENDLY=0.12): o mesmo EV=0.10 muda de decisão", () => {
+    // odd local casa=2.20: EV = 0.50*2.20-1 = 0.10 -> bate EV_MIN (0.08) mas não EV_MIN_FRIENDLY (0.12)
+    expect(EV_MIN).toBeLessThan(0.10);
+    expect(EV_MIN_FRIENDLY).toBeGreaterThan(0.10);
+    const oddsCasa = { h: 2.2, d: 3.0, a: 3.0 };
     const decOficial = autoDecide(makeGame({ o: oddsCasa, friendly: false }), ctx, sharp);
     const decAmigavel = autoDecide(makeGame({ o: oddsCasa, friendly: true }), ctx, sharp);
-    expect(decOficial.bestKey).toBe("1");
-    expect(decOficial.ev).toBeCloseTo(0.04, 10);
+    expect(decOficial.ev).toBeCloseTo(0.10, 10);
     expect(decOficial.bet).toBe(true);
-    // stake: b=1.08; kf=(1.08*0.5-0.5)/1.08=0.04/1.08≈0.037037; frac=kf*0.25≈0.0092593 (< cap 5%)
-    expect(decOficial.stakeFrac).toBeCloseTo((0.04 / 1.08) * 0.25, 4);
     // em bet:false o EV vive em dec.best.ev, não em dec.ev (só a decisão bet:true guarda .ev direto)
-    expect(decAmigavel.best?.ev).toBeCloseTo(0.04, 10);
+    expect(decAmigavel.best?.ev).toBeCloseTo(0.10, 10);
     expect(decAmigavel.bet).toBe(false);
     expect(decAmigavel.msg).toMatch(/^Valor marginal/);
-  });
-
-  it("com tier 'alt' (Betclic, fallback), o mesmo EV de 4% NÃO chega — precisa de EV_MIN_ALT_SHARP (5%), mais exigente que com sharp", () => {
-    // Mesmo cenário do teste anterior (EV=4%, exatamente o mesmo cálculo), mas agora a quote vem
-    // marcada tier:"alt" — o limiar sobe de EV_MIN_SHARP (3%) para EV_MIN_ALT_SHARP (5%), por isso
-    // o EV de 4% deixa de bater o limiar (fica "valor marginal" em vez de "apostar").
-    expect(EV_MIN_ALT_SHARP).toBeGreaterThan(0.04);
-    const altSharp = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
-    const oddsCasa = { h: 2.08, d: 3.0, a: 3.0 };
-    const dec = autoDecide(makeGame({ o: oddsCasa, friendly: false }), ctx, altSharp);
-    expect(dec.bet).toBe(false);
-    expect(dec.msg).toMatch(/^Valor marginal/);
-    expect(dec.best?.ev).toBeCloseTo(0.04, 10);
-  });
-
-  it("com tier 'alt', um EV de 6% já bate o EV_MIN_ALT_SHARP (5%) e aposta", () => {
-    // fair(h)=2.00; odd de referência 6% acima -> 2.12. EV = 0.5*2.12-1 = 0.06.
-    expect(EV_MIN_ALT_SHARP).toBeLessThan(0.06);
-    const altSharp = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
-    const oddsCasa = { h: 2.12, d: 3.0, a: 3.0 };
-    const dec = autoDecide(makeGame({ o: oddsCasa, friendly: false }), ctx, altSharp);
-    expect(dec.bet).toBe(true);
-    expect(dec.ev).toBeCloseTo(0.06, 10);
-  });
-
-  it("com tier 'alt' e jogo amigável, precisa de EV_MIN_ALT_SHARP_FRIENDLY (9%) — 6% ainda não chega", () => {
-    expect(EV_MIN_ALT_SHARP_FRIENDLY).toBeGreaterThan(0.06);
-    const altSharp = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
-    const oddsCasa = { h: 2.12, d: 3.0, a: 3.0 };
-    const dec = autoDecide(makeGame({ o: oddsCasa, friendly: true }), ctx, altSharp);
-    expect(dec.bet).toBe(false);
-    expect(dec.best?.ev).toBeCloseTo(0.06, 10);
   });
 });
 
@@ -260,40 +215,77 @@ describe("calibration — compara probabilidades previstas com o que realmente a
   });
 });
 
-describe("modelProbs — no-vig puro da Pinnacle/Betclic, ÚNICOS caminhos suportados (sem heurística, sem fallback para g.o)", () => {
-  it("com sharp (tier Pinnacle), devolve o no-vig da sharp, com heur=false e tier propagado, independentemente de forma/registo", () => {
-    const sharp = { h: 2.0, d: 4.0, a: 4.0, tier: "sharp" as const };   // no-vig limpo: h=0.5, d=0.25, a=0.25
+describe("modelProbs — blend forma+mercado com pesos MODEL_BLEND_W/MODEL_HOME_ADV", () => {
+  it("com forma real (não vazia), usa o caminho heurístico e devolve os inputs brutos para recalibração", () => {
+    // ppg/fpts ficam normalizados a 0-1 (não 0-3): (3*V+E)/(3*jogos). "10-0-0" (10 vitórias) -> 1.
+    // Casa domina em pontos e forma (WWWWW -> 1); Fora não pontuou nada (0-0-10, LLLLL -> 0).
+    // Não é preciso calcular a exponencial à mão: o que importa é que o resultado é coerente
+    // (casa larga favorita) e que os inputs ficam gravados tal como entraram.
+    const sharp = { h: 2.0, d: 4.0, a: 4.0 };   // no-vig limpo: h=0.5, d=0.25, a=0.25
     const g = makeGame({
       h: { n: "Casa", f: "WWWWW", r: "10-0-0", s: null },
       a: { n: "Fora", f: "LLLLL", r: "0-0-10", s: null }
     });
     const mp = modelProbs(g, sharp);
     expect(mp).not.toBeNull();
+    expect(mp!.heur).toBe(true);
+    expect(mp!.p.h + mp!.p.d + mp!.p.a).toBeCloseTo(1, 8);
+    expect(mp!.p.h).toBeGreaterThan(mp!.p.d);
+    expect(mp!.p.h).toBeGreaterThan(mp!.p.a);
+    expect(mp!.inputs).toEqual({ nvH: 0.5, nvD: 0.25, nvA: 0.25, sH0: 1, sA0: 0, fH: 1, fA: 0 });
+  });
+
+  it("sem forma (f vazio) cai para o no-vig puro e não guarda inputs (heur=false)", () => {
+    const g = makeGame({ h: { n: "Casa", f: "", r: "0-0-0", s: null } });
+    const mp = modelProbs(g, { h: 2, d: 4, a: 4 });
     expect(mp!.heur).toBe(false);
-    expect(mp!.sharp).toBe(true);
-    expect(mp!.tier).toBe("sharp");
-    expect(mp!.p).toEqual({ h: 0.5, d: 0.25, a: 0.25, margin: 0 });
+    expect(mp!.inputs).toBeUndefined();
+  });
+});
+
+describe("suggestModelWeights — grid-search de pesos otimizado para Brier score (nunca P&L)", () => {
+  // Forma claramente mais favorável à casa do que o mercado sugere, para que w (peso da forma)
+  // tenha um impacto real em p — se ph e nv.h fossem parecidos, mudar w quase não moveria nada.
+  const inputs: ModelInputsSnapshot = { nvH: 0.40, nvD: 0.30, nvA: 0.30, sH0: 2.2, sA0: 0.8, fH: 0.8, fA: 0.3 };
+
+  it("fica inativo com amostra abaixo de RECALIB_MIN_N", () => {
+    const bets = Array.from({ length: 10 }, (_, i) => makeBet({ id: "b" + i, status: i % 2 === 0 ? "win" : "loss", selKey: "1", modelInputs: inputs }));
+    const s = suggestModelWeights(bets);
+    expect(s.active).toBe(false);
+    expect(s.n).toBe(10);
   });
 
-  it("com tier 'alt' (Betclic), propaga tier:'alt' no resultado", () => {
-    const alt = { h: 2.0, d: 4.0, a: 4.0, tier: "alt" as const };
-    const g = makeGame();
-    const mp = modelProbs(g, alt);
-    expect(mp!.tier).toBe("alt");
+  it("ignora apostas de handicap/golos (só olha a 1X2 simples) e as sem modelInputs guardados", () => {
+    const bets = [
+      makeBet({ id: "b1", status: "win", selKey: "HH", modelInputs: inputs }),
+      makeBet({ id: "b2", status: "win", selKey: "D:GOV", modelInputs: inputs }),
+      makeBet({ id: "b3", status: "win", selKey: "1" })   // sem modelInputs
+    ];
+    const s = suggestModelWeights(bets);
+    expect(s.n).toBe(0);
+    expect(s.active).toBe(false);
   });
 
-  it("SEM sharp, devolve null — nunca cai para o no-vig de g.o (elimina o bug do EV circular)", () => {
-    // Antes desta correção, sem sharp caía-se para noVig(g.o) — o motor de decisão comparava então
-    // essa MESMA odd de referência consigo própria (EV = -margem sempre), dizendo "não apostar" em
-    // todos os jogos por construção. Agora, sem baseline sharp, não há probabilidade nenhuma.
-    const g = makeGame({ o: { h: 2, d: 4, a: 4 } });
-    expect(modelProbs(g, null)).toBeNull();
-    expect(modelProbs(g, undefined)).toBeNull();
-  });
-
-  it("sem odds nenhumas (nem sharp nem g.o), devolve null", () => {
-    const g = makeGame({ o: null });
-    expect(modelProbs(g, null)).toBeNull();
+  it("encontra a combinação (w, vantagem casa) usada para gerar os dados — é a única que minimiza o Brier", () => {
+    // Para uma previsão constante p sobre uma amostra binária, Brier(p) = (p-taxaEmpirica)² +
+    // taxaEmpirica·(1-taxaEmpirica) — decomposição bias-variância — logo é minimizado exatamente
+    // quando p = taxa empírica. Gerando a amostra para que a taxa de acerto bata precisamente com
+    // blendFormMarket(trueW,trueHomeAdv), essa combinação da grelha vence matematicamente todas as
+    // outras (nenhuma outra produz o mesmo p para estes inputs).
+    const trueW = 0.20, trueHomeAdv = 0.18;   // extremos da grelha, bem longe do default (0.35/0.12)
+    const pTrue = blendFormMarket({ h: inputs.nvH, d: inputs.nvD, a: inputs.nvA }, inputs.sH0, inputs.sA0, inputs.fH, inputs.fA, trueW, trueHomeAdv).h;
+    // n grande para que o arredondamento de "wins" a um inteiro não desloque a taxa empírica o
+    // suficiente para empatar com a grelha vizinha (passo de 0.05/0.02) — sem isto, o teste ficava
+    // sensível a qual dos dois lados o arredondamento caía.
+    const n = 100000;
+    const wins = Math.round(pTrue * n);
+    const bets: Bet[] = Array.from({ length: n }, (_, i) => makeBet({ id: "b" + i, status: i < wins ? "win" : "loss", selKey: i % 2 === 0 ? "1" : "AUTO:1", modelInputs: inputs }));
+    const s = suggestModelWeights(bets);
+    expect(s.active).toBe(true);
+    expect(s.n).toBe(n);
+    expect(s.bestW).toBeCloseTo(trueW, 6);
+    expect(s.bestHomeAdv).toBeCloseTo(trueHomeAdv, 6);
+    expect(s.improved).toBe(true);
   });
 });
 

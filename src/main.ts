@@ -9,9 +9,8 @@ import { LS } from "./storage";
 import { PRELOADED } from "./data";
 import {
   BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
-  CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_ALT_SHARP, EV_MIN_ALT_SHARP_FRIENDLY,
-  EV_MIN_FRIENDLY, EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY, LINE_MOVEMENT_ALERT,
-  PENDING_RISK_FRAC, SETTLE_REMINDER_H, SHARP_BOOKMAKER_KEY, STAKE_CAP_FRAC,
+  CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
+  MODEL_BLEND_W, MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, SETTLE_REMINDER_H, STAKE_CAP_FRAC,
   STOP_LOSS_DRAWDOWN_FRAC
 } from "./config";
 import { esc, fmt2, fmtDate, formHtml, num, pct, ymd } from "./utils";
@@ -65,17 +64,7 @@ function getSharp(g: Game): SharpQuote | null {
 }
 // Nota de transparência: de onde veio a probabilidade de mercado usada no no-vig deste jogo.
 function marketSourceNote(g: Game): string {
-  const s = getSharp(g);
-  if (!s) return " · mercado: DraftKings/ESPN (referência)";
-  return s.tier === "sharp" ? " · mercado: Pinnacle (sharp)" : " · mercado: Betclic (alternativa)";
-}
-// Limiar de EV que autoDecide() realmente usou para esta decisão — depende de qual baseline
-// respondeu (ver quant.ts): Pinnacle ("sharp", mais fiável) ou Betclic ("alt", fallback mais
-// ruidoso, limiar mais alto). Usado só para RE-MOSTRAR o mesmo limiar em texto (ex. "odd mínima
-// para valer a pena"); nunca para decidir — isso já foi feito em autoDecide.
-function evMinFor(g: Game, tier: "sharp" | "alt" | undefined): number {
-  if (tier === "alt") return g.friendly ? EV_MIN_ALT_SHARP_FRIENDLY : EV_MIN_ALT_SHARP;
-  return g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
+  return getSharp(g) ? " · mercado: Pinnacle (sharp)" : " · mercado: DraftKings/ESPN (referência)";
 }
 function getDecision(g: Game): ModelDecision {
   return quant.autoDecide(g, buildDecisionContext(), getSharp(g));
@@ -179,7 +168,7 @@ function autoRegisterIfEnabled(g: Game, dec: ModelDecision): void {
     const key = "AUTO:" + (dec.bestKey as string);
     if (!storage.betAlreadyLogged(g.id, key)) {
       const stakeVal = bank ? (dec.stakeFrac as number) * bank : (dec.stakeFrac as number) * 100;
-      storage.saveBet({ gameId: g.id, selKey: key, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, auto: true, lg: g.lg, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
+      storage.saveBet({ gameId: g.id, selKey: key, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, auto: true, lg: g.lg, modelInputs: dec.modelInputs, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
       saved = true;
     }
   }
@@ -234,23 +223,6 @@ function showToast(msg: string, type?: "success" | "error" | "info"): void {
     el.classList.remove("show");
     setTimeout(() => el.remove(), 300);
   }, 3000);
-}
-
-// ===== Aviso: disponibilidade da Pinnacle e/ou Betclic (ver api.sharpDiagnostic) =====
-// "ok" (Pinnacle disponível): sem banner. "alt-only" (só Betclic): aviso leve — a app continua a
-// decidir sozinha, só com um sinal mais fraco e limiar de EV mais exigente (ver EV_MIN_ALT_SHARP).
-// "unavailable" (nenhuma das duas): aviso forte — modelProbs() nunca tem baseline e o motor
-// automático fica sempre indisponível. Discreto e uma só vez (só muda se a chave for trocada, ver
-// resetSharpAvailability).
-function sharpAvailabilityBanner(): string {
-  if (!LS.oddsApiKey) return "";
-  const diag = api.sharpDiagnostic();
-  if (diag === "ok") return "";
-  if (diag === "alt-only") {
-    return '<div class="banner">' + icon("alert") + ' A tua Odds API key não devolve odds Pinnacle (' + SHARP_BOOKMAKER_KEY + ') — o modo automático passa a usar a Betclic como baseline alternativa (sinal mais fraco, limiar de EV mais exigente aplicado automaticamente). Cada jogo mostra a origem usada no detalhe ("baseline: ...").</div>';
-  }
-  return '<div class="warnbox">' + icon("alert") + ' A tua Odds API key não devolve odds Pinnacle nem Betclic — o modo automático fica indisponível para todos os jogos (normalmente a Pinnacle exige o plano pago da The-Odds-API; confirma se a tua chave tem acesso a alguma das duas). '
-    + 'Alternativa: define outra casa em <code>ALT_SHARP_BOOKMAKER_KEY</code> (src/config.ts) se a tua chave tiver acesso a uma terceira casa. Sem isso, as decisões automáticas ficam indisponíveis, mas o comparador manual continua a funcionar com a odd de referência como estimativa.</div>';
 }
 
 // ===== Lembretes passivos: aparecem quando abres a app, nada de notificações push =====
@@ -381,7 +353,26 @@ function calibrationPanel(bets: Bet[]): string {
 
   h += '<div class="note" style="margin-top:8px">Como usar: se o viés for muito otimista, sobe o teu limiar de EV ou desconfia dos sinais fracos. Um modelo pode dar lucro por sorte num período curto e continuar mal calibrado — por isso olha para isto <b>e</b> para o yield, com muitas apostas.</div>';
 
+  h += weightSuggestionPanel(bets);
+
   return h;
+}
+
+// ===== Recalibração periódica dos pesos (sugestão textual, nunca aplicada sozinha) =====
+function weightSuggestionPanel(bets: Bet[]): string {
+  const s = quant.suggestModelWeights(bets);
+  if (!s.active) {
+    if (s.n > 0) {
+      return '<div class="note" style="margin-top:6px">Recalibração de pesos: ' + s.n + ' / ' + RECALIB_MIN_N + ' apostas 1X2 com dados guardados — ainda insuficiente para sugerir novos pesos com confiança.</div>';
+    }
+    return "";
+  }
+  if (!s.improved) {
+    return '<div class="kv" style="margin-top:6px">' + icon("check") + ' Recalibração de pesos (' + s.n + ' apostas): os pesos atuais (w=' + MODEL_BLEND_W.toFixed(2) + ', vantagem casa ' + MODEL_HOME_ADV.toFixed(2) + ') já são os melhores desta grelha de pesquisa para o teu histórico.</div>';
+  }
+  return '<div class="banner" style="margin-top:6px">' + icon("alert") + ' <b>Recalibração de pesos</b> — com base nas tuas últimas ' + s.n + ' apostas 1X2, pesos w=' + s.bestW.toFixed(2)
+    + ' / vantagem casa ' + s.bestHomeAdv.toFixed(2) + ' teriam dado um Brier score melhor (' + s.bestBrier.toFixed(4) + ' vs ' + (s.currentBrier as number).toFixed(4) + ' atual) — considera ajustar manualmente '
+    + 'MODEL_BLEND_W/MODEL_HOME_ADV em config.ts. Isto não é aplicado automaticamente.</div>';
 }
 
 // ===== Segmentação por mercado e por liga — reaproveita computePnL/avgCLV, só com filtros
@@ -669,7 +660,6 @@ function renderInner(): void {
   if (ageH > 24) {
     html += '<div class="warnbox">⏰ <b>Odds com ' + Math.floor(ageH) + 'h</b> — muito mais velhas do que a atualização diária habitual (08:00). Podem já não refletir o mercado real; confirma as odds antes de confiar em qualquer decisão desta página.</div>';
   }
-  html += sharpAvailabilityBanner();
   const stopLoss = currentStopLoss();
   if (stopLoss.halted) {
     html += '<div class="warnbox">🛑 <b>Stop-loss ativo</b> — prejuízo de ' + Math.abs(stopLoss.profit).toFixed(2)
@@ -854,13 +844,9 @@ function showModelBase(id: string): void {
   if (!out || !opts || !sel) return;
   const opt = opts[parseInt(sel.value)];
   out.classList.add("show");
-  const hasSharp = !!(g && getSharp(g));
   const evMin = (g && g.friendly) ? EV_MIN_FRIENDLY : EV_MIN;
   const p = opt.p, fair = 1 / p, minOdd = (1 + evMin) / p;
-  let html = '<div style="font-size:14px"><b>' + esc(opt.lbl) + '</b> — prob. do modelo <b>' + pct(p) + (hasSharp ? "" : " (estimativa)") + '</b></div>';
-  if (!hasSharp) {
-    html += '<div class="kv" style="color:#e0b080">' + icon("alert") + ' Sem odds Pinnacle (sharp) para este jogo — esta probabilidade vem da odd de referência (DraftKings/ESPN), uma estimativa mais fraca. Os valores abaixo são só indicativos.</div>';
-  }
+  let html = '<div style="font-size:14px"><b>' + esc(opt.lbl) + '</b> — prob. do modelo <b>' + pct(p) + '</b></div>';
   html += '<div class="oddgrid"><div class="oddrow"><span class="house">Odd justa (sem margem)</span><span class="oddval">' + fmt2(fair) + '</span></div>'
     + '<div class="oddrow best"><span class="house">➤ Odd mínima para valer a pena</span><span class="oddval">' + fmt2(minOdd) + '</span></div></div>';
   html += '<div class="kv" style="margin-top:6px">Sem odd no feed de referência para este mercado — insere a odd real acima e carrega em <b>Calcular</b>.</div>';
@@ -870,10 +856,7 @@ function showModelBase(id: string): void {
 function derivedDecBox(g: Game, dec: ModelDecision): string {
   const d2 = dec.derived;
   if (!d2) return "";
-  // dec/d2 vêm de autoDecide() (quant.ts), que hoje só decide COM baseline (Pinnacle ou Betclic) —
-  // por isso o limiar mostrado aqui tem de ser o mesmo que autoDecide usou (ver evMinFor), não o
-  // antigo EV_MIN/EV_MIN_FRIENDLY (reservado, nunca usado enquanto não houver um caminho sem nenhuma baseline).
-  const evMin = evMinFor(g, getSharp(g)?.tier);
+  const evMin = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
   const selKey2 = d2.bet ? ("D:" + (d2.bestKey as string)) : null;
   if (d2.bet) {
     const minOdd = (1 + evMin) / (d2.p as number);
@@ -901,7 +884,7 @@ function derivedDecBox(g: Game, dec: ModelDecision): string {
 function detailHtml(g: Game): string {
   const o = g.o, nv = quant.noVig(o);
   const friendlyWarn = g.friendly
-    ? '<div class="warnbox">🤝 <b>Jogo amigável</b> — forma pouco fiável; limiar sobe para EV ≥ +' + (100 * EV_MIN_SHARP_FRIENDLY).toFixed(0) + '%. Aposta com stakes reduzidas, se apostares.</div>'
+    ? '<div class="warnbox">🤝 <b>Jogo amigável</b> — forma pouco fiável; limiar sobe para EV ≥ +' + (100 * EV_MIN_FRIENDLY).toFixed(0) + '%. Aposta com stakes reduzidas, se apostares.</div>'
     : "";
   let oddsT = "<p class='kv'>Sem odds disponíveis nesta fonte para este jogo — pede a análise no chat para eu procurar odds atuais.</p>";
   if (o) {
@@ -926,19 +909,13 @@ function detailHtml(g: Game): string {
       oddsT += '<div class="warnbox">' + icon("alert") + ' Mercado moveu-se desde a abertura: ' + movParts.join(" · ") + " — pode indicar informação nova (lesão, onze) que o modelo não vê.</div>";
     }
   }
-  const sharpQ = getSharp(g);
   const info: string[] = [];
   if (g.v) info.push("🏟 " + esc(g.v));
   info.push("🗓 " + g.dt.toLocaleString("pt-PT", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }));
   info.push(esc(g.h.n) + " — forma " + esc(g.h.f || "?") + ", V-E-D " + esc(g.h.r || "?") + (g.h.s ? ", ⚽ " + esc(g.h.s) : ""));
   info.push(esc(g.a.n) + " — forma " + esc(g.a.f || "?") + ", V-E-D " + esc(g.a.r || "?") + (g.a.s ? ", ⚽ " + esc(g.a.s) : ""));
-  info.push(
-    !sharpQ ? "📡 baseline indisponível — sem odds Pinnacle nem Betclic para este jogo"
-      : sharpQ.tier === "sharp" ? "📡 baseline: Pinnacle (sharp)"
-        : "📡 baseline: Betclic (alternativa — sinal mais fraco que a Pinnacle, limiar de EV mais exigente)"
-  );
   let cmp = "";
-  const opts = quant.buildOpts(g, buildDecisionContext().calib, sharpQ);
+  const opts = quant.buildOpts(g, buildDecisionContext().calib, getSharp(g));
   if (opts.length) {
     currentOpts[g.id] = opts;
     cmp = "<h4>Melhor odd e stake — Blockbet · Betano · Betclic</h4>"
@@ -957,9 +934,7 @@ function detailHtml(g: Game): string {
   autoRegisterIfEnabled(g, dec);
   let decBox = "";
   if (dec.bet) {
-    // Mesma nota da derivedDecBox acima: dec vem de autoDecide(), que decide com a baseline
-    // disponível (Pinnacle ou Betclic) — o limiar mostrado tem de ser o mesmo que ela usou.
-    const evMinG = evMinFor(g, sharpQ?.tier);
+    const evMinG = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
     const minOdd = (1 + evMinG) / (dec.p as number);
     const logged = storage.betAlreadyLogged(g.id, dec.bestKey);
     let extra = "";
@@ -975,12 +950,9 @@ function detailHtml(g: Game): string {
       + '</button>'
       + '</div>';
   } else {
-    const evMinG = evMinFor(g, sharpQ?.tier);
+    const evMinG = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
     decBox = '<div class="decbox no"><span style="font-size:15px"><b>' + icon("x") + ' NÃO APOSTAR — ' + esc(dec.msg) + "</b></span>"
-      + (dec.best
-          ? "<br>Melhor candidata: " + esc(dec.best.lbl) + " — só com odd ≥ <b>" + fmt2((1 + evMinG) / dec.best.p) + "</b> (ref. " + fmt2(dec.best.od) + ")."
-          : (!sharpQ ? '<br><span class="kv">Ativa isto configurando, no painel "APIs externas", uma Odds API key com acesso à Pinnacle ou à Betclic.</span>' : ""))
-      + "</div>";
+      + (dec.best ? "<br>Melhor candidata: " + esc(dec.best.lbl) + " — só com odd ≥ <b>" + fmt2((1 + evMinG) / dec.best.p) + "</b> (ref. " + fmt2(dec.best.od) + ")." : "") + "</div>";
   }
   const decBox2 = derivedDecBox(g, dec);
   return finalScoreBox(g) + friendlyWarn + '<div class="kv">' + info.join("<br>") + "</div>"
@@ -1018,7 +990,7 @@ async function aiAnalyse(id: string): Promise<void> {
   const dec = getDecision(g);
   out.textContent = "A redigir análise…";
   const nv = quant.noVig(g.o);
-  const evMinG = evMinFor(g, getSharp(g)?.tier);   // dec vem de autoDecide(), com a baseline que estiver disponível
+  const evMinG = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
   const decTxt = dec.bet
     ? "APOSTAR " + (dec.stakeTxt as string) + " em " + (dec.lbl as string) + " @ " + fmt2(dec.od) + " (prob. modelo " + pct(dec.p) + ", EV +" + (100 * (dec.ev as number)).toFixed(1) + "%), na casa (Blockbet/Betano/Betclic) com a odd mais alta, mínimo " + fmt2((1 + evMinG) / (dec.p as number))
     : "NÃO APOSTAR (" + (dec.msg || "sem dados") + ")";
@@ -1074,7 +1046,6 @@ function compareOdds(id: string): void {
   if (!g || !opts || !sel || !out) return;
   const opt = opts[parseInt(sel.value)];
   out.classList.add("show");
-  const hasSharp = !!getSharp(g);
   const evMin = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
   const houses = ([["Blockbet", "bb"], ["Betano", "bt"], ["Betclic", "bc"]] as [string, string][])
     .map(([n, pfx]) => ({ n, od: parseFloat((document.getElementById(pfx + id) as HTMLInputElement | null)?.value || "") }))
@@ -1088,13 +1059,7 @@ function compareOdds(id: string): void {
   if (opt.ref && houses.length === 3 && houses.every(h => Math.abs(h.od - (opt.ref as number)) < 0.005)) {
     html += '<div class="banner" style="margin-bottom:8px">' + icon("alert") + ' Estás a ver a <b>odd de referência</b> nas 3 casas — ainda não inseriste as odds reais. O veredito abaixo baseia-se na referência; substitui pelos valores reais de cada casa para saberes onde está a melhor odd.</div>';
   }
-  if (!hasSharp) {
-    // Sem Pinnacle, p vem do no-vig da odd de referência (ver quant.buildOpts) — uma estimativa
-    // mais fraca do que a Pinnacle traria. Mostra os números como indicação, mas nunca um veredito
-    // automático "APOSTAR" com esta base (ver Ponto 1 do pedido de correção do EV circular).
-    html += '<div class="warnbox">' + icon("alert") + ' Sem odds Pinnacle (sharp) para este jogo — a probabilidade usada aqui vem da odd de referência (DraftKings/ESPN), uma estimativa mais fraca. Por isso não há veredito automático de aposta: usa os números abaixo só como indicação e decide tu.</div>';
-    html += "<b>" + esc(opt.lbl) + " @ " + fmt2(best.od) + "</b> · EV (estimado) " + (best.ev >= 0 ? "+" : "") + (100 * best.ev).toFixed(1) + "% · prob. do modelo (estimativa) " + pct(p) + "<br>";
-  } else if (best.ev >= evMin) {
+  if (best.ev >= evMin) {
     const stakeInfo = quant.computeStake(p, best.od, buildDecisionContext().stake);
     html += '<div style="font-size:14px" class="best">' + icon("check") + ' DECISÃO FINAL: APOSTAR ' + stakeInfo.txt + " na " + esc(best.n) + "</div>"
       + "<b>" + esc(opt.lbl) + " @ " + fmt2(best.od) + "</b> · EV +" + (100 * best.ev).toFixed(1) + "% · prob. modelo " + pct(p) + " · Kelly " + LS.kellyFrac.toFixed(2) + "x<br>";
@@ -1201,7 +1166,7 @@ function logFromDecision(id: string): void {
   if (!dec.bet) return;
   const bank = parseFloat(LS.bank) || 0;
   const stakeVal = bank ? (dec.stakeFrac as number) * bank : (dec.stakeFrac as number) * 100;
-  storage.saveBet({ gameId: g.id, selKey: dec.bestKey as string, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, lg: g.lg, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
+  storage.saveBet({ gameId: g.id, selKey: dec.bestKey as string, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, lg: g.lg, modelInputs: dec.modelInputs, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
   updLogCount();
   refreshDetail(id);
 }
@@ -1333,7 +1298,6 @@ function bootstrapInner(): void {
   oddsApiKeyEl.value = LS.oddsApiKey; aiProviderEl.value = LS.aiProvider; aiKeyEl.value = LS.aiKey;
   oddsApiKeyEl.onchange = () => {
     LS.oddsApiKey = oddsApiKeyEl.value.trim();
-    api.resetSharpAvailability();   // dá a uma chave nova a sua própria oportunidade de ter Pinnacle
     if (curTab === "games") startCardOddsTimer();   // liga/desliga o refresco consoante a chave ficou definida ou não
   };
   aiProviderEl.onchange = () => { LS.aiProvider = aiProviderEl.value; aiCache.clear(); };
@@ -1376,10 +1340,6 @@ function bootstrapInner(): void {
     render();
     if (wasOpen) toggle(gameId);
   });
-
-  // A Pinnacle não veio numa resposta bem sucedida — mostra o aviso (ver sharpAvailabilityBanner)
-  // assim que possível; só importa se estivermos na aba "games" (é lá que o banner aparece).
-  api.setOnSharpUnavailable(() => { if (curTab === "games") render(); });
 
   // Quando o resultado final (ESPN) chega em segundo plano para um jogo com apostas pendentes —
   // mesma técnica de re-render das duas anteriores.

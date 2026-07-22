@@ -7,16 +7,52 @@
 import type {
   Bet, Candidate, CalibAdjustment, CalibInfo, CalibrationBin, CalibrationResult,
   ClvGate, CompareOption, DecisionContext, Game, GoalModel, LineMovement, ModelDecision,
-  ModelProbs, NoVigProbs, Odds, PoissonMatrix, SharpQuote, StakeContext,
-  StakeInfo, StopLossStatus
+  ModelInputsSnapshot, ModelProbs, NoVigProbs, Odds, PoissonMatrix, SharpQuote, StakeContext,
+  StakeInfo, StopLossStatus, WeightSuggestion
 } from "./types";
 import {
-  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, EV_MIN_ALT_SHARP, EV_MIN_ALT_SHARP_FRIENDLY,
-  EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY, MIN_ODD, PENDING_RISK_FRAC, STAKE_CAP_FRAC,
-  STOP_LOSS_DRAWDOWN_FRAC, STOP_LOSS_WINDOW_DAYS
+  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, EV_MIN, EV_MIN_FRIENDLY, MIN_ODD, MODEL_BLEND_W,
+  MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, STAKE_CAP_FRAC, STOP_LOSS_DRAWDOWN_FRAC,
+  STOP_LOSS_WINDOW_DAYS
 } from "./config";
 import { avgCLV } from "./storage";
 import { fmt2, num } from "./utils";
+
+// Pontos por jogo (V-E-D) e forma recente ("WWLWD") normalizados para 0-1 — hoisted para fora de
+// modelProbs para serem reutilizáveis por suggestModelWeights (recalibração retroativa) sem
+// duplicar a lógica de parsing.
+function ppg(r: string | undefined | null): number | null {
+  const p = (r || "").split("-").map(Number);
+  if (p.length !== 3 || p.some(isNaN)) return null;
+  const n = p[0] + p[1] + p[2];
+  return n ? (3 * p[0] + p[1]) / (3 * n) : null;
+}
+function fpts(f: string | undefined | null): number | null {
+  if (!f) return null;
+  const m: Record<string, number> = { W: 3, D: 1, L: 0 };
+  let s = 0, n = 0;
+  for (const c of f) { if (c in m) { s += m[c]; n++; } }
+  return n ? s / (3 * n) : null;
+}
+
+// Blend forma+mercado propriamente dito, parametrizado em w/homeAdv (k fica fixo em 4 — só w e
+// vantagem casa entram na grid-search de suggestModelWeights). Extraído de modelProbs para que
+// os dois usem exatamente a mesma fórmula — não há dois sítios com a mesma conta escrita à mão.
+export function blendFormMarket(
+  nv: { h: number; d: number; a: number },
+  sH0: number, sA0: number, fH: number, fA: number,
+  w: number, homeAdv: number
+): { h: number; d: number; a: number } {
+  const sH = 0.55 * sH0 + 0.45 * fH + homeAdv;
+  const sA = 0.55 * sA0 + 0.45 * fA;
+  const k = 4, eh = Math.exp(k * sH), ea = Math.exp(k * sA);
+  const diff = Math.abs(sH - sA);
+  const pd = Math.min(0.32, Math.max(0.15, 0.30 - 0.5 * diff));
+  const ph = (1 - pd) * eh / (eh + ea), pa = (1 - pd) - ph;
+  let p = { h: (1 - w) * nv.h + w * ph, d: (1 - w) * nv.d + w * pd, a: (1 - w) * nv.a + w * pa };
+  const s = p.h + p.d + p.a;
+  return { h: p.h / s, d: p.d / s, a: p.a / s };
+}
 
 // ===== No-vig: probabilidades sem margem do bookmaker, a partir das odds 1X2 =====
 // Método "Margin Proportional to Odds" / normalização multiplicativa: cada probabilidade implícita
@@ -38,30 +74,65 @@ export function lineMovement(o: Odds | null | undefined): LineMovement {
   return { h, a };
 }
 
-// ===== Modelo automático: no-vig puro da Pinnacle ou, em falta, da Betclic (alternativa) —
-// ÚNICOS caminhos suportados =====
-// A heurística forma+PPG que existia aqui foi removida a pedido explícito: o mercado (Pinnacle) já
-// é eficiente o suficiente para não valer a pena somar ruído de uma heurística simples de pontos/
-// forma por cima. O scaffolding de ML (ONNX) já tinha sido removido antes pelo mesmo motivo (nada
-// por trás validado).
-// SEM nenhuma das duas, devolve-se null — nunca se cai para o no-vig da odd de referência (g.o,
-// DraftKings/ESPN). Essa era precisamente a odd que o motor de decisão depois compara para
-// calcular o EV: usar a MESMA odd como "probabilidade do modelo" e como "odd apostada" faz
-// EV = −margem sempre, garantindo "não apostar" em todos os jogos por construção (bug circular
-// corrigido aqui). Sem baseline, autoDecide() produz uma decisão honesta de indisponibilidade em
-// vez de um "sem valor" enganoso — ver comparador manual (buildOpts) para o único sítio que ainda
-// aceita a referência como estimativa fraca, sinalizada como tal.
+// ===== Modelo automático: forma+registo misturado com mercado no-vig (ver MODEL_BLEND_W) =====
+// Único caminho suportado — o scaffolding de ML (ONNX) foi removido (ver histórico): não havia
+// nenhum model.onnx treinado/validado por trás, e manter o código pronto a ligar era um risco de
+// alguém ativá-lo no futuro sem perceber que não tinha validação nenhuma atrás. Se um dia fizer
+// sentido ML a sério, isso é um projeto à parte com xG real e validação, não isto reativado.
+// "sharp" (Pinnacle, via src/api.ts:getSharpOdds) substitui a odd de referência (DraftKings/ESPN)
+// como base do no-vig quando disponível — a fórmula de blending forma+mercado abaixo não muda,
+// só a fonte da componente de mercado é que fica mais precisa.
 export function modelProbs(g: Game, sharp?: SharpQuote | null): ModelProbs | null {
-  if (!sharp) return null;
-  const nv = noVig({ h: sharp.h, d: sharp.d, a: sharp.a });
+  const marketOdds: Odds | null = sharp ? { h: sharp.h, d: sharp.d, a: sharp.a } : g.o;
+  const nv = noVig(marketOdds);
   if (!nv) return null;
-  return { p: nv, heur: false, sharp: true, tier: sharp.tier };
+  const sH0 = ppg(g.h.r), sA0 = ppg(g.a.r), fH = fpts(g.h.f), fA = fpts(g.a.f);
+  if (sH0 == null || sA0 == null || fH == null || fA == null) return { p: nv, heur: false, sharp: !!sharp };
+  const p = blendFormMarket(nv, sH0, sA0, fH, fA, MODEL_BLEND_W, MODEL_HOME_ADV);
+  const inputs: ModelInputsSnapshot = { nvH: nv.h, nvD: nv.d, nvA: nv.a, sH0, sA0, fH, fA };
+  return { p, heur: true, sharp: !!sharp, inputs };
 }
 
-// Usado por segmentedPerformancePanels (main.ts) para separar 1X2/handicap principal da segunda
-// oportunidade de golos (prefixo "D:") — independente do modelo de probabilidade em si.
+// ===== Recalibração periódica (sugestão, nunca aplicação automática) =====
+// Faz um grid-search sobre w (peso forma) e vantagem casa, otimizando para Brier score (nunca
+// P&L, para não sobreajustar a uma sequência boa/má) sobre o histórico de apostas 1X2 simples
+// ("1"/"X"/"2", com ou sem prefixo "AUTO:") que guardaram os inputs brutos do blend. Só ativa com
+// amostra suficiente (RECALIB_MIN_N) — antes disso o "melhor" combo seria só ruído.
 export function stripAutoPrefix(selKey: string): string {
   return selKey.startsWith("AUTO:") ? selKey.slice(5) : selKey;
+}
+export function suggestModelWeights(bets: Bet[]): WeightSuggestion {
+  const sample = bets
+    .filter(b => (b.status === "win" || b.status === "loss") && b.modelInputs)
+    .map(b => ({ key: stripAutoPrefix(b.selKey), inputs: b.modelInputs as ModelInputsSnapshot, y: b.status === "win" ? 1 : 0 }))
+    .filter(x => x.key === "1" || x.key === "X" || x.key === "2");
+
+  const n = sample.length;
+  if (n < RECALIB_MIN_N) {
+    return { active: false, n, currentBrier: null, bestW: MODEL_BLEND_W, bestHomeAdv: MODEL_HOME_ADV, bestBrier: 0, improved: false };
+  }
+
+  const brierFor = (w: number, homeAdv: number): number => {
+    let sum = 0;
+    for (const s of sample) {
+      const p = blendFormMarket({ h: s.inputs.nvH, d: s.inputs.nvD, a: s.inputs.nvA }, s.inputs.sH0, s.inputs.sA0, s.inputs.fH, s.inputs.fA, w, homeAdv);
+      const pSel = s.key === "1" ? p.h : s.key === "X" ? p.d : p.a;
+      sum += (pSel - s.y) ** 2;
+    }
+    return sum / sample.length;
+  };
+
+  const currentBrier = brierFor(MODEL_BLEND_W, MODEL_HOME_ADV);
+  let bestW = MODEL_BLEND_W, bestHomeAdv = MODEL_HOME_ADV, bestBrier = currentBrier;
+  for (let wi = 20; wi <= 50; wi += 5) {
+    const w = wi / 100;
+    for (let hai = 6; hai <= 18; hai += 2) {
+      const homeAdv = hai / 100;
+      const brier = brierFor(w, homeAdv);
+      if (brier < bestBrier) { bestBrier = brier; bestW = w; bestHomeAdv = homeAdv; }
+    }
+  }
+  return { active: true, n, currentBrier, bestW, bestHomeAdv, bestBrier, improved: bestBrier < currentBrier - 0.0005 };
 }
 
 // ===== Motor de golos esperados (Poisson) para mercados derivados =====
@@ -297,14 +368,7 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
   const o = g.o;
   let dec: ModelDecision | null = null;
   const mp = modelProbs(g, sharp);
-  // mp só existe quando há baseline (ver modelProbs) — o limiar depende de qual: Pinnacle
-  // ("sharp", mais fiável, limiar mais baixo) ou Betclic ("alt", fallback mais ruidoso, limiar
-  // mais alto para compensar). EV_MIN/EV_MIN_FRIENDLY ficam reservados para um eventual caminho
-  // sem nenhuma das duas, que hoje não existe: sem baseline a decisão é "indisponível", nunca uma
-  // comparação de EV.
-  const evMin = mp?.tier === "alt"
-    ? (g.friendly ? EV_MIN_ALT_SHARP_FRIENDLY : EV_MIN_ALT_SHARP)
-    : (g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP);
+  const evMin = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
   const calib = ctx.calib;
   if (o && mp) {
     const p = mp.p;
@@ -340,7 +404,7 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
           bet: true, lbl: best.lbl, od: best.od, ev: best.ev, p: best.p, pBefore: best.pBefore,
           calibApplied: best.calibApplied, stakeTxt: stakeInfo.txt, stakeFrac: stakeInfo.frac,
           reducedForRisk: stakeInfo.reducedForRisk, reducedForClv: stakeInfo.reducedForClv,
-          cands, heur: mp.heur, bestKey: best.k
+          cands, heur: mp.heur, bestKey: best.k, modelInputs: mp.inputs
         };
       } else if (bestEv > 0) {
         dec = { bet: false, msg: "Valor marginal: " + best.lbl + " @ " + fmt2(best.od) + " (EV +" + (100 * bestEv).toFixed(1) + "%) — só observar", cands, best, heur: mp.heur, bestKey: best.k };
@@ -349,11 +413,7 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
       }
     }
   }
-  if (!dec) {
-    if (!o) dec = { bet: false, msg: "Sem odds — decisão indisponível", cands: [] };
-    else if (!sharp) dec = { bet: false, msg: "Sem baseline sharp (Pinnacle) nem alternativa (Betclic) — decisão automática indisponível", cands: [] };
-    else dec = { bet: false, msg: "Dados insuficientes para decisão automática", cands: [] };
-  }
+  if (!dec) dec = o ? { bet: false, msg: "Dados insuficientes para decisão automática", cands: [] } : { bet: false, msg: "Sem odds — decisão indisponível", cands: [] };
 
   // Segunda oportunidade (mercados de golos, motor de Poisson)
   const dc = derivedCandidates(g, sharp);
@@ -395,12 +455,7 @@ export function buildOpts(g: Game, calib: CalibInfo, sharp?: SharpQuote | null):
   const o = g.o, nv = noVig(o), opts: CompareOption[] = [];
   if (!o || !nv) return opts;
   const mp = modelProbs(g, sharp);
-  // Sem sharp, modelProbs devolve null (ver comentário lá) — mas o comparador MANUAL continua a
-  // precisar de uma probabilidade para calcular EV contra as odds reais que o utilizador insere,
-  // por isso aqui (só aqui) cai-se para o no-vig da odd de referência (nv) como estimativa fraca.
-  // Quem chama (main.ts) tem de sinalizar isto ao utilizador — ver getSharp(g) em detailHtml/
-  // compareOdds — e nunca mostrar um veredito automático "APOSTAR" com esta base.
-  const p0 = mp ? mp.p : nv;
+  const p0 = mp ? mp.p : nv;   // prob. RAW do modelo (mesma base da decisão automática)
   const adjP = (raw: number) => applyCalib(raw, calib).p;
   const p = { h: adjP(p0.h), d: adjP(p0.d), a: adjP(p0.a) };
   opts.push({ k: "1", lbl: "1 — " + g.h.n, p: p.h, ref: o.h });

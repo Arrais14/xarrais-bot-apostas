@@ -58,14 +58,23 @@ export interface NoVigProbs {
   margin: number;
 }
 
-/** Resultado do modelo automático de probabilidades (no-vig puro da odd de referência ou da
- * Pinnacle/"sharp" quando disponível — único caminho suportado; a heurística forma+PPG e o
- * scaffolding de ML/ONNX foram ambos removidos por não acrescentarem sinal validado). */
+/** Inputs brutos do blend forma+mercado no momento em que uma decisão foi tomada — guardados na
+ * aposta (ver Bet.modelInputs) para permitir recalibração retroativa dos pesos (ver
+ * quant.suggestModelWeights) sem depender dos dados do jogo, que a tarefa diária substitui todos
+ * os dias (o array `games` em memória só tem os jogos de hoje, nunca os de semanas atrás). */
+export interface ModelInputsSnapshot {
+  nvH: number; nvD: number; nvA: number;   // no-vig do mercado (sharp ou referência) nesse momento
+  sH0: number; sA0: number;                 // pontos por jogo casa/fora
+  fH: number; fA: number;                   // forma recente casa/fora (0-1)
+}
+
+/** Resultado do modelo automático de probabilidades (heurística forma+mercado — único caminho
+ * suportado; o scaffolding de ML/ONNX foi removido por não ter validação nenhuma por trás). */
 export interface ModelProbs {
   p: { h: number; d: number; a: number };
   heur: boolean;
-  sharp?: boolean;   // true quando o componente de mercado veio de uma casa sharp/alternativa (ver tier), não do preload DraftKings/ESPN
-  tier?: "sharp" | "alt";   // qual casa gerou o SharpQuote usado — "sharp" (Pinnacle) ou "alt" (Betclic, fallback) — ver quant.autoDecide
+  sharp?: boolean;   // true quando o componente de mercado veio da Pinnacle, não do preload DraftKings/ESPN
+  inputs?: ModelInputsSnapshot;   // só presente quando heur=true (há forma/registo suficiente)
 }
 
 /** Variação percentual entre a odd de abertura e a atual (ver quant.lineMovement) — null quando
@@ -81,15 +90,13 @@ export interface FinalScore {
   away: number;
 }
 
-/** Odds 1X2 de uma casa sharp (Pinnacle) ou alternativa (Betclic, fallback quando falta a
- * Pinnacle — ver ALT_SHARP_BOOKMAKER_KEY) usadas como referência de mercado para o no-vig —
- * mesma forma que Odds, mas só o 1X2 (a The-Odds-API não devolve totais/handicaps destas casas
+/** Odds 1X2 de uma casa "sharp" (Pinnacle) usadas como referência de mercado para o no-vig —
+ * mesma forma que Odds, mas só o 1X2 (a The-Odds-API não devolve totais/handicaps da Pinnacle
  * no mesmo pedido h2h que usamos aqui). */
 export interface SharpQuote {
   h: number;
   d: number;
   a: number;
-  tier: "sharp" | "alt";   // "sharp" = Pinnacle (mais fiável); "alt" = Betclic (fallback, sinal mais fraco)
 }
 
 export interface StakeInfo {
@@ -167,6 +174,7 @@ export interface ModelDecision {
   msg?: string;
   best?: Candidate;
   derived?: DerivedDecision;
+  modelInputs?: ModelInputsSnapshot;   // inputs do blend no momento da decisão — ver Bet.modelInputs
 }
 
 /** Contexto necessário para autoDecide/buildOpts: calibração + banca/perfil/risco pendente. */
@@ -215,6 +223,19 @@ export interface CalibInfo {
   n: number;
 }
 
+/** Sugestão de pesos do blend forma+mercado (ver quant.suggestModelWeights) — só texto informativo
+ * no painel de calibração, nunca aplicado automaticamente. active=false enquanto a amostra
+ * (RECALIB_MIN_N) for insuficiente. */
+export interface WeightSuggestion {
+  active: boolean;
+  n: number;
+  currentBrier: number | null;
+  bestW: number;
+  bestHomeAdv: number;
+  bestBrier: number;
+  improved: boolean;
+}
+
 export interface CalibAdjustment {
   p: number;
   applied: boolean;
@@ -243,6 +264,7 @@ export interface Bet {
   homeTeam?: string; awayTeam?: string; kickoff?: string;   // denormalizado do Game no momento do registo —
                                                               // permite resolver o resultado (api.getFinalScoreFor)
                                                               // mesmo depois de o jogo sair de `games` (ver Game/data.ts)
+  modelInputs?: ModelInputsSnapshot;   // inputs brutos do blend forma+mercado nesse momento — ver quant.suggestModelWeights
 }
 
 /** Aposta ainda por gravar (saveBet atribui id/status/loggedAt). */
