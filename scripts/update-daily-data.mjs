@@ -25,7 +25,11 @@ const ESPN_LEAGUE_SLUG = {
   "Bundesliga": "ger.1",
   "Ligue 1": "fra.1",
   "Champions League": "uefa.champions",
-  "Liga Europa": "uefa.europa"
+  "Liga Europa": "uefa.europa",
+  // Confirmados ao vivo em 2026-07-22 — ambos devolveram jogos reais da ronda de qualificação em
+  // curso nesta altura do ano (meados de julho a agosto).
+  "Champions League (Qualificação)": "uefa.champions_qual",
+  "Liga Europa (Qualificação)": "uefa.europa_qual"
 };
 
 const ODDS_API_SPORT_MAP = {
@@ -38,7 +42,12 @@ const ODDS_API_SPORT_MAP = {
   "Bundesliga": "soccer_germany_bundesliga",
   "Ligue 1": "soccer_france_ligue_one",
   "Champions League": "soccer_uefa_champs_league",
-  "Liga Europa": "soccer_uefa_europa_league"
+  "Liga Europa": "soccer_uefa_europa_league",
+  // NÃO confirmadas contra uma chave real (só encontradas via pesquisa — ver comentário igual em
+  // src/api.ts:ODDS_API_SPORT_MAP). Se a key estiver errada, fetchOddsForLeague falha em segurança
+  // (liga sem odds, mas com jogos) — nunca impede o resto do script de correr.
+  "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
+  "Liga Europa (Qualificação)": "soccer_uefa_europa_league_qualification"
 };
 
 const DAYS_AHEAD = 3;             // hoje + 3 dias, para cobrir efeitos de fuso horário
