@@ -10,7 +10,7 @@ import { PRELOADED } from "./data";
 import {
   BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
   CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
-  MODEL_BLEND_W, MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, SETTLE_REMINDER_H, STAKE_CAP_FRAC,
+  PENDING_RISK_FRAC, SETTLE_REMINDER_H, STAKE_CAP_FRAC,
   STOP_LOSS_DRAWDOWN_FRAC
 } from "./config";
 import { esc, fmt2, fmtDate, formHtml, num, pct, ymd } from "./utils";
@@ -122,6 +122,37 @@ function confirmSettle(betId: string, status: string, gameId: string): void {
   refreshDetail(gameId);
 }
 
+// Resolve o resultado de uma aposta pendente independentemente de o Game original ainda estar em
+// `games` — usa os campos denormalizados (Bet.lg/kickoff/homeTeam/awayTeam, ver types.ts) quando
+// presentes; cai para o comportamento antigo (procurar em `games`) para apostas antigas que ainda
+// não os têm gravados.
+function resolveScoreForBet(b: Bet): FinalScore | null {
+  if (b.lg && b.kickoff && b.homeTeam && b.awayTeam) {
+    return api.getFinalScoreFor(b.gameId, b.lg, b.kickoff, b.homeTeam, b.awayTeam);
+  }
+  const g = games.find(x => x.id === b.gameId);
+  return g ? api.getFinalScore(g) : null;
+}
+
+// Confirmação a partir da tabela de "Os meus resultados" (não do detalhe do jogo) — torna a
+// sugestão de liquidação alcançável mesmo para apostas cujo jogo já saiu de `games` há dias.
+function confirmSettleLog(betId: string, status: string): void {
+  storage.settleBet(betId, status as BetStatus);
+  renderLog();
+}
+
+// ===== Liquidação automática das "não-apostas" (Bet.rejected) — sem clique, ao contrário das
+// apostas reais: não há dinheiro em risco, por isso não faz sentido exigir confirmação manual. =====
+function autoSettleRejected(bets: Bet[]): void {
+  for (const b of bets) {
+    if (!b.rejected || b.status !== "pending") continue;
+    const score = resolveScoreForBet(b);
+    if (!score) continue;
+    const suggestion = suggestOutcome(b.selKey.slice(4), score);   // "REJ:1" -> "1"
+    if (suggestion) storage.settleBet(b.id, suggestion);
+  }
+}
+
 // ===== Registo automático e não enviesado das sugestões do modelo =====
 // Se o utilizador só registasse manualmente as apostas que "sente" serem boas, a calibração/CLV
 // passariam a medir o julgamento dele, não o do modelo. Com "Registar sugestões automaticamente"
@@ -130,13 +161,14 @@ function confirmSettle(betId: string, status: string, gameId: string): void {
 // manual real do utilizador nem com ele próprio ser registado duas vezes.
 function autoRegisterIfEnabled(g: Game, dec: ModelDecision): void {
   if (!LS.autoRegister) return;
+  if (g.dt.getTime() <= Date.now()) return;   // nunca registar/re-registar decisões de jogos já começados (ver card())
   const bank = parseFloat(LS.bank) || 0;
   let saved = false;
   if (dec.bet) {
     const key = "AUTO:" + (dec.bestKey as string);
     if (!storage.betAlreadyLogged(g.id, key)) {
       const stakeVal = bank ? (dec.stakeFrac as number) * bank : (dec.stakeFrac as number) * 100;
-      storage.saveBet({ gameId: g.id, selKey: key, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, auto: true, lg: g.lg, modelInputs: dec.modelInputs });
+      storage.saveBet({ gameId: g.id, selKey: key, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, auto: true, lg: g.lg, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
       saved = true;
     }
   }
@@ -145,11 +177,36 @@ function autoRegisterIfEnabled(g: Game, dec: ModelDecision): void {
     const key2 = "AUTO:D:" + (d2.bestKey as string);
     if (!storage.betAlreadyLogged(g.id, key2)) {
       const stakeVal2 = bank ? (d2.stakeFrac as number) * bank : (d2.stakeFrac as number) * 100;
-      storage.saveBet({ gameId: g.id, selKey: key2, sel: d2.lbl as string, game: g.h.n + " vs " + g.a.n, odd: d2.od as number, stake: stakeVal2.toFixed(2), prob: d2.p as number, auto: true, lg: g.lg });
+      storage.saveBet({ gameId: g.id, selKey: key2, sel: d2.lbl as string, game: g.h.n + " vs " + g.a.n, odd: d2.od as number, stake: stakeVal2.toFixed(2), prob: d2.p as number, auto: true, lg: g.lg, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
       saved = true;
     }
   }
   if (saved) updLogCount();
+}
+
+// ===== Rastreio de "não-apostas": candidatos com EV insuficiente (marginal ou negativo) — guardados
+// com rejected:true, stake=0€ risco real nenhum, só para medir depois se "não apostar" foi a decisão
+// certa (ver storage.computeRejectedStats). Prefixo "REJ:" novo, na mesma família de "AUTO:"/"D:",
+// para nunca colidir com apostas reais/automáticas no dedup de betAlreadyLogged.
+function trackRejectedIfEnabled(g: Game, dec: ModelDecision): void {
+  if (!LS.trackRejected) return;
+  if (g.dt.getTime() <= Date.now()) return;   // mesmo guard de autoRegisterIfEnabled — nunca em jogos já começados
+  if (dec.bet || !dec.best) return;
+  // Só rastreia candidatos 1X2 simples — são os únicos que suggestOutcome resolve com confiança
+  // direta do placar, garantindo que toda entrada rejeitada acaba por se liquidar sozinha.
+  if (dec.best.k !== "1" && dec.best.k !== "X" && dec.best.k !== "2") return;
+  const key = "REJ:" + (dec.best.k as string);
+  if (storage.betAlreadyLogged(g.id, key)) return;
+  const bank = parseFloat(LS.bank) || 0;
+  const ctx = buildDecisionContext();
+  const stakeInfo = quant.computeStake(dec.best.p, dec.best.od as number, ctx.stake);
+  const stakeVal = bank ? stakeInfo.frac * bank : stakeInfo.frac * 100;
+  storage.saveBet({
+    gameId: g.id, selKey: key, sel: dec.best.lbl, game: g.h.n + " vs " + g.a.n,
+    odd: dec.best.od as number, stake: stakeVal.toFixed(2), prob: dec.best.p,
+    rejected: true, lg: g.lg, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d
+  });
+  updLogCount();
 }
 
 // ===== Toasts: substitui alert()s invasivos por notificações flutuantes =====
@@ -296,26 +353,7 @@ function calibrationPanel(bets: Bet[]): string {
 
   h += '<div class="note" style="margin-top:8px">Como usar: se o viés for muito otimista, sobe o teu limiar de EV ou desconfia dos sinais fracos. Um modelo pode dar lucro por sorte num período curto e continuar mal calibrado — por isso olha para isto <b>e</b> para o yield, com muitas apostas.</div>';
 
-  h += weightSuggestionPanel(bets);
-
   return h;
-}
-
-// ===== Recalibração periódica dos pesos (sugestão textual, nunca aplicada sozinha) =====
-function weightSuggestionPanel(bets: Bet[]): string {
-  const s = quant.suggestModelWeights(bets);
-  if (!s.active) {
-    if (s.n > 0) {
-      return '<div class="note" style="margin-top:6px">Recalibração de pesos: ' + s.n + ' / ' + RECALIB_MIN_N + ' apostas 1X2 com dados guardados — ainda insuficiente para sugerir novos pesos com confiança.</div>';
-    }
-    return "";
-  }
-  if (!s.improved) {
-    return '<div class="kv" style="margin-top:6px">' + icon("check") + ' Recalibração de pesos (' + s.n + ' apostas): os pesos atuais (w=' + MODEL_BLEND_W.toFixed(2) + ', vantagem casa ' + MODEL_HOME_ADV.toFixed(2) + ') já são os melhores desta grelha de pesquisa para o teu histórico.</div>';
-  }
-  return '<div class="banner" style="margin-top:6px">' + icon("alert") + ' <b>Recalibração de pesos</b> — com base nas tuas últimas ' + s.n + ' apostas 1X2, pesos w=' + s.bestW.toFixed(2)
-    + ' / vantagem casa ' + s.bestHomeAdv.toFixed(2) + ' teriam dado um Brier score melhor (' + s.bestBrier.toFixed(4) + ' vs ' + (s.currentBrier as number).toFixed(4) + ' atual) — considera ajustar manualmente '
-    + 'MODEL_BLEND_W/MODEL_HOME_ADV em config.ts. Isto não é aplicado automaticamente.</div>';
 }
 
 // ===== Segmentação por mercado e por liga — reaproveita computePnL/avgCLV, só com filtros
@@ -384,13 +422,15 @@ function renderLog(): void {
   // Modo papel e registo automático: ambos alimentam calibração/CLV/Brier na mesma (mais amostra,
   // mais cedo fiável, e sem o viés de só se registar o que "parece bom"), mas ficam fora do P&L
   // "real" — computePnL/avgCLV recebem o filtro que os separa, sem precisar de duas funções.
-  const isReal = (b: Bet) => !b.paper && !b.auto;
+  const isReal = (b: Bet) => !b.paper && !b.auto && !b.rejected;
   const realBets = allBets.filter(isReal);
   const paperBets = allBets.filter(b => b.paper);
   const autoBets = allBets.filter(b => b.auto);
   const s = storage.computePnL(allBets, isReal);
   const clv = storage.avgCLV(allBets);
   const gate = quant.clvGate(allBets);
+
+  autoSettleRejected(allBets);
 
   // Backup automático: se já lá vão BACKUP_STALE_DAYS dias sem exportar, faz-se sozinho e avisa.
   let autoBackupMsg = "";
@@ -473,6 +513,18 @@ function renderLog(): void {
     html += '<div class="kv" style="margin-bottom:10px">🤖 <b>' + autoBets.length + '</b> sugestão(ões) registada(s) automaticamente (amostra não enviesada para calibração/CLV) — fora do P&L real. Linhas com opacidade reduzida na tabela abaixo.</div>';
   }
 
+  // Rastreio de "não-apostas": mede se rejeitar estes candidatos (EV insuficiente) foi a decisão
+  // certa. hypotheticalProfit é sempre hipotético — nunca dinheiro real, nunca misturado no P&L acima.
+  const rejStats = storage.computeRejectedStats(allBets);
+  if (rejStats.n > 0) {
+    const rejPc = rejStats.hypotheticalProfit > 0 ? "neg" : rejStats.hypotheticalProfit < 0 ? "pos" : "neu";
+    html += '<div class="banner" style="margin-bottom:10px">🚫 <b>Não-apostas rastreadas:</b> ' + rejStats.n + ' resolvidas · teriam ganho ' + (100 * rejStats.wouldWinRate).toFixed(0) + '% das vezes'
+      + ' · <span class="' + rejPc + '">se as tivesses apostado (stake hipotético): ' + (rejStats.hypotheticalProfit >= 0 ? "+" : "−") + Math.abs(rejStats.hypotheticalProfit).toFixed(2) + (cur === "€" ? " €" : " u") + '</span>'
+      + '<br><span class="kv">' + (rejStats.hypotheticalProfit < 0
+        ? "Não apostar nestas oportunidades salvou-te dinheiro (hipotético) até agora."
+        : "Estas oportunidades rejeitadas teriam dado lucro (hipotético) — vale a pena rever se o limiar de EV está calibrado corretamente.") + '</span></div>';
+  }
+
   html += segmentedPerformancePanels(realBets);
 
   html += calibrationPanel(allBets);
@@ -482,16 +534,27 @@ function renderLog(): void {
     const d = new Date(b.loggedAt).toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit" });
     const stat = b.status;
     const bClv = (num(b.oddClose) > 0) ? (num(b.odd) / num(b.oddClose) - 1) : null;
-    const rowClasses = [b.paper ? "paper-row" : "", b.auto ? "auto-row" : ""].filter(Boolean).join(" ");
+    const rowClasses = [b.paper ? "paper-row" : "", b.auto ? "auto-row" : "", b.rejected ? "rejected-row" : ""].filter(Boolean).join(" ");
+    let settleSuggestion = "";
+    if (stat === "pending" && !b.rejected) {
+      const score = resolveScoreForBet(b);
+      const suggestion = score ? suggestOutcome(b.selKey, score) : null;
+      if (suggestion) {
+        const lbl = suggestion === "win" ? "Ganhou" : "Perdeu";
+        settleSuggestion = '<div class="kv" style="margin-top:4px">ESPN: ' + score!.home + "-" + score!.away + " — sugestão: <b>" + lbl + "</b> "
+          + '<button class="logbtn" onclick="confirmSettleLog(\'' + b.id + '\',\'' + suggestion + '\')">' + icon("check") + ' Confirmar</button></div>';
+      }
+    }
     html += '<tr' + (rowClasses ? ' class="' + rowClasses + '"' : '') + '>'
       + '<td>' + d + '</td>'
-      + '<td><b>' + esc(b.sel) + '</b>' + (b.paper ? ' <span class="pill pend">📝 papel</span>' : '') + (b.auto ? ' <span class="pill pend">🤖 auto</span>' : '') + '<br><span class="kv">' + esc(b.game) + '</span></td>'
+      + '<td><b>' + esc(b.sel) + '</b>' + (b.paper ? ' <span class="pill pend">📝 papel</span>' : '') + (b.auto ? ' <span class="pill pend">🤖 auto</span>' : '') + (b.rejected ? ' <span class="pill pend">🚫 não-aposta</span>' : '') + '<br><span class="kv">' + esc(b.game) + '</span></td>'
       + '<td class="num">' + (num(b.odd) || 0).toFixed(2) + '</td>'
       + '<td class="num">' + (num(b.stake) || 0).toFixed(2) + '</td>'
       + '<td><div class="settle">'
       + '<button type="button" class="pill win ' + (stat === "win" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'win\')" aria-label="Marcar aposta como ganha">Ganhou</button>'
       + '<button type="button" class="pill loss ' + (stat === "loss" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'loss\')" aria-label="Marcar aposta como perdida">Perdeu</button>'
       + '<button type="button" class="pill void ' + (stat === "void" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'void\')" aria-label="Marcar aposta como anulada">Anulada</button>'
+      + settleSuggestion
       + '</div></td>'
       + '<td class="num"><input type="number" step="0.01" min="1" value="' + (b.oddClose ? b.oddClose : "") + '" style="width:64px;padding:4px;border:1px solid var(--line);border-radius:6px;background:#1d2129;color:var(--ink);font-size:11px;text-align:right" onchange="setOddClose(\'' + b.id + '\', this.value)" aria-label="Odd de fecho"></td>'
       + '<td class="num" style="' + (bClv != null ? ('color:' + (bClv >= 0 ? "#6dd18e" : "var(--bad)") + ';font-weight:700') : 'color:var(--muted)') + '">' + (bClv != null ? ((bClv >= 0 ? "+" : "") + (100 * bClv).toFixed(1) + "%") : "—") + '</td>'
@@ -630,25 +693,41 @@ function card(g: Game): string {
     + '<div class="ob"><small>1</small>' + fmt2(o.h) + "</div>"
     + '<div class="ob"><small>X</small>' + fmt2(o.d) + "</div>"
     + '<div class="ob"><small>2</small>' + fmt2(o.a) + "</div></div>" : "";
-  const dec = getDecision(g);
-  autoRegisterIfEnabled(g, dec);
-  let valClass = "val-none";   // cinzento: sem aposta/dados
-  const decLine = dec.bet
-    ? '<div class="dec bet">' + icon("target") + ' ' + esc(dec.lbl) + " @ " + fmt2(dec.od) + " · EV +" + (100 * (dec.ev as number)).toFixed(1) + "% · " + (dec.stakeTxt as string) + "</div>"
-    : '<div class="dec no">' + icon("target") + ' ' + esc(dec.msg) + "</div>";
-  if (dec.bet) valClass = "val-good";                                          // verde: EV >= limiar no mercado principal
-  else if (dec.derived?.bet) valClass = "val-derived";                        // azul: sem valor no 1X2, mas há segunda oportunidade (golos)
-  else if (dec.best && (dec.best.ev as number) > 0) valClass = "val-marginal"; // laranja: EV>0 mas abaixo do limiar
+  // Jogos já começados (navegação para "ontem"/"anteontem" — ver DAYS_BEHIND no script diário) só
+  // mostram o resultado final, nunca uma sugestão de aposta nova: getDecision/autoRegisterIfEnabled/
+  // trackRejectedIfEnabled ficam de fora por completo para não recalcular EV sobre odds já fechadas
+  // nem re-registar a mesma decisão sempre que o utilizador visita esse dia.
+  const started = g.dt.getTime() <= Date.now();
   const pending = pendingBetsFor(g.id);
+  let valClass = "val-none";
+  let decLine: string;
   let scoreHint = "";
-  if (pending.length) {
+  let freshNote = "";
+  if (started) {
     const score = api.getFinalScore(g);
-    if (score) scoreHint = '<div class="kv">' + icon("check") + ' Resultado: ' + score.home + "-" + score.away + " — abre o jogo para confirmar</div>";
+    decLine = score
+      ? '<div class="dec no">' + icon("check") + ' Terminado: ' + score.home + "-" + score.away + "</div>"
+      : '<div class="dec no">' + icon("target") + ' A decorrer / resultado ainda não disponível</div>';
+    if (pending.length && score) scoreHint = '<div class="kv">' + icon("check") + ' Resultado: ' + score.home + "-" + score.away + " — abre o jogo para confirmar</div>";
+  } else {
+    const dec = getDecision(g);
+    autoRegisterIfEnabled(g, dec);
+    trackRejectedIfEnabled(g, dec);
+    decLine = dec.bet
+      ? '<div class="dec bet">' + icon("target") + ' ' + esc(dec.lbl) + " @ " + fmt2(dec.od) + " · EV +" + (100 * (dec.ev as number)).toFixed(1) + "% · " + (dec.stakeTxt as string) + "</div>"
+      : '<div class="dec no">' + icon("target") + ' ' + esc(dec.msg) + "</div>";
+    if (dec.bet) valClass = "val-good";                                          // verde: EV >= limiar no mercado principal
+    else if (dec.derived?.bet) valClass = "val-derived";                        // azul: sem valor no 1X2, mas há segunda oportunidade (golos)
+    else if (dec.best && (dec.best.ev as number) > 0) valClass = "val-marginal"; // laranja: EV>0 mas abaixo do limiar
+    if (pending.length) {
+      const score = api.getFinalScore(g);
+      if (score) scoreHint = '<div class="kv">' + icon("check") + ' Resultado: ' + score.home + "-" + score.away + " — abre o jogo para confirmar</div>";
+    }
+    // Nota de frescura: quando a Pinnacle já refrescou pelo menos uma vez para este jogo, a decisão
+    // acima (EV/probabilidade) já reflete isso — este texto só explica PORQUÊ pode ter mudado sozinha.
+    const freshTs = cardOddsFreshness.get(g.id);
+    freshNote = freshTs ? '<div class="kv" style="margin-top:2px">' + icon("refresh") + ' Modelo (Pinnacle) atualizado ' + freshLabel(freshTs) + '</div>' : "";
   }
-  // Nota de frescura: quando a Pinnacle já refrescou pelo menos uma vez para este jogo, a decisão
-  // acima (EV/probabilidade) já reflete isso — este texto só explica PORQUÊ pode ter mudado sozinha.
-  const freshTs = cardOddsFreshness.get(g.id);
-  const freshNote = freshTs ? '<div class="kv" style="margin-top:2px">' + icon("refresh") + ' Modelo (Pinnacle) atualizado ' + freshLabel(freshTs) + '</div>' : "";
   return '<div class="card ' + valClass + '"><div class="row" onclick="toggle(\'' + g.id + '\')">'
     + '<div class="time">' + t + (g.friendly ? '<span class="fchip">amigável</span>' : "") + "</div>"
     + '<div class="teams">'
@@ -678,7 +757,7 @@ function startCardOddsTimer(): void {
     document.querySelectorAll<HTMLElement>(".oddsmini[data-gid]").forEach(el => {
       const gid = el.dataset.gid as string;
       const g = games.find(x => x.id === gid);
-      if (g) void refreshCardOdds(g);
+      if (g && g.dt.getTime() > Date.now()) void refreshCardOdds(g);   // jogos já começados não precisam de mais refresco
     });
   }, CARD_ODDS_REFRESH_MS);
 }
@@ -1068,7 +1147,7 @@ function logFromDecision(id: string): void {
   if (!dec.bet) return;
   const bank = parseFloat(LS.bank) || 0;
   const stakeVal = bank ? (dec.stakeFrac as number) * bank : (dec.stakeFrac as number) * 100;
-  storage.saveBet({ gameId: g.id, selKey: dec.bestKey as string, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, lg: g.lg, modelInputs: dec.modelInputs });
+  storage.saveBet({ gameId: g.id, selKey: dec.bestKey as string, sel: dec.lbl as string, game: g.h.n + " vs " + g.a.n, odd: dec.od as number, stake: stakeVal.toFixed(2), prob: dec.p as number, lg: g.lg, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
   updLogCount();
   refreshDetail(id);
 }
@@ -1081,7 +1160,7 @@ function logFromDerived(id: string): void {
   if (!d2 || !d2.bet) return;
   const bank = parseFloat(LS.bank) || 0;
   const stakeVal = bank ? (d2.stakeFrac as number) * bank : (d2.stakeFrac as number) * 100;
-  storage.saveBet({ gameId: g.id, selKey: "D:" + (d2.bestKey as string), sel: d2.lbl as string, game: g.h.n + " vs " + g.a.n, odd: d2.od as number, stake: stakeVal.toFixed(2), prob: d2.p as number, lg: g.lg });
+  storage.saveBet({ gameId: g.id, selKey: "D:" + (d2.bestKey as string), sel: d2.lbl as string, game: g.h.n + " vs " + g.a.n, odd: d2.od as number, stake: stakeVal.toFixed(2), prob: d2.p as number, lg: g.lg, homeTeam: g.h.n, awayTeam: g.a.n, kickoff: g.d });
   updLogCount();
   refreshDetail(id);
 }
@@ -1229,6 +1308,10 @@ function bootstrapInner(): void {
   autoRegEl.checked = LS.autoRegister;
   autoRegEl.onchange = () => { LS.autoRegister = autoRegEl.checked; render(); };
 
+  const trackRejEl = document.getElementById("trackRejected") as HTMLInputElement;
+  trackRejEl.checked = LS.trackRejected;
+  trackRejEl.onchange = () => { LS.trackRejected = trackRejEl.checked; render(); };
+
   // Quando a odd sharp (Pinnacle) chega em segundo plano (ver api.getSharpOdds), o EV e o no-vig
   // já mudaram para este jogo — re-renderiza e reabre o painel se estava aberto.
   api.setOnSharpResult((gameId) => {
@@ -1242,6 +1325,7 @@ function bootstrapInner(): void {
   // Quando o resultado final (ESPN) chega em segundo plano para um jogo com apostas pendentes —
   // mesma técnica de re-render das duas anteriores.
   api.setOnScoreResult((gameId) => {
+    if (curTab === "log") { renderLog(); return; }
     const d = document.getElementById("d" + gameId);
     const wasOpen = !!d && d.classList.contains("open");
     render();
@@ -1260,7 +1344,7 @@ Object.assign(window, {
   logFromDecision, logFromDerived, copyPrompt, jumpTo,
   exportJSON: exportJSONUI, exportCSV: exportCSVUI, importJSON: importJSONUI,
   settleBet: settleBetUI, deleteBet: deleteBetUI, setOddClose: setOddCloseUI,
-  syncExternal, confirmSettle
+  syncExternal, confirmSettle, confirmSettleLog
 });
 
 bootstrap();

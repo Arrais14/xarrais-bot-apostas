@@ -4,11 +4,11 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  applyCalib, autoDecide, blendFormMarket, calibInfo, calibration, computeStake, lineMovement,
-  modelProbs, noVig, stopLossStatus, suggestModelWeights
+  applyCalib, autoDecide, calibInfo, calibration, computeStake, lineMovement,
+  modelProbs, noVig, stopLossStatus
 } from "./quant";
-import { EV_MIN, EV_MIN_FRIENDLY, RECALIB_MIN_N } from "./config";
-import type { Bet, CalibInfo, DecisionContext, Game, ModelInputsSnapshot, StakeContext } from "./types";
+import { EV_MIN, EV_MIN_FRIENDLY } from "./config";
+import type { Bet, CalibInfo, DecisionContext, Game, StakeContext } from "./types";
 
 function makeGame(overrides: Partial<Game> = {}): Game {
   return {
@@ -117,9 +117,9 @@ describe("computeStake — Kelly fracionário, teto de 5%, corte por risco pende
 
 describe("autoDecide — seleção do melhor candidato, threshold de EV, jogos amigáveis", () => {
   // Fixa a probabilidade de mercado via "sharp" limpa: h=2.00 d=4.00 a=4.00 -> soma implícita
-  // exatamente 1 (sem margem), logo no-vig = implícita: p.h=0.50, p.d=0.25, p.a=0.25.
-  // h.f="" força modelProbs a saltar a heurística forma+mercado (fpts("")=null) e devolver
-  // exatamente essa probabilidade de mercado, tornando o EV 100% calculável à mão.
+  // exatamente 1 (sem margem), logo no-vig = implícita: p.h=0.50, p.d=0.25, p.a=0.25 — e é
+  // exatamente essa a probabilidade que modelProbs devolve (100% Pinnacle/no-vig), tornando o EV
+  // 100% calculável à mão.
   const sharp = { h: 2.0, d: 4.0, a: 4.0 };
   const ctx: DecisionContext = { calib: noCalib, stake: noRisk };
 
@@ -215,12 +215,8 @@ describe("calibration — compara probabilidades previstas com o que realmente a
   });
 });
 
-describe("modelProbs — blend forma+mercado com pesos MODEL_BLEND_W/MODEL_HOME_ADV", () => {
-  it("com forma real (não vazia), usa o caminho heurístico e devolve os inputs brutos para recalibração", () => {
-    // ppg/fpts ficam normalizados a 0-1 (não 0-3): (3*V+E)/(3*jogos). "10-0-0" (10 vitórias) -> 1.
-    // Casa domina em pontos e forma (WWWWW -> 1); Fora não pontuou nada (0-0-10, LLLLL -> 0).
-    // Não é preciso calcular a exponencial à mão: o que importa é que o resultado é coerente
-    // (casa larga favorita) e que os inputs ficam gravados tal como entraram.
+describe("modelProbs — no-vig puro da odd de referência ou da Pinnacle/\"sharp\" (sem heurística)", () => {
+  it("devolve sempre o no-vig do mercado disponível, com heur=false, independentemente de forma/registo", () => {
     const sharp = { h: 2.0, d: 4.0, a: 4.0 };   // no-vig limpo: h=0.5, d=0.25, a=0.25
     const g = makeGame({
       h: { n: "Casa", f: "WWWWW", r: "10-0-0", s: null },
@@ -228,64 +224,22 @@ describe("modelProbs — blend forma+mercado com pesos MODEL_BLEND_W/MODEL_HOME_
     });
     const mp = modelProbs(g, sharp);
     expect(mp).not.toBeNull();
-    expect(mp!.heur).toBe(true);
-    expect(mp!.p.h + mp!.p.d + mp!.p.a).toBeCloseTo(1, 8);
-    expect(mp!.p.h).toBeGreaterThan(mp!.p.d);
-    expect(mp!.p.h).toBeGreaterThan(mp!.p.a);
-    expect(mp!.inputs).toEqual({ nvH: 0.5, nvD: 0.25, nvA: 0.25, sH0: 1, sA0: 0, fH: 1, fA: 0 });
-  });
-
-  it("sem forma (f vazio) cai para o no-vig puro e não guarda inputs (heur=false)", () => {
-    const g = makeGame({ h: { n: "Casa", f: "", r: "0-0-0", s: null } });
-    const mp = modelProbs(g, { h: 2, d: 4, a: 4 });
     expect(mp!.heur).toBe(false);
-    expect(mp!.inputs).toBeUndefined();
-  });
-});
-
-describe("suggestModelWeights — grid-search de pesos otimizado para Brier score (nunca P&L)", () => {
-  // Forma claramente mais favorável à casa do que o mercado sugere, para que w (peso da forma)
-  // tenha um impacto real em p — se ph e nv.h fossem parecidos, mudar w quase não moveria nada.
-  const inputs: ModelInputsSnapshot = { nvH: 0.40, nvD: 0.30, nvA: 0.30, sH0: 2.2, sA0: 0.8, fH: 0.8, fA: 0.3 };
-
-  it("fica inativo com amostra abaixo de RECALIB_MIN_N", () => {
-    const bets = Array.from({ length: 10 }, (_, i) => makeBet({ id: "b" + i, status: i % 2 === 0 ? "win" : "loss", selKey: "1", modelInputs: inputs }));
-    const s = suggestModelWeights(bets);
-    expect(s.active).toBe(false);
-    expect(s.n).toBe(10);
+    expect(mp!.sharp).toBe(true);
+    expect(mp!.p).toEqual({ h: 0.5, d: 0.25, a: 0.25, margin: 0 });
   });
 
-  it("ignora apostas de handicap/golos (só olha a 1X2 simples) e as sem modelInputs guardados", () => {
-    const bets = [
-      makeBet({ id: "b1", status: "win", selKey: "HH", modelInputs: inputs }),
-      makeBet({ id: "b2", status: "win", selKey: "D:GOV", modelInputs: inputs }),
-      makeBet({ id: "b3", status: "win", selKey: "1" })   // sem modelInputs
-    ];
-    const s = suggestModelWeights(bets);
-    expect(s.n).toBe(0);
-    expect(s.active).toBe(false);
+  it("sem sharp, usa o no-vig da odd de referência do jogo (g.o)", () => {
+    const g = makeGame({ o: { h: 2, d: 4, a: 4 } });
+    const mp = modelProbs(g, null);
+    expect(mp!.heur).toBe(false);
+    expect(mp!.sharp).toBe(false);
+    expect(mp!.p).toEqual({ h: 0.5, d: 0.25, a: 0.25, margin: 0 });
   });
 
-  it("encontra a combinação (w, vantagem casa) usada para gerar os dados — é a única que minimiza o Brier", () => {
-    // Para uma previsão constante p sobre uma amostra binária, Brier(p) = (p-taxaEmpirica)² +
-    // taxaEmpirica·(1-taxaEmpirica) — decomposição bias-variância — logo é minimizado exatamente
-    // quando p = taxa empírica. Gerando a amostra para que a taxa de acerto bata precisamente com
-    // blendFormMarket(trueW,trueHomeAdv), essa combinação da grelha vence matematicamente todas as
-    // outras (nenhuma outra produz o mesmo p para estes inputs).
-    const trueW = 0.20, trueHomeAdv = 0.18;   // extremos da grelha, bem longe do default (0.35/0.12)
-    const pTrue = blendFormMarket({ h: inputs.nvH, d: inputs.nvD, a: inputs.nvA }, inputs.sH0, inputs.sA0, inputs.fH, inputs.fA, trueW, trueHomeAdv).h;
-    // n grande para que o arredondamento de "wins" a um inteiro não desloque a taxa empírica o
-    // suficiente para empatar com a grelha vizinha (passo de 0.05/0.02) — sem isto, o teste ficava
-    // sensível a qual dos dois lados o arredondamento caía.
-    const n = 100000;
-    const wins = Math.round(pTrue * n);
-    const bets: Bet[] = Array.from({ length: n }, (_, i) => makeBet({ id: "b" + i, status: i < wins ? "win" : "loss", selKey: i % 2 === 0 ? "1" : "AUTO:1", modelInputs: inputs }));
-    const s = suggestModelWeights(bets);
-    expect(s.active).toBe(true);
-    expect(s.n).toBe(n);
-    expect(s.bestW).toBeCloseTo(trueW, 6);
-    expect(s.bestHomeAdv).toBeCloseTo(trueHomeAdv, 6);
-    expect(s.improved).toBe(true);
+  it("sem odds nenhumas (nem sharp nem g.o), devolve null", () => {
+    const g = makeGame({ o: null });
+    expect(modelProbs(g, null)).toBeNull();
   });
 });
 

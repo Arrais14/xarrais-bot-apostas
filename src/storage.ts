@@ -3,7 +3,7 @@
 // quantitativo. Quem chama saveBet/settleBet/deleteBet é responsável por invalidar essa
 // cache e voltar a renderizar (ver main.ts), à semelhança do que o monólito fazia inline.
 
-import type { Bet, BetStatus, CLVResult, NewBet, PnLStats } from "./types";
+import type { Bet, BetStatus, CLVResult, NewBet, PnLStats, RejectedStats } from "./types";
 import { KELLY_FRAC_DEFAULT } from "./config";
 import { num } from "./utils";
 
@@ -36,6 +36,8 @@ export const LS = {
   set paperMode(v: boolean) { localStorage.setItem("jd_paperMode", v ? "1" : "0"); },
   get autoRegister(): boolean { return localStorage.getItem("jd_autoRegister") === "1"; },
   set autoRegister(v: boolean) { localStorage.setItem("jd_autoRegister", v ? "1" : "0"); },
+  get trackRejected(): boolean { return localStorage.getItem("jd_trackRejected") === "1"; },
+  set trackRejected(v: boolean) { localStorage.setItem("jd_trackRejected", v ? "1" : "0"); },
   get mcpSyncTool(): string { return localStorage.getItem("jd_mcpSyncTool") || ""; },
   set mcpSyncTool(v: string) { localStorage.setItem("jd_mcpSyncTool", v); },
   get lastYesterdayBannerDate(): string { return localStorage.getItem("jd_lastYesterdayBannerDate") || ""; },
@@ -105,6 +107,21 @@ export function computePnL(bets: Bet[], filter?: (b: Bet) => boolean): PnLStats 
     ? relevant.filter(b => b.status === "win" || b.status === "loss").reduce((s, b) => s + (num(b.odd) || 0), 0) / settled
     : 0;
   return { staked, returned, profit, roi, hitRate, avgOdd, settled, wins, losses, voids, pending, pendingStake };
+}
+
+// ===== Estatísticas dos candidatos rejeitados (EV insuficiente, ver Bet.rejected) =====
+// Mesma matemática de computePnL, mas sobre o stake HIPOTÉTICO guardado no momento da rejeição —
+// nunca dinheiro real. Serve só para responder "se tivesses apostado nestas oportunidades
+// marginais/sem valor, terias ganho ou perdido?".
+export function computeRejectedStats(bets: Bet[]): RejectedStats {
+  const rej = bets.filter(b => b.rejected && (b.status === "win" || b.status === "loss"));
+  let staked = 0, profit = 0, wins = 0;
+  for (const b of rej) {
+    const stake = num(b.stake) || 0, odd = num(b.odd) || 0;
+    staked += stake;
+    if (b.status === "win") { wins++; profit += stake * (odd - 1); } else { profit -= stake; }
+  }
+  return { n: rej.length, wouldWinRate: rej.length ? wins / rej.length : 0, hypotheticalStaked: staked, hypotheticalProfit: profit };
 }
 
 // ===== CLV (Closing Line Value) =====

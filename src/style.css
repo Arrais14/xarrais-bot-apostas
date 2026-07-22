@@ -159,6 +159,8 @@ table.log td.num { text-align:right; font-variant-numeric:tabular-nums; }
 tr.paper-row td { border-top:1px dashed var(--accent); border-bottom:1px dashed var(--accent); background:rgba(212,175,55,.04); }
 /* ===== Registo automático: opacidade reduzida — amostra não enviesada, fora do P&L real ===== */
 tr.auto-row td { opacity:.6; }
+/* ===== Não-apostas rastreadas: opacidade reduzida + itálico — nunca dinheiro real ===== */
+tr.rejected-row td { opacity:.55; font-style:italic; }
 
 .settle { display:flex; gap:5px; }
 .settle .pill { opacity:.5; } .settle .pill.on { opacity:1; }

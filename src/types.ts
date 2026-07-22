@@ -58,23 +58,13 @@ export interface NoVigProbs {
   margin: number;
 }
 
-/** Inputs brutos do blend forma+mercado no momento em que uma decisão foi tomada — guardados na
- * aposta (ver Bet.modelInputs) para permitir recalibração retroativa dos pesos (ver
- * quant.suggestModelWeights) sem depender dos dados do jogo, que a tarefa diária substitui todos
- * os dias (o array `games` em memória só tem os jogos de hoje, nunca os de semanas atrás). */
-export interface ModelInputsSnapshot {
-  nvH: number; nvD: number; nvA: number;   // no-vig do mercado (sharp ou referência) nesse momento
-  sH0: number; sA0: number;                 // pontos por jogo casa/fora
-  fH: number; fA: number;                   // forma recente casa/fora (0-1)
-}
-
-/** Resultado do modelo automático de probabilidades (heurística forma+mercado — único caminho
- * suportado; o scaffolding de ML/ONNX foi removido por não ter validação nenhuma por trás). */
+/** Resultado do modelo automático de probabilidades (no-vig puro da odd de referência ou da
+ * Pinnacle/"sharp" quando disponível — único caminho suportado; a heurística forma+PPG e o
+ * scaffolding de ML/ONNX foram ambos removidos por não acrescentarem sinal validado). */
 export interface ModelProbs {
   p: { h: number; d: number; a: number };
   heur: boolean;
   sharp?: boolean;   // true quando o componente de mercado veio da Pinnacle, não do preload DraftKings/ESPN
-  inputs?: ModelInputsSnapshot;   // só presente quando heur=true (há forma/registo suficiente)
 }
 
 /** Variação percentual entre a odd de abertura e a atual (ver quant.lineMovement) — null quando
@@ -174,7 +164,6 @@ export interface ModelDecision {
   msg?: string;
   best?: Candidate;
   derived?: DerivedDecision;
-  modelInputs?: ModelInputsSnapshot;   // inputs do blend no momento da decisão — ver Bet.modelInputs
 }
 
 /** Contexto necessário para autoDecide/buildOpts: calibração + banca/perfil/risco pendente. */
@@ -223,19 +212,6 @@ export interface CalibInfo {
   n: number;
 }
 
-/** Sugestão de pesos do blend forma+mercado (ver quant.suggestModelWeights) — só texto informativo
- * no painel de calibração, nunca aplicado automaticamente. active=false enquanto a amostra
- * (RECALIB_MIN_N) for insuficiente. */
-export interface WeightSuggestion {
-  active: boolean;
-  n: number;
-  currentBrier: number | null;
-  bestW: number;
-  bestHomeAdv: number;
-  bestBrier: number;
-  improved: boolean;
-}
-
 export interface CalibAdjustment {
   p: number;
   applied: boolean;
@@ -259,7 +235,11 @@ export interface Bet {
   auto?: boolean;    // true quando registada sozinha por "Registar sugestões automaticamente" — amostra
                       // não enviesada pela escolha do utilizador; também fora do P&L real (ver storage.ts)
   lg?: string;       // liga do jogo (g.lg no momento do registo) — evita fazer parsing de texto a partir de `game`
-  modelInputs?: ModelInputsSnapshot;   // inputs brutos do blend forma+mercado nesse momento — ver quant.suggestModelWeights
+  rejected?: boolean;   // true = não é uma aposta real, é um candidato rejeitado (EV insuficiente) guardado
+                         // só para medir se "não apostar" foi a decisão certa — ver storage.computeRejectedStats
+  homeTeam?: string; awayTeam?: string; kickoff?: string;   // denormalizado do Game no momento do registo —
+                                                              // permite resolver o resultado (api.getFinalScoreFor)
+                                                              // mesmo depois de o jogo sair de `games` (ver Game/data.ts)
 }
 
 /** Aposta ainda por gravar (saveBet atribui id/status/loggedAt). */
@@ -283,6 +263,16 @@ export interface PnLStats {
 export interface CLVResult {
   avg: number;
   n: number;
+}
+
+/** Estatísticas dos candidatos rejeitados (EV insuficiente) rastreados como Bet.rejected — ver
+ * storage.computeRejectedStats. hypotheticalProfit usa o stake hipotético guardado no momento da
+ * rejeição, nunca dinheiro real. */
+export interface RejectedStats {
+  n: number;
+  wouldWinRate: number;
+  hypotheticalStaked: number;
+  hypotheticalProfit: number;
 }
 
 /** Resultado do stop-loss por período (ver quant.stopLossStatus) — trava novas apostas quando o

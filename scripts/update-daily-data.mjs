@@ -42,6 +42,8 @@ const ODDS_API_SPORT_MAP = {
 };
 
 const DAYS_AHEAD = 3;             // hoje + 3 dias, para cobrir efeitos de fuso horário
+const DAYS_BEHIND = 2;            // + ontem/anteontem, para a app poder mostrar histórico recente
+                                   // (ver "ver jogos dos últimos 1-2 dias" e liquidação automática)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || "";
 
 function normTeam(s) {
@@ -58,11 +60,11 @@ async function fetchJson(url) {
   return r.json();
 }
 
-// ===== ESPN: fixtures dos próximos DAYS_AHEAD dias =====
+// ===== ESPN: fixtures de DAYS_BEHIND dias atrás até DAYS_AHEAD dias à frente =====
 async function fetchFixtures(slug) {
   const events = [];
   const today = new Date();
-  for (let i = 0; i <= DAYS_AHEAD; i++) {
+  for (let i = -DAYS_BEHIND; i <= DAYS_AHEAD; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
     const url = "https://site.api.espn.com/apis/site/v2/sports/soccer/" + encodeURIComponent(slug) + "/scoreboard?dates=" + ymd(d);

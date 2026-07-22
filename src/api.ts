@@ -149,13 +149,18 @@ export type FetchScoreResult =
   | { ok: false; reason: string };
 
 // Só faz sentido tentar depois de SETTLE_REMINDER_H horas do kickoff (mesma referência usada para
-// o lembrete de "por liquidar" em main.ts) — antes disso o jogo pode nem ter terminado.
-export async function fetchFinalScore(g: Game): Promise<FetchScoreResult> {
-  const hoursSinceKickoff = (Date.now() - g.dt.getTime()) / 3600000;
+// o lembrete de "por liquidar" em main.ts) — antes disso o jogo pode nem ter terminado. Recebe os
+// dados em bruto (não um Game) para poder ser chamada tanto a partir de um jogo ainda em `games`
+// como a partir de uma Bet já denormalizada (ver Bet.homeTeam/awayTeam/kickoff em types.ts) — uma
+// aposta de há 1-2 dias já pode não ter Game correspondente, porque a tarefa diária substitui
+// `src/data.ts` a cada corrida.
+export async function fetchFinalScoreRaw(lg: string, kickoffIso: string, homeName: string, awayName: string): Promise<FetchScoreResult> {
+  const kickoffMs = new Date(kickoffIso).getTime();
+  const hoursSinceKickoff = (Date.now() - kickoffMs) / 3600000;
   if (hoursSinceKickoff < SETTLE_REMINDER_H) return { ok: false, reason: "cedo-demais" };
-  const slug = ESPN_LEAGUE_SLUG[g.lg];
+  const slug = ESPN_LEAGUE_SLUG[lg];
   if (!slug) return { ok: false, reason: "liga-nao-mapeada" };
-  const dateStr = g.dt.toISOString().slice(0, 10).replace(/-/g, "");
+  const dateStr = new Date(kickoffMs).toISOString().slice(0, 10).replace(/-/g, "");
   const url = "https://site.api.espn.com/apis/site/v2/sports/soccer/" + encodeURIComponent(slug) + "/scoreboard?dates=" + dateStr;
   let data: EspnScoreboard;
   try {
@@ -169,7 +174,7 @@ export async function fetchFinalScore(g: Game): Promise<FetchScoreResult> {
     const comp = ev.competitions?.[0];
     const home = comp?.competitors?.find(c => c.homeAway === "home");
     const away = comp?.competitors?.find(c => c.homeAway === "away");
-    return !!home && !!away && normTeam(home.team?.displayName) === normTeam(g.h.n) && normTeam(away.team?.displayName) === normTeam(g.a.n);
+    return !!home && !!away && normTeam(home.team?.displayName) === normTeam(homeName) && normTeam(away.team?.displayName) === normTeam(awayName);
   });
   if (!match) return { ok: false, reason: "jogo-nao-encontrado" };
   if (!match.status?.type?.completed) return { ok: false, reason: "ainda-a-decorrer" };
@@ -182,23 +187,33 @@ export async function fetchFinalScore(g: Game): Promise<FetchScoreResult> {
   return { ok: true, score: { home: homeScore, away: awayScore } };
 }
 
+export async function fetchFinalScore(g: Game): Promise<FetchScoreResult> {
+  return fetchFinalScoreRaw(g.lg, g.d, g.h.n, g.a.n);
+}
+
 const scoreCache = new Map<string, FinalScore>();
 const scorePending = new Set<string>();
 let onScoreResult: ((gameId: string) => void) | null = null;
 export function setOnScoreResult(cb: ((gameId: string) => void) | null): void { onScoreResult = cb; }
 
-// Mesmo padrão síncrono cache-or-trigger de getSharpOdds. Só vale a pena chamar para jogos com
-// apostas pendentes (ver pendingBetsFor em main.ts) — não faz sentido gastar pedidos à ESPN para
-// todos os jogos do dia.
-export function getFinalScore(g: Game): FinalScore | null {
-  const cached = scoreCache.get(g.id);
+// Mesmo padrão síncrono cache-or-trigger de getSharpOdds, mas indexado por um `id` genérico (não
+// precisa de um Game vivo em `games`) — permite resolver o resultado de uma aposta antiga a partir
+// só dos campos denormalizados nela (lg/kickoff/homeTeam/awayTeam).
+export function getFinalScoreFor(id: string, lg: string, kickoffIso: string, homeName: string, awayName: string): FinalScore | null {
+  const cached = scoreCache.get(id);
   if (cached) return cached;
-  if (scorePending.has(g.id)) return null;
-  scorePending.add(g.id);
-  void fetchFinalScore(g)
-    .then(res => { if (res.ok) { scoreCache.set(g.id, res.score); onScoreResult?.(g.id); } })
-    .finally(() => scorePending.delete(g.id));
+  if (scorePending.has(id)) return null;
+  scorePending.add(id);
+  void fetchFinalScoreRaw(lg, kickoffIso, homeName, awayName)
+    .then(res => { if (res.ok) { scoreCache.set(id, res.score); onScoreResult?.(id); } })
+    .finally(() => scorePending.delete(id));
   return null;
+}
+
+// Só vale a pena chamar para jogos com apostas pendentes (ver pendingBetsFor em main.ts) — não faz
+// sentido gastar pedidos à ESPN para todos os jogos do dia.
+export function getFinalScore(g: Game): FinalScore | null {
+  return getFinalScoreFor(g.id, g.lg, g.d, g.h.n, g.a.n);
 }
 
 // ===== Chamadas reais a LLMs externos (usadas só quando não há window.cowork disponível) =====

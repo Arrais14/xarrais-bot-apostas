@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 # ===== Backtest histórico do modelo Xarrais — independente da app web (Vite/TS) =====
-# As fórmulas aqui (no-vig MPTO, blend forma+mercado, Kelly fracionário) são uma tradução
-# 1:1 das de src/quant.ts — qualquer alteração num dos dois lados tem de ser replicada no
-# outro, senão o backtest deixa de validar o que a app realmente decide ao vivo.
+# As fórmulas aqui (no-vig MPTO, Kelly fracionário) são uma tradução 1:1 das de src/quant.ts —
+# qualquer alteração num dos dois lados tem de ser replicada no outro, senão o backtest deixa de
+# validar o que a app realmente decide ao vivo. A app confia 100% no no-vig da Pinnacle (sem
+# heurística forma/PPG — removida a pedido: o mercado já é eficiente o suficiente). O modelo
+# Poisson bottom-up abaixo (--model poisson) é só uma exploração alternativa, não usada pela app.
 #
 # Dependências: pip install pandas numpy matplotlib
-# Opcional (se já tiveres um model.onnx treinado, o mesmo usado por src/api.ts): pip install onnxruntime
 #
 # Uso:
 #   python backtest.py --csv historico.csv
 #   python backtest.py --csv historico.csv --kelly-frac 0.25 --ev-min 0.08 --bankroll 1000
+#   python backtest.py --csv historico_poisson.csv --model poisson
 #
 # Esquema esperado do CSV (colunas mínimas):
 #   date, league, home_team, away_team, result        (result: "H" | "D" | "A")
 #   odds_home, odds_draw, odds_away                    (odds a que terias efetivamente apostado)
 #   pinn_home, pinn_draw, pinn_away                    (odds de FECHO da Pinnacle — referência sharp)
-# Colunas opcionais (ativam a heurística forma+mercado; sem elas cai-se para no-vig puro da Pinnacle,
-# exatamente como modelProbs() em quant.ts faz quando não há pontos/forma disponíveis):
-#   home_ppg, away_ppg                                 (pontos por jogo, 0-3)
-#   home_form_pts, away_form_pts                        (pontos de forma normalizados, 0-1 — ver form_points())
+# Colunas adicionais obrigatórias só com --model poisson (ver poisson_1x2()):
+#   home_goals_for_avg, home_goals_against_avg         (média de golos marcados/sofridos, casa)
+#   away_goals_for_avg, away_goals_against_avg         (média de golos marcados/sofridos, fora)
+#   league_avg_home_goals, league_avg_away_goals       (média da liga, golos marcados em casa/fora)
 
 from __future__ import annotations
 
@@ -44,53 +46,41 @@ def no_vig(o_h: float, o_d: float, o_a: float) -> tuple[float, float, float]:
     return (1 / o_h) / s, (1 / o_d) / s, (1 / o_a) / s
 
 
-# ===== Modelo forma+mercado: idêntico a modelProbs() em src/quant.ts =====
-# nv = no-vig da odd de referência (aqui: Pinnacle de fecho, a "sharp" do sistema);
-# quando não há pontos/forma disponíveis, devolve-se o no-vig puro (heur=False), tal como no TS.
-def model_probs(
-    nv_h: float, nv_d: float, nv_a: float,
-    home_ppg: float | None, away_ppg: float | None,
-    home_form: float | None, away_form: float | None,
-) -> tuple[dict[str, float], bool]:
-    if home_ppg is None or away_ppg is None or home_form is None or away_form is None:
-        return {"h": nv_h, "d": nv_d, "a": nv_a}, False
-
-    sH = 0.55 * home_ppg + 0.45 * home_form + 0.12   # vantagem casa
-    sA = 0.55 * away_ppg + 0.45 * away_form
-    k = 4
-    eh, ea = math.exp(k * sH), math.exp(k * sA)
-    diff = abs(sH - sA)
-    pd_ = min(0.32, max(0.15, 0.30 - 0.5 * diff))
-    ph = (1 - pd_) * eh / (eh + ea)
-    pa = (1 - pd_) - ph
-
-    w = 0.35
-    ph_blend = (1 - w) * nv_h + w * ph
-    pd_blend = (1 - w) * nv_d + w * pd_
-    pa_blend = (1 - w) * nv_a + w * pa
-    s = ph_blend + pd_blend + pa_blend
-    return {"h": ph_blend / s, "d": pd_blend / s, "a": pa_blend / s}, True
+# ===== Modelo Poisson bottom-up (attack/defense strength) — exploração alternativa, à parte =====
+# Deriva a força ofensiva/defensiva de cada equipa relativa à média da liga (o mesmo princípio
+# usado pela indústria para golos esperados/xG), calcula os golos esperados (lambda) de cada
+# equipa, e soma a matriz de Poisson para as probabilidades 1X2. Ao contrário do no-vig da
+# Pinnacle, não depende de nenhuma odd de mercado — só de médias de golos marcados/sofridos.
+def poisson_p(lam: float, k: int) -> float:
+    return (lam ** k) * math.exp(-lam) / math.factorial(k)
 
 
-# ppg a partir de pontos por jogo já vem pronto no CSV (home_ppg/away_ppg); se só tiveres o
-# registo V-E-D bruto, converte com esta função antes de gerar o CSV (mesma fórmula do ppg() em
-# quant.ts: (3*V + E) / (3*jogos)).
-def ppg_from_record(wins: int, draws: int, losses: int) -> float | None:
-    n = wins + draws + losses
-    if n == 0:
-        return None
-    return (3 * wins + draws) / (3 * n)
+def poisson_1x2(
+    home_gf: float, home_ga: float, away_gf: float, away_ga: float,
+    league_avg_home_goals: float, league_avg_away_goals: float,
+    max_goals: int = 10,
+) -> dict[str, float]:
+    home_attack = home_gf / league_avg_home_goals
+    home_defense = home_ga / league_avg_away_goals
+    away_attack = away_gf / league_avg_away_goals
+    away_defense = away_ga / league_avg_home_goals
 
+    lambda_home = home_attack * away_defense * league_avg_home_goals
+    lambda_away = away_attack * home_defense * league_avg_away_goals
 
-# fpts a partir de string de forma "WWLWD" (mesma fórmula do fpts() em quant.ts).
-def form_points(form: str | None) -> float | None:
-    if not form:
-        return None
-    m = {"W": 3, "D": 1, "L": 0}
-    pts = [m[c] for c in form if c in m]
-    if not pts:
-        return None
-    return sum(pts) / (3 * len(pts))
+    p_home = p_draw = p_away = 0.0
+    for i in range(max_goals + 1):
+        pi = poisson_p(lambda_home, i)
+        for j in range(max_goals + 1):
+            pij = pi * poisson_p(lambda_away, j)
+            if i > j:
+                p_home += pij
+            elif i == j:
+                p_draw += pij
+            else:
+                p_away += pij
+    total = p_home + p_draw + p_away   # a cauda > max_goals é residual — normaliza para somar 1
+    return {"h": p_home / total, "d": p_draw / total, "a": p_away / total}
 
 
 # ===== Kelly Criterion fracionário — idêntico a computeStake() em src/quant.ts =====
@@ -131,7 +121,7 @@ class BacktestResult:
         return max_dd
 
 
-def run_backtest(df: pd.DataFrame, ev_min: float, kelly_frac: float, stake_cap: float, bankroll0: float) -> BacktestResult:
+def run_backtest(df: pd.DataFrame, ev_min: float, kelly_frac: float, stake_cap: float, bankroll0: float, model: str = "pinnacle") -> BacktestResult:
     df = df.sort_values("date").reset_index(drop=True)
     bankroll = bankroll0
     res = BacktestResult()
@@ -142,16 +132,17 @@ def run_backtest(df: pd.DataFrame, ev_min: float, kelly_frac: float, stake_cap: 
         except (KeyError, ZeroDivisionError, ValueError):
             continue
 
-        home_ppg = row.get("home_ppg")
-        away_ppg = row.get("away_ppg")
-        home_form = row.get("home_form_pts")
-        away_form = row.get("away_form_pts")
-        home_ppg = None if pd.isna(home_ppg) else home_ppg
-        away_ppg = None if pd.isna(away_ppg) else away_ppg
-        home_form = None if pd.isna(home_form) else home_form
-        away_form = None if pd.isna(away_form) else away_form
-
-        p, _heur = model_probs(nv_h, nv_d, nv_a, home_ppg, away_ppg, home_form, away_form)
+        if model == "poisson":
+            try:
+                p = poisson_1x2(
+                    row["home_goals_for_avg"], row["home_goals_against_avg"],
+                    row["away_goals_for_avg"], row["away_goals_against_avg"],
+                    row["league_avg_home_goals"], row["league_avg_away_goals"],
+                )
+            except (KeyError, ZeroDivisionError, ValueError):
+                continue
+        else:
+            p = {"h": nv_h, "d": nv_d, "a": nv_a}
 
         candidates = [
             ("H", p["h"], row["odds_home"]),
@@ -204,7 +195,9 @@ def plot_bankroll(res: BacktestResult, bankroll0: float, output_path: str) -> No
 def main() -> None:
     ap = argparse.ArgumentParser(description="Backtest histórico do modelo Xarrais (Kelly fracionário, no-vig Pinnacle).")
     ap.add_argument("--csv", required=True, help="CSV histórico (ver esquema de colunas no topo deste ficheiro).")
-    ap.add_argument("--model", default=None, help="Caminho para model.onnx (opcional — se omitido, usa a heurística forma+mercado).")
+    ap.add_argument("--model", choices=["pinnacle", "poisson"], default="pinnacle",
+                    help="'pinnacle' (default) = no-vig da Pinnacle, igual à app ao vivo. "
+                         "'poisson' = modelo bottom-up alternativo por médias de golos (ver poisson_1x2()), exige colunas extra no CSV.")
     ap.add_argument("--ev-min", type=float, default=EV_MIN_DEFAULT, help=f"EV mínimo para apostar (default {EV_MIN_DEFAULT}).")
     ap.add_argument("--kelly-frac", type=float, default=KELLY_FRAC_DEFAULT, help=f"Fração de Kelly (default {KELLY_FRAC_DEFAULT} = 1/4).")
     ap.add_argument("--stake-cap", type=float, default=STAKE_CAP_FRAC_DEFAULT, help=f"Teto de stake por aposta, fração da banca (default {STAKE_CAP_FRAC_DEFAULT}).")
@@ -214,22 +207,13 @@ def main() -> None:
 
     df = pd.read_csv(args.csv, parse_dates=["date"])
     required = {"date", "home_team", "away_team", "result", "odds_home", "odds_draw", "odds_away", "pinn_home", "pinn_draw", "pinn_away"}
+    if args.model == "poisson":
+        required |= {"home_goals_for_avg", "home_goals_against_avg", "away_goals_for_avg", "away_goals_against_avg", "league_avg_home_goals", "league_avg_away_goals"}
     missing = required - set(df.columns)
     if missing:
-        raise SystemExit(f"CSV sem colunas obrigatórias: {sorted(missing)}")
+        raise SystemExit(f"CSV sem colunas obrigatórias para --model {args.model}: {sorted(missing)}")
 
-    ort_session = None
-    if args.model:
-        try:
-            import onnxruntime as ort
-            ort_session = ort.InferenceSession(args.model)
-            print(f"Modelo ONNX carregado de {args.model} (nota: este backtest ainda usa a heurística "
-                  "forma+mercado para o blend — liga aqui a tua própria chamada a ort_session.run(...) "
-                  "com o mesmo vetor de features de src/api.ts:runMLInference antes de correr em produção).")
-        except Exception as e:
-            print(f"Aviso: não consegui carregar {args.model} ({e}) — a usar a heurística forma+mercado.")
-
-    res = run_backtest(df, args.ev_min, args.kelly_frac, args.stake_cap, args.bankroll)
+    res = run_backtest(df, args.ev_min, args.kelly_frac, args.stake_cap, args.bankroll, model=args.model)
 
     print("\n===== Resultado do backtest =====")
     print(f"Apostas colocadas : {res.n_bets}")

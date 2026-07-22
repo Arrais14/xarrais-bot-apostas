@@ -31,14 +31,6 @@ export const CLV_RISK_MULT = 0.5;        // multiplicador do Kelly quando o CLV 
 // ===== Sinal de movimento de mercado (abertura vs atual) =====
 export const LINE_MOVEMENT_ALERT = 0.08;   // variação (fração) a partir da qual se destaca o movimento
 
-// ===== Pesos do modelo heurístico forma+mercado (ver quant.ts: blendFormMarket/modelProbs) =====
-// Ajustáveis manualmente aqui com base na sugestão do painel de calibração (quant.suggestModelWeights)
-// — nunca aplicados automaticamente. Mudar estes valores muda o comportamento do modelo para TODOS
-// os jogos a partir daí; faz isso de forma deliberada, não a meio de uma sequência má ou boa.
-export const MODEL_BLEND_W = 0.35;       // peso do componente forma+registo (1-w = peso do mercado no-vig)
-export const MODEL_HOME_ADV = 0.12;      // vantagem casa somada ao "score de força" da equipa da casa
-export const RECALIB_MIN_N = 200;        // nº mínimo de apostas resolvidas c/ inputs guardados para sugerir novos pesos
-
 // ===== Frescura de odds ao vivo no card fechado e no comparador aberto (main.ts) =====
 // Só corre quando o próprio utilizador tem uma Odds API key configurada — cada um usa só a sua
 // própria quota (plano gratuito da The-Odds-API), nunca uma partilhada. Cadência conservadora de
