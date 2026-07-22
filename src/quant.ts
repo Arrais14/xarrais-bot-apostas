@@ -11,9 +11,8 @@ import type {
   StakeInfo, StopLossStatus
 } from "./types";
 import {
-  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, EV_MIN, EV_MIN_FRIENDLY, MIN_ODD,
-  PENDING_RISK_FRAC, STAKE_CAP_FRAC, STOP_LOSS_DRAWDOWN_FRAC,
-  STOP_LOSS_WINDOW_DAYS
+  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY, MIN_ODD,
+  PENDING_RISK_FRAC, STAKE_CAP_FRAC, STOP_LOSS_DRAWDOWN_FRAC, STOP_LOSS_WINDOW_DAYS
 } from "./config";
 import { avgCLV } from "./storage";
 import { fmt2, num } from "./utils";
@@ -38,18 +37,23 @@ export function lineMovement(o: Odds | null | undefined): LineMovement {
   return { h, a };
 }
 
-// ===== Modelo automático: no-vig puro da odd de referência (ou da Pinnacle/"sharp" quando
-// disponível) — único caminho suportado. A heurística forma+PPG que existia aqui foi removida a
-// pedido explícito: o mercado (Pinnacle) já é eficiente o suficiente para não valer a pena somar
-// ruído de uma heurística simples de pontos/forma por cima. O scaffolding de ML (ONNX) já tinha
-// sido removido antes pelo mesmo motivo (nada por trás validado). "sharp" (via
-// src/api.ts:getSharpOdds) substitui a odd de referência (DraftKings/ESPN) como base do no-vig
-// quando disponível.
+// ===== Modelo automático: no-vig puro da Pinnacle/"sharp" — ÚNICO caminho suportado =====
+// A heurística forma+PPG que existia aqui foi removida a pedido explícito: o mercado (Pinnacle) já
+// é eficiente o suficiente para não valer a pena somar ruído de uma heurística simples de pontos/
+// forma por cima. O scaffolding de ML (ONNX) já tinha sido removido antes pelo mesmo motivo (nada
+// por trás validado).
+// SEM sharp, devolve-se null — nunca se cai para o no-vig da odd de referência (g.o, DraftKings/
+// ESPN). Essa era precisamente a odd que o motor de decisão depois compara para calcular o EV: usar
+// a MESMA odd como "probabilidade do modelo" e como "odd apostada" faz EV = −margem sempre,
+// garantindo "não apostar" em todos os jogos por construção (bug circular corrigido aqui). Sem
+// baseline sharp, autoDecide() produz uma decisão honesta de indisponibilidade em vez de um "sem
+// valor" enganoso — ver comparador manual (buildOpts) para o único sítio que ainda aceita a
+// referência como estimativa fraca, sinalizada como tal.
 export function modelProbs(g: Game, sharp?: SharpQuote | null): ModelProbs | null {
-  const marketOdds: Odds | null = sharp ? { h: sharp.h, d: sharp.d, a: sharp.a } : g.o;
-  const nv = noVig(marketOdds);
+  if (!sharp) return null;
+  const nv = noVig({ h: sharp.h, d: sharp.d, a: sharp.a });
   if (!nv) return null;
-  return { p: nv, heur: false, sharp: !!sharp };
+  return { p: nv, heur: false, sharp: true };
 }
 
 // Usado por segmentedPerformancePanels (main.ts) para separar 1X2/handicap principal da segunda
@@ -291,7 +295,10 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
   const o = g.o;
   let dec: ModelDecision | null = null;
   const mp = modelProbs(g, sharp);
-  const evMin = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
+  // mp só existe quando há baseline sharp (ver modelProbs) — por isso este é sempre o limiar
+  // "com sharp", mais baixo que EV_MIN/EV_MIN_FRIENDLY (reservados para um eventual caminho sem
+  // sharp que hoje não existe: sem baseline, a decisão é "indisponível", nunca uma comparação de EV).
+  const evMin = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
   const calib = ctx.calib;
   if (o && mp) {
     const p = mp.p;
@@ -336,7 +343,11 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
       }
     }
   }
-  if (!dec) dec = o ? { bet: false, msg: "Dados insuficientes para decisão automática", cands: [] } : { bet: false, msg: "Sem odds — decisão indisponível", cands: [] };
+  if (!dec) {
+    if (!o) dec = { bet: false, msg: "Sem odds — decisão indisponível", cands: [] };
+    else if (!sharp) dec = { bet: false, msg: "Sem baseline sharp (Pinnacle) — decisão automática indisponível", cands: [] };
+    else dec = { bet: false, msg: "Dados insuficientes para decisão automática", cands: [] };
+  }
 
   // Segunda oportunidade (mercados de golos, motor de Poisson)
   const dc = derivedCandidates(g, sharp);
@@ -378,7 +389,12 @@ export function buildOpts(g: Game, calib: CalibInfo, sharp?: SharpQuote | null):
   const o = g.o, nv = noVig(o), opts: CompareOption[] = [];
   if (!o || !nv) return opts;
   const mp = modelProbs(g, sharp);
-  const p0 = mp ? mp.p : nv;   // prob. RAW do modelo (mesma base da decisão automática)
+  // Sem sharp, modelProbs devolve null (ver comentário lá) — mas o comparador MANUAL continua a
+  // precisar de uma probabilidade para calcular EV contra as odds reais que o utilizador insere,
+  // por isso aqui (só aqui) cai-se para o no-vig da odd de referência (nv) como estimativa fraca.
+  // Quem chama (main.ts) tem de sinalizar isto ao utilizador — ver getSharp(g) em detailHtml/
+  // compareOdds — e nunca mostrar um veredito automático "APOSTAR" com esta base.
+  const p0 = mp ? mp.p : nv;
   const adjP = (raw: number) => applyCalib(raw, calib).p;
   const p = { h: adjP(p0.h), d: adjP(p0.d), a: adjP(p0.a) };
   opts.push({ k: "1", lbl: "1 — " + g.h.n, p: p.h, ref: o.h });

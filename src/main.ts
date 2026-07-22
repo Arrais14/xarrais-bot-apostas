@@ -9,8 +9,9 @@ import { LS } from "./storage";
 import { PRELOADED } from "./data";
 import {
   BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
-  CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
-  PENDING_RISK_FRAC, SETTLE_REMINDER_H, STAKE_CAP_FRAC,
+  CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, EV_MIN_SHARP,
+  EV_MIN_SHARP_FRIENDLY, LINE_MOVEMENT_ALERT,
+  PENDING_RISK_FRAC, SETTLE_REMINDER_H, SHARP_BOOKMAKER_KEY, STAKE_CAP_FRAC,
   STOP_LOSS_DRAWDOWN_FRAC
 } from "./config";
 import { esc, fmt2, fmtDate, formHtml, num, pct, ymd } from "./utils";
@@ -223,6 +224,16 @@ function showToast(msg: string, type?: "success" | "error" | "info"): void {
     el.classList.remove("show");
     setTimeout(() => el.remove(), 300);
   }, 3000);
+}
+
+// ===== Aviso único: a Odds API key do utilizador não dá acesso à Pinnacle (ver api.ts) =====
+// Sem isto, modelProbs() (src/quant.ts) nunca tem baseline sharp e o motor automático fica sempre
+// "indisponível" — este banner explica porquê, discreto e uma só vez (só desaparece se a chave for
+// trocada e a nova também não tiver acesso — nesse caso reaparece, ver resetSharpAvailability).
+function sharpAvailabilityBanner(): string {
+  if (!LS.oddsApiKey || !api.isSharpBookmakerMissing()) return "";
+  return '<div class="warnbox">' + icon("alert") + ' A tua Odds API key não devolve odds Pinnacle (' + SHARP_BOOKMAKER_KEY + ') — o modo automático precisa delas para decidir (normalmente exige o plano pago da The-Odds-API). '
+    + 'Alternativa: define outra casa sharp em <code>SHARP_BOOKMAKER_KEY</code> (src/config.ts) se a tua chave tiver acesso a uma. Sem isso, as decisões automáticas ficam indisponíveis, mas o comparador manual continua a funcionar com a odd de referência como estimativa.</div>';
 }
 
 // ===== Lembretes passivos: aparecem quando abres a app, nada de notificações push =====
@@ -641,6 +652,7 @@ function renderInner(): void {
   if (ageH > 24) {
     html += '<div class="warnbox">⏰ <b>Odds com ' + Math.floor(ageH) + 'h</b> — muito mais velhas do que a atualização diária habitual (08:00). Podem já não refletir o mercado real; confirma as odds antes de confiar em qualquer decisão desta página.</div>';
   }
+  html += sharpAvailabilityBanner();
   const stopLoss = currentStopLoss();
   if (stopLoss.halted) {
     html += '<div class="warnbox">🛑 <b>Stop-loss ativo</b> — prejuízo de ' + Math.abs(stopLoss.profit).toFixed(2)
@@ -825,9 +837,13 @@ function showModelBase(id: string): void {
   if (!out || !opts || !sel) return;
   const opt = opts[parseInt(sel.value)];
   out.classList.add("show");
+  const hasSharp = !!(g && getSharp(g));
   const evMin = (g && g.friendly) ? EV_MIN_FRIENDLY : EV_MIN;
   const p = opt.p, fair = 1 / p, minOdd = (1 + evMin) / p;
-  let html = '<div style="font-size:14px"><b>' + esc(opt.lbl) + '</b> — prob. do modelo <b>' + pct(p) + '</b></div>';
+  let html = '<div style="font-size:14px"><b>' + esc(opt.lbl) + '</b> — prob. do modelo <b>' + pct(p) + (hasSharp ? "" : " (estimativa)") + '</b></div>';
+  if (!hasSharp) {
+    html += '<div class="kv" style="color:#e0b080">' + icon("alert") + ' Sem odds Pinnacle (sharp) para este jogo — esta probabilidade vem da odd de referência (DraftKings/ESPN), uma estimativa mais fraca. Os valores abaixo são só indicativos.</div>';
+  }
   html += '<div class="oddgrid"><div class="oddrow"><span class="house">Odd justa (sem margem)</span><span class="oddval">' + fmt2(fair) + '</span></div>'
     + '<div class="oddrow best"><span class="house">➤ Odd mínima para valer a pena</span><span class="oddval">' + fmt2(minOdd) + '</span></div></div>';
   html += '<div class="kv" style="margin-top:6px">Sem odd no feed de referência para este mercado — insere a odd real acima e carrega em <b>Calcular</b>.</div>';
@@ -837,7 +853,10 @@ function showModelBase(id: string): void {
 function derivedDecBox(g: Game, dec: ModelDecision): string {
   const d2 = dec.derived;
   if (!d2) return "";
-  const evMin = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
+  // dec/d2 vêm de autoDecide() (quant.ts), que hoje só decide COM baseline sharp — por isso o
+  // limiar mostrado aqui tem de ser o mesmo que autoDecide usou (EV_MIN_SHARP), não o antigo
+  // EV_MIN/EV_MIN_FRIENDLY (reservado, nunca usado enquanto não houver um caminho sem sharp).
+  const evMin = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
   const selKey2 = d2.bet ? ("D:" + (d2.bestKey as string)) : null;
   if (d2.bet) {
     const minOdd = (1 + evMin) / (d2.p as number);
@@ -865,7 +884,7 @@ function derivedDecBox(g: Game, dec: ModelDecision): string {
 function detailHtml(g: Game): string {
   const o = g.o, nv = quant.noVig(o);
   const friendlyWarn = g.friendly
-    ? '<div class="warnbox">🤝 <b>Jogo amigável</b> — forma pouco fiável; limiar sobe para EV ≥ +' + (100 * EV_MIN_FRIENDLY).toFixed(0) + '%. Aposta com stakes reduzidas, se apostares.</div>'
+    ? '<div class="warnbox">🤝 <b>Jogo amigável</b> — forma pouco fiável; limiar sobe para EV ≥ +' + (100 * EV_MIN_SHARP_FRIENDLY).toFixed(0) + '%. Aposta com stakes reduzidas, se apostares.</div>'
     : "";
   let oddsT = "<p class='kv'>Sem odds disponíveis nesta fonte para este jogo — pede a análise no chat para eu procurar odds atuais.</p>";
   if (o) {
@@ -890,13 +909,15 @@ function detailHtml(g: Game): string {
       oddsT += '<div class="warnbox">' + icon("alert") + ' Mercado moveu-se desde a abertura: ' + movParts.join(" · ") + " — pode indicar informação nova (lesão, onze) que o modelo não vê.</div>";
     }
   }
+  const sharpQ = getSharp(g);
   const info: string[] = [];
   if (g.v) info.push("🏟 " + esc(g.v));
   info.push("🗓 " + g.dt.toLocaleString("pt-PT", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }));
   info.push(esc(g.h.n) + " — forma " + esc(g.h.f || "?") + ", V-E-D " + esc(g.h.r || "?") + (g.h.s ? ", ⚽ " + esc(g.h.s) : ""));
   info.push(esc(g.a.n) + " — forma " + esc(g.a.f || "?") + ", V-E-D " + esc(g.a.r || "?") + (g.a.s ? ", ⚽ " + esc(g.a.s) : ""));
+  info.push(sharpQ ? "📡 baseline: Pinnacle (sharp)" : "📡 baseline indisponível — sem odds Pinnacle para este jogo");
   let cmp = "";
-  const opts = quant.buildOpts(g, buildDecisionContext().calib, getSharp(g));
+  const opts = quant.buildOpts(g, buildDecisionContext().calib, sharpQ);
   if (opts.length) {
     currentOpts[g.id] = opts;
     cmp = "<h4>Melhor odd e stake — Blockbet · Betano · Betclic</h4>"
@@ -915,7 +936,9 @@ function detailHtml(g: Game): string {
   autoRegisterIfEnabled(g, dec);
   let decBox = "";
   if (dec.bet) {
-    const evMinG = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
+    // Mesma nota da derivedDecBox acima: dec vem de autoDecide(), que só decide COM sharp — o
+    // limiar mostrado tem de ser o mesmo (EV_MIN_SHARP), não o antigo EV_MIN/EV_MIN_FRIENDLY.
+    const evMinG = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
     const minOdd = (1 + evMinG) / (dec.p as number);
     const logged = storage.betAlreadyLogged(g.id, dec.bestKey);
     let extra = "";
@@ -931,9 +954,12 @@ function detailHtml(g: Game): string {
       + '</button>'
       + '</div>';
   } else {
-    const evMinG = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
+    const evMinG = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;
     decBox = '<div class="decbox no"><span style="font-size:15px"><b>' + icon("x") + ' NÃO APOSTAR — ' + esc(dec.msg) + "</b></span>"
-      + (dec.best ? "<br>Melhor candidata: " + esc(dec.best.lbl) + " — só com odd ≥ <b>" + fmt2((1 + evMinG) / dec.best.p) + "</b> (ref. " + fmt2(dec.best.od) + ")." : "") + "</div>";
+      + (dec.best
+          ? "<br>Melhor candidata: " + esc(dec.best.lbl) + " — só com odd ≥ <b>" + fmt2((1 + evMinG) / dec.best.p) + "</b> (ref. " + fmt2(dec.best.od) + ")."
+          : (!sharpQ ? '<br><span class="kv">Ativa isto configurando, no painel "APIs externas", uma Odds API key com acesso à Pinnacle (normalmente exige o plano pago da The-Odds-API).</span>' : ""))
+      + "</div>";
   }
   const decBox2 = derivedDecBox(g, dec);
   return finalScoreBox(g) + friendlyWarn + '<div class="kv">' + info.join("<br>") + "</div>"
@@ -971,7 +997,7 @@ async function aiAnalyse(id: string): Promise<void> {
   const dec = getDecision(g);
   out.textContent = "A redigir análise…";
   const nv = quant.noVig(g.o);
-  const evMinG = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
+  const evMinG = g.friendly ? EV_MIN_SHARP_FRIENDLY : EV_MIN_SHARP;   // dec vem de autoDecide(), que só decide COM sharp
   const decTxt = dec.bet
     ? "APOSTAR " + (dec.stakeTxt as string) + " em " + (dec.lbl as string) + " @ " + fmt2(dec.od) + " (prob. modelo " + pct(dec.p) + ", EV +" + (100 * (dec.ev as number)).toFixed(1) + "%), na casa (Blockbet/Betano/Betclic) com a odd mais alta, mínimo " + fmt2((1 + evMinG) / (dec.p as number))
     : "NÃO APOSTAR (" + (dec.msg || "sem dados") + ")";
@@ -1027,6 +1053,7 @@ function compareOdds(id: string): void {
   if (!g || !opts || !sel || !out) return;
   const opt = opts[parseInt(sel.value)];
   out.classList.add("show");
+  const hasSharp = !!getSharp(g);
   const evMin = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
   const houses = ([["Blockbet", "bb"], ["Betano", "bt"], ["Betclic", "bc"]] as [string, string][])
     .map(([n, pfx]) => ({ n, od: parseFloat((document.getElementById(pfx + id) as HTMLInputElement | null)?.value || "") }))
@@ -1040,7 +1067,13 @@ function compareOdds(id: string): void {
   if (opt.ref && houses.length === 3 && houses.every(h => Math.abs(h.od - (opt.ref as number)) < 0.005)) {
     html += '<div class="banner" style="margin-bottom:8px">' + icon("alert") + ' Estás a ver a <b>odd de referência</b> nas 3 casas — ainda não inseriste as odds reais. O veredito abaixo baseia-se na referência; substitui pelos valores reais de cada casa para saberes onde está a melhor odd.</div>';
   }
-  if (best.ev >= evMin) {
+  if (!hasSharp) {
+    // Sem Pinnacle, p vem do no-vig da odd de referência (ver quant.buildOpts) — uma estimativa
+    // mais fraca do que a Pinnacle traria. Mostra os números como indicação, mas nunca um veredito
+    // automático "APOSTAR" com esta base (ver Ponto 1 do pedido de correção do EV circular).
+    html += '<div class="warnbox">' + icon("alert") + ' Sem odds Pinnacle (sharp) para este jogo — a probabilidade usada aqui vem da odd de referência (DraftKings/ESPN), uma estimativa mais fraca. Por isso não há veredito automático de aposta: usa os números abaixo só como indicação e decide tu.</div>';
+    html += "<b>" + esc(opt.lbl) + " @ " + fmt2(best.od) + "</b> · EV (estimado) " + (best.ev >= 0 ? "+" : "") + (100 * best.ev).toFixed(1) + "% · prob. do modelo (estimativa) " + pct(p) + "<br>";
+  } else if (best.ev >= evMin) {
     const stakeInfo = quant.computeStake(p, best.od, buildDecisionContext().stake);
     html += '<div style="font-size:14px" class="best">' + icon("check") + ' DECISÃO FINAL: APOSTAR ' + stakeInfo.txt + " na " + esc(best.n) + "</div>"
       + "<b>" + esc(opt.lbl) + " @ " + fmt2(best.od) + "</b> · EV +" + (100 * best.ev).toFixed(1) + "% · prob. modelo " + pct(p) + " · Kelly " + LS.kellyFrac.toFixed(2) + "x<br>";
@@ -1279,6 +1312,7 @@ function bootstrapInner(): void {
   oddsApiKeyEl.value = LS.oddsApiKey; aiProviderEl.value = LS.aiProvider; aiKeyEl.value = LS.aiKey;
   oddsApiKeyEl.onchange = () => {
     LS.oddsApiKey = oddsApiKeyEl.value.trim();
+    api.resetSharpAvailability();   // dá a uma chave nova a sua própria oportunidade de ter Pinnacle
     if (curTab === "games") startCardOddsTimer();   // liga/desliga o refresco consoante a chave ficou definida ou não
   };
   aiProviderEl.onchange = () => { LS.aiProvider = aiProviderEl.value; aiCache.clear(); };
@@ -1321,6 +1355,10 @@ function bootstrapInner(): void {
     render();
     if (wasOpen) toggle(gameId);
   });
+
+  // A Pinnacle não veio numa resposta bem sucedida — mostra o aviso (ver sharpAvailabilityBanner)
+  // assim que possível; só importa se estivermos na aba "games" (é lá que o banner aparece).
+  api.setOnSharpUnavailable(() => { if (curTab === "games") render(); });
 
   // Quando o resultado final (ESPN) chega em segundo plano para um jogo com apostas pendentes —
   // mesma técnica de re-render das duas anteriores.

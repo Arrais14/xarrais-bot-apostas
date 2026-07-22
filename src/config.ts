@@ -1,8 +1,17 @@
 // ===== Constantes centrais (limiares de EV, calibração, risco) =====
 // Valores idênticos ao monólito original — só ganharam um único sítio partilhado.
 
-export const EV_MIN = 0.08;              // EV mínimo para sinalizar aposta (jogos oficiais)
-export const EV_MIN_FRIENDLY = 0.12;     // EV mínimo em jogos amigáveis (forma pouco fiável)
+export const EV_MIN = 0.08;              // reservado para um eventual caminho automático futuro sem
+                                          // baseline sharp — autoDecide() hoje só decide COM sharp
+                                          // (ver EV_MIN_SHARP), nunca chega a usar esta constante
+export const EV_MIN_FRIENDLY = 0.12;     // idem, reservado (par de EV_MIN para jogos amigáveis)
+
+// ===== EV mínimo COM baseline sharp (Pinnacle) — usado por autoDecide() =====
+// 8%/12% foram calibrados para o antigo modelo de forma (heurística ruidosa, já removida) — com
+// no-vig puro da Pinnacle a discrepância típica entre ela e a odd de referência (DraftKings/ESPN)
+// raramente passa de 3-5%, por isso um limiar de 8% deixava passar quase nenhum sinal.
+export const EV_MIN_SHARP = 0.03;            // EV mínimo com baseline sharp (jogos oficiais)
+export const EV_MIN_SHARP_FRIENDLY = 0.06;   // idem, jogos amigáveis (forma pouco fiável)
 export const CALIB_MIN_N = 30;           // nº mínimo de apostas resolvidas c/ prob. para ativar o shrinkage de calibração
 export const PENDING_RISK_FRAC = 0.15;   // % da banca em apostas por resolver a partir da qual reduzimos novas stakes
 export const SETTLE_REMINDER_H = 3;      // horas após o kickoff a partir das quais uma aposta pendente é "para liquidar"

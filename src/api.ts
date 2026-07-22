@@ -90,6 +90,18 @@ const sharpPending = new Set<string>();
 let onSharpResult: ((gameId: string) => void) | null = null;
 export function setOnSharpResult(cb: ((gameId: string) => void) | null): void { onSharpResult = cb; }
 
+// ===== Diagnóstico: a chave do utilizador dá acesso à Pinnacle (SHARP_BOOKMAKER_KEY)? =====
+// O plano gratuito da The-Odds-API normalmente não inclui a Pinnacle — sem ela, modelProbs()
+// (src/quant.ts) nunca tem baseline e o motor automático fica sempre indisponível, por desenho.
+// Fica true assim que um pedido bem sucedido casa o jogo mas NÃO traz o bookmaker sharp na
+// resposta — nunca volta a false sozinho (evita "piscar" entre pedidos); resetSharpAvailability()
+// é chamado quando a chave muda, para dar a uma chave nova a sua própria oportunidade.
+let sharpBookmakerMissing = false;
+let onSharpUnavailable: (() => void) | null = null;
+export function setOnSharpUnavailable(cb: (() => void) | null): void { onSharpUnavailable = cb; }
+export function isSharpBookmakerMissing(): boolean { return sharpBookmakerMissing; }
+export function resetSharpAvailability(): void { sharpBookmakerMissing = false; }
+
 // Substitui a cópia manual da odd da Betclic no comparador (a única casa local confirmada nesta
 // API — ver AUTO_BOOKMAKER_KEYS). Se não houver chave, a liga não estiver mapeada, ou o jogo não
 // for encontrado na API, cai-se sempre para os campos manuais — nunca bloqueia o resto da app.
@@ -113,6 +125,9 @@ export async function fetchLiveOdds(g: Game): Promise<FetchOddsResult> {
   }
   const match = findApiGame(data, g);
   if (!match) return { ok: false, reason: "jogo-nao-encontrado" };
+  if (!(match.bookmakers || []).some(b => b.key === SHARP_BOOKMAKER_KEY)) {
+    if (!sharpBookmakerMissing) { sharpBookmakerMissing = true; onSharpUnavailable?.(); }
+  }
   const sharp = extractSharpQuote(match, g);
   if (sharp) { sharpCache.set(g.id, sharp); onSharpResult?.(g.id); }
   const out: Record<string, number> = {};

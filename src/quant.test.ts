@@ -7,7 +7,7 @@ import {
   applyCalib, autoDecide, calibInfo, calibration, computeStake, lineMovement,
   modelProbs, noVig, stopLossStatus
 } from "./quant";
-import { EV_MIN, EV_MIN_FRIENDLY } from "./config";
+import { EV_MIN_SHARP, EV_MIN_SHARP_FRIENDLY } from "./config";
 import type { Bet, CalibInfo, DecisionContext, Game, StakeContext } from "./types";
 
 function makeGame(overrides: Partial<Game> = {}): Game {
@@ -115,55 +115,68 @@ describe("computeStake — Kelly fracionário, teto de 5%, corte por risco pende
   });
 });
 
-describe("autoDecide — seleção do melhor candidato, threshold de EV, jogos amigáveis", () => {
+describe("autoDecide — baseline sharp obrigatória, threshold EV_MIN_SHARP, jogos amigáveis", () => {
   // Fixa a probabilidade de mercado via "sharp" limpa: h=2.00 d=4.00 a=4.00 -> soma implícita
   // exatamente 1 (sem margem), logo no-vig = implícita: p.h=0.50, p.d=0.25, p.a=0.25 — e é
-  // exatamente essa a probabilidade que modelProbs devolve (100% Pinnacle/no-vig), tornando o EV
-  // 100% calculável à mão.
+  // exatamente essa a probabilidade que modelProbs devolve (100% Pinnacle/no-vig) quando há sharp,
+  // tornando o EV 100% calculável à mão.
   const sharp = { h: 2.0, d: 4.0, a: 4.0 };
   const ctx: DecisionContext = { calib: noCalib, stake: noRisk };
 
-  it("escolhe o candidato com melhor EV e aposta quando o EV está bem acima do limiar", () => {
-    // odd local casa=2.30: EV = 0.50*2.30-1 = 0.15 (15%, >> EV_MIN=0.08)
-    // empate/fora a odd 3.00 com p=0.25: EV = 0.25*3.00-1 = -0.25 (bem pior) -> "1" tem de ganhar
+  it("sem baseline sharp, devolve a mensagem de indisponibilidade e NUNCA bet:true — mesmo com odd 'boa'", () => {
+    // Odd de referência claramente vantajosa (2.30 vs 2.00 "justa") não importa: sem sharp não há
+    // probabilidade do modelo nenhuma para comparar — este é exatamente o bug do EV circular que
+    // esta correção elimina (nunca mais comparar a odd de referência com ela própria).
     const g = makeGame({ o: { h: 2.3, d: 3.0, a: 3.0 } });
-    const dec = autoDecide(g, ctx, sharp);
-    expect(dec.bestKey).toBe("1");
-    expect(dec.bet).toBe(true);
-    expect(dec.ev).toBeCloseTo(0.15, 10);
-    expect(dec.p).toBeCloseTo(0.5, 10);
-    // stake: b=1.3; kf=(1.3*0.5-0.5)/1.3=0.15/1.3≈0.115385; frac=kf*0.25≈0.0288462 (< cap 5%)
-    expect(dec.stakeFrac).toBeCloseTo(0.115385 * 0.25, 4);
-  });
-
-  it("EV positivo mas abaixo do limiar (EV_MIN) fica marcado como 'valor marginal', não aposta", () => {
-    // odd local casa=2.10: EV = 0.50*2.10-1 = 0.05 (5%, < EV_MIN=0.08 mas > 0)
-    const g = makeGame({ o: { h: 2.1, d: 3.0, a: 3.0 } });
-    const dec = autoDecide(g, ctx, sharp);
+    const dec = autoDecide(g, ctx, null);
     expect(dec.bet).toBe(false);
-    expect(dec.msg).toMatch(/^Valor marginal/);
-    expect(dec.best?.k).toBe("1");
+    expect(dec.msg).toBe("Sem baseline sharp (Pinnacle) — decisão automática indisponível");
   });
 
-  it("EV negativo (odd abaixo da odd justa) não aposta e não guarda 'valor marginal'", () => {
-    // odd local casa=1.90: EV = 0.50*1.90-1 = -0.05
-    const g = makeGame({ o: { h: 1.9, d: 3.0, a: 3.0 } });
-    const dec = autoDecide(g, ctx, sharp);
+  it("sem baseline sharp, dec.best fica undefined — garante que trackRejectedIfEnabled (main.ts) nunca regista uma 'não-aposta' para uma decisão apenas indisponível", () => {
+    // trackRejectedIfEnabled só grava quando `dec.best` existe (ver main.ts: "if (dec.bet || !dec.best) return;").
+    // A "indisponibilidade" não passa por nenhum candidato avaliado (cands fica [] antes de sequer
+    // se calcular EV), logo dec.best nunca é definido neste caminho — a não-aposta nunca é
+    // confundida com uma rejeição real por EV insuficiente, o que poluiria as estatísticas.
+    const g = makeGame({ o: { h: 2.3, d: 3.0, a: 3.0 } });
+    const dec = autoDecide(g, ctx, null);
+    expect(dec.best).toBeUndefined();
+    expect(dec.cands).toEqual([]);
+  });
+
+  it("sharp igual à odd de referência: EV negativo em todas as seleções (≈ −margem), não aposta", () => {
+    // sharp === g.o (mesmas odds) -> nv(sharp) é o mesmo no-vig de g.o, logo EV = nv.h*o.h - 1 =
+    // 1/S - 1 = -margem/(1+margem) para TODAS as seleções (a mesma álgebra que causava o bug
+    // circular) — a diferença agora é que isto só acontece quando o utilizador tem sharp de
+    // verdade e ela calha a bater com a referência, não porque falta a Pinnacle e se cai para a
+    // referência às escondidas.
+    const oddsRef = { h: 2.0, d: 3.5, a: 3.8 };
+    const g = makeGame({ o: oddsRef });
+    const dec = autoDecide(g, ctx, oddsRef);
+    const nv = noVig(oddsRef)!;
+    const expectedEvH = nv.h * oddsRef.h - 1;
+    expect(expectedEvH).toBeLessThan(0);
+    expect(expectedEvH).toBeCloseTo(-nv.margin / (1 + nv.margin), 10);
     expect(dec.bet).toBe(false);
     expect(dec.msg).toBe("Não apostar — sem valor às odds de referência");
   });
 
-  it("jogo amigável exige um limiar de EV mais alto (EV_MIN_FRIENDLY=0.12): o mesmo EV=0.10 muda de decisão", () => {
-    // odd local casa=2.20: EV = 0.50*2.20-1 = 0.10 -> bate EV_MIN (0.08) mas não EV_MIN_FRIENDLY (0.12)
-    expect(EV_MIN).toBeLessThan(0.10);
-    expect(EV_MIN_FRIENDLY).toBeGreaterThan(0.10);
-    const oddsCasa = { h: 2.2, d: 3.0, a: 3.0 };
+  it("sharp que torna a odd de referência 4% acima da justa: aposta com EV_MIN_SHARP=0.03; não aposta se amigável (limiar 6%)", () => {
+    // fair(h) = 1/nv.h = 2.00 (a partir do sharp acima); odd de referência 4% acima -> 2.08.
+    // EV = nv.h*2.08 - 1 = 0.5*2.08-1 = 0.04 exatamente (4%), acima de EV_MIN_SHARP (3%) mas
+    // abaixo de EV_MIN_SHARP_FRIENDLY (6%) — o mesmo EV muda de decisão consoante friendly.
+    expect(EV_MIN_SHARP).toBeLessThan(0.04);
+    expect(EV_MIN_SHARP_FRIENDLY).toBeGreaterThan(0.04);
+    const oddsCasa = { h: 2.08, d: 3.0, a: 3.0 };
     const decOficial = autoDecide(makeGame({ o: oddsCasa, friendly: false }), ctx, sharp);
     const decAmigavel = autoDecide(makeGame({ o: oddsCasa, friendly: true }), ctx, sharp);
-    expect(decOficial.ev).toBeCloseTo(0.10, 10);
+    expect(decOficial.bestKey).toBe("1");
+    expect(decOficial.ev).toBeCloseTo(0.04, 10);
     expect(decOficial.bet).toBe(true);
+    // stake: b=1.08; kf=(1.08*0.5-0.5)/1.08=0.04/1.08≈0.037037; frac=kf*0.25≈0.0092593 (< cap 5%)
+    expect(decOficial.stakeFrac).toBeCloseTo((0.04 / 1.08) * 0.25, 4);
     // em bet:false o EV vive em dec.best.ev, não em dec.ev (só a decisão bet:true guarda .ev direto)
-    expect(decAmigavel.best?.ev).toBeCloseTo(0.10, 10);
+    expect(decAmigavel.best?.ev).toBeCloseTo(0.04, 10);
     expect(decAmigavel.bet).toBe(false);
     expect(decAmigavel.msg).toMatch(/^Valor marginal/);
   });
@@ -215,8 +228,8 @@ describe("calibration — compara probabilidades previstas com o que realmente a
   });
 });
 
-describe("modelProbs — no-vig puro da odd de referência ou da Pinnacle/\"sharp\" (sem heurística)", () => {
-  it("devolve sempre o no-vig do mercado disponível, com heur=false, independentemente de forma/registo", () => {
+describe("modelProbs — no-vig puro da Pinnacle/\"sharp\", ÚNICO caminho suportado (sem heurística, sem fallback)", () => {
+  it("com sharp, devolve o no-vig da sharp, com heur=false, independentemente de forma/registo", () => {
     const sharp = { h: 2.0, d: 4.0, a: 4.0 };   // no-vig limpo: h=0.5, d=0.25, a=0.25
     const g = makeGame({
       h: { n: "Casa", f: "WWWWW", r: "10-0-0", s: null },
@@ -229,12 +242,13 @@ describe("modelProbs — no-vig puro da odd de referência ou da Pinnacle/\"shar
     expect(mp!.p).toEqual({ h: 0.5, d: 0.25, a: 0.25, margin: 0 });
   });
 
-  it("sem sharp, usa o no-vig da odd de referência do jogo (g.o)", () => {
+  it("SEM sharp, devolve null — nunca cai para o no-vig de g.o (elimina o bug do EV circular)", () => {
+    // Antes desta correção, sem sharp caía-se para noVig(g.o) — o motor de decisão comparava então
+    // essa MESMA odd de referência consigo própria (EV = -margem sempre), dizendo "não apostar" em
+    // todos os jogos por construção. Agora, sem baseline sharp, não há probabilidade nenhuma.
     const g = makeGame({ o: { h: 2, d: 4, a: 4 } });
-    const mp = modelProbs(g, null);
-    expect(mp!.heur).toBe(false);
-    expect(mp!.sharp).toBe(false);
-    expect(mp!.p).toEqual({ h: 0.5, d: 0.25, a: 0.25, margin: 0 });
+    expect(modelProbs(g, null)).toBeNull();
+    expect(modelProbs(g, undefined)).toBeNull();
   });
 
   it("sem odds nenhumas (nem sharp nem g.o), devolve null", () => {
