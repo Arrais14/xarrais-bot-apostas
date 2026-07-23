@@ -148,13 +148,34 @@ async function fetchOddsForLeague(sportKey) {
   }
 }
 
+// ===== Aliases ESPN -> The-Odds-API (ambos os lados já normalizados por normTeam) =====
+// Para os pares em que o fuzzy (includes bidirecional) não chega, porque as duas fontes usam
+// nomes genuinamente diferentes para a mesma equipa. Alimentado a partir dos logs "[sem-match]"
+// abaixo — quando aparecer um, acrescenta aqui o par normalizado correspondente.
+const TEAM_ALIASES = {
+  // Brasileirão
+  "atleticomg": "atleticomineiro",
+  "athleticopr": "athleticoparanaense",
+  "americamg": "americamineiro",
+  // Liga MX
+  "atleticodesanluis": "atleticosanluis"
+};
+
+// Fuzzy de src/api.ts:findApiGame (includes bidirecional) + aliases para o resto.
+function teamMatches(espnNorm, apiNorm) {
+  if (!espnNorm || !apiNorm) return false;
+  if (espnNorm === apiNorm || espnNorm.includes(apiNorm) || apiNorm.includes(espnNorm)) return true;
+  const alias = TEAM_ALIASES[espnNorm];
+  return !!alias && (alias === apiNorm || alias.includes(apiNorm) || apiNorm.includes(alias));
+}
+
 // Prioridade DraftKings -> Betclic: DraftKings mantém-se a casa "por omissão" (é a que a UI já
 // rotula por defeito); Betclic só entra quando a DraftKings ainda não tem linha para este jogo em
 // concreto — nesse caso out.src fica marcado para a UI anotar a fonte (ver marketSourceNote/oddsT
 // em main.ts). Nunca prefere Betclic quando a DraftKings já responde, mesmo que a Betclic também exista.
 function matchOdds(oddsGames, homeName, awayName) {
   const nh = normTeam(homeName), na = normTeam(awayName);
-  const match = oddsGames.find(g => normTeam(g.home_team) === nh && normTeam(g.away_team) === na);
+  const match = oddsGames.find(g => teamMatches(nh, normTeam(g.home_team)) && teamMatches(na, normTeam(g.away_team)));
   if (!match) return null;
   const bookmakers = match.bookmakers || [];
   let bk = bookmakers.find(b => b.key === "draftkings");
@@ -164,8 +185,10 @@ function matchOdds(oddsGames, homeName, awayName) {
   const h2h = (bk.markets || []).find(m => m.key === "h2h");
   const totals = (bk.markets || []).find(m => m.key === "totals");
   if (!h2h) return null;
-  const hOc = h2h.outcomes.find(o => normTeam(o.name) === nh);
-  const aOc = h2h.outcomes.find(o => normTeam(o.name) === na);
+  // Os outcomes h2h usam os nomes PRÓPRIOS da The-Odds-API (home_team/away_team verbatim), não os
+  // da ESPN — comparar com o match, nunca com nh/na, senão o alias/fuzzy de cima seria desfeito aqui.
+  const hOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.home_team));
+  const aOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.away_team));
   const dOc = h2h.outcomes.find(o => o.name === "Draw");
   if (!hOc || !aOc || !dOc) return null;
   const out = { h: hOc.price, d: dOc.price, a: aOc.price };
@@ -229,7 +252,15 @@ async function runLeague(lgName, oldOdds) {
       if (!formCache.has(homeId)) formCache.set(homeId, await fetchForm(slug, homeId));
       if (!formCache.has(awayId)) formCache.set(awayId, await fetchForm(slug, awayId));
 
-      const odds = matchOdds(oddsGames, homeC.team.displayName, awayC.team.displayName) || oldOdds.get(String(ev.id)) || null;
+      const freshOdds = matchOdds(oddsGames, homeC.team.displayName, awayC.team.displayName);
+      const odds = freshOdds || oldOdds.get(String(ev.id)) || null;
+      // Diagnóstico para alimentar TEAM_ALIASES: só interessa quando a liga TEVE resposta da
+      // The-Odds-API (oddsGames.length) mas este jogo em concreto não casou com nada nela — nesse
+      // caso é quase sempre uma diferença de nome entre ESPN e The-Odds-API, não falta de mercado.
+      if (!freshOdds && oddsGames.length) {
+        console.log("  [sem-match] " + homeC.team.displayName + " (" + normTeam(homeC.team.displayName) + ") vs "
+          + awayC.team.displayName + " (" + normTeam(awayC.team.displayName) + ")");
+      }
 
       games.push({
         id: String(ev.id),
@@ -286,6 +317,14 @@ export const PRELOADED: PreloadedData = ${JSON.stringify({ fetchedAt: new Date()
   await writeFile(new URL("../src/data.ts", import.meta.url), fileContent, "utf8");
   const withOdds = allGames.filter(g => g.o).length;
   console.log("src/data.ts atualizado: " + allGames.length + " jogo(s) em " + okLeagues.length + " liga(s), " + withOdds + " com odds.");
+
+  console.log("\n% de jogos com odds por liga:");
+  for (const lgName of okLeagues) {
+    const lgGames = allGames.filter(g => g.lg === lgName);
+    const lgWithOdds = lgGames.filter(g => g.o).length;
+    const pct = lgGames.length ? Math.round(100 * lgWithOdds / lgGames.length) : 0;
+    console.log("  " + lgName + ": " + lgWithOdds + "/" + lgGames.length + " (" + pct + "%)");
+  }
 }
 
 main().catch(e => {
