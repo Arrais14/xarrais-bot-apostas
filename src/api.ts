@@ -111,6 +111,53 @@ const sharpPending = new Set<string>();
 let onSharpResult: ((gameId: string) => void) | null = null;
 export function setOnSharpResult(cb: ((gameId: string) => void) | null): void { onSharpResult = cb; }
 
+// ===== Cache partilhado por liga (não por jogo) — a resposta de uma liga serve todos os jogos
+// abertos dessa liga na mesma janela de 55s, em vez de 1 pedido por jogo por tick (o comparador e o
+// card já reduziram a cadência — ver CMP_ODDS_REFRESH_MS/CARD_ODDS_REFRESH_MS — mas com vários jogos
+// da mesma liga abertos ao mesmo tempo isto ainda multiplicava pedidos desnecessariamente). Um mapa
+// de promessas pendentes evita 2 pedidos em voo para a mesma liga se dois jogos pedirem ao mesmo
+// tempo (ex.: o timer do card e o do comparador a disparar juntos). =====
+type LeagueOddsFetch = { ok: true; data: ApiGame[] } | { ok: false; reason: string };
+const leagueOddsCache = new Map<string, { data: ApiGame[]; ts: number }>();
+const leagueOddsPending = new Map<string, Promise<LeagueOddsFetch>>();
+const LEAGUE_ODDS_CACHE_MS = 55_000;
+
+// Quota da The-Odds-API (plano grátis ≈ 500 créditos/mês) lida dos headers de resposta — só
+// atualizada quando um pedido real sai (nunca em cache hits, que não têm headers novos), mas fica
+// disponível globalmente para a UI mostrar mesmo que a leitura tenha vindo de outro jogo/liga.
+let lastQuota: { remaining: number | null; used: number | null } = { remaining: null, used: null };
+export function getOddsApiQuota(): { remaining: number | null; used: number | null } { return lastQuota; }
+
+async function fetchLeagueOddsCached(sportKey: string, apiKey: string): Promise<LeagueOddsFetch> {
+  const cached = leagueOddsCache.get(sportKey);
+  if (cached && Date.now() - cached.ts < LEAGUE_ODDS_CACHE_MS) return { ok: true, data: cached.data };
+  const pending = leagueOddsPending.get(sportKey);
+  if (pending) return pending;
+  const bookmakers = [SHARP_BOOKMAKER_KEY, ...Object.values(AUTO_BOOKMAKER_KEYS)].join(",");
+  const url = ODDS_API_BASE + "/sports/" + encodeURIComponent(sportKey) + "/odds/?apiKey=" + encodeURIComponent(apiKey)
+    + "&regions=eu,fr&markets=h2h&oddsFormat=decimal&bookmakers=" + bookmakers;
+  const p = (async (): Promise<LeagueOddsFetch> => {
+    try {
+      const r = await fetch(url);
+      const remaining = r.headers.get("x-requests-remaining");
+      const used = r.headers.get("x-requests-used");
+      if (remaining != null || used != null) {
+        lastQuota = { remaining: remaining != null ? parseInt(remaining, 10) : null, used: used != null ? parseInt(used, 10) : null };
+      }
+      if (!r.ok) return { ok: false, reason: "http-" + r.status };
+      const data: ApiGame[] = await r.json();
+      leagueOddsCache.set(sportKey, { data, ts: Date.now() });
+      return { ok: true, data };
+    } catch {
+      return { ok: false, reason: "erro-rede" };
+    } finally {
+      leagueOddsPending.delete(sportKey);
+    }
+  })();
+  leagueOddsPending.set(sportKey, p);
+  return p;
+}
+
 // Substitui a cópia manual da odd da Betclic no comparador (a única casa local confirmada nesta
 // API — ver AUTO_BOOKMAKER_KEYS). Se não houver chave, a liga não estiver mapeada, ou o jogo não
 // for encontrado na API, cai-se sempre para os campos manuais — nunca bloqueia o resto da app.
@@ -121,17 +168,9 @@ export async function fetchLiveOdds(g: Game): Promise<FetchOddsResult> {
   if (!apiKey) return { ok: false, reason: "sem-chave" };
   const sportKey = ODDS_API_SPORT_MAP[g.lg];
   if (!sportKey) return { ok: false, reason: "liga-nao-mapeada" };
-  const bookmakers = [SHARP_BOOKMAKER_KEY, ...Object.values(AUTO_BOOKMAKER_KEYS)].join(",");
-  const url = ODDS_API_BASE + "/sports/" + encodeURIComponent(sportKey) + "/odds/?apiKey=" + encodeURIComponent(apiKey)
-    + "&regions=eu,fr&markets=h2h&oddsFormat=decimal&bookmakers=" + bookmakers;
-  let data: ApiGame[];
-  try {
-    const r = await fetch(url);
-    if (!r.ok) return { ok: false, reason: "http-" + r.status };
-    data = await r.json();
-  } catch {
-    return { ok: false, reason: "erro-rede" };
-  }
+  const league = await fetchLeagueOddsCached(sportKey, apiKey);
+  if (!league.ok) return { ok: false, reason: league.reason };
+  const data = league.data;
   const match = findApiGame(data, g);
   if (!match) return { ok: false, reason: "jogo-nao-encontrado" };
   const sharp = extractSharpQuote(match, g);

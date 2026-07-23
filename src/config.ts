@@ -46,8 +46,11 @@ export const RECALIB_MIN_N = 200;        // nº mínimo de apostas resolvidas c/
 // o comparador aberto (um único jogo de cada vez).
 export const CARD_ODDS_TICK_MS = 30_000;          // frequência do texto "atualizado há Xs" no card
 export const CARD_ODDS_REFRESH_MS = 12 * 60_000;  // frequência real de um novo pedido por jogo no card
-export const CMP_ODDS_TICK_MS = 15_000;           // idem, no comparador aberto (só 1 jogo de cada vez)
-export const CMP_ODDS_REFRESH_MS = 3 * 60_000;    // idem, pedido real (Betclic) no comparador aberto
+export const CMP_ODDS_TICK_MS = 10_000;           // idem, no comparador aberto (só 1 jogo de cada vez)
+export const CMP_ODDS_REFRESH_MS = 60_000;        // idem, pedido real (Betclic) no comparador aberto —
+                                                   // seguro porque fetchLiveOdds partilha 1 pedido por
+                                                   // liga (cache de 55s, ver src/api.ts) entre todos os
+                                                   // jogos dessa liga, não gasta 1 crédito por jogo
 
 // ===== Casa de referência "sharp" para o no-vig (ver src/api.ts) =====
 // A Pinnacle normalmente exige o plano pago ("Business") da The-Odds-API; se a chave não tiver

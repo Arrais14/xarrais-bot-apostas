@@ -1113,8 +1113,10 @@ function updateCmpFreshLabel(id: string): void {
   const el = document.getElementById("cmpFresh" + id);
   if (!el) return;
   const ts = cmpOddsFreshness.get(id);
+  const quota = api.getOddsApiQuota();
   el.innerHTML = icon("refresh") + ' A atualizar a Betclic automaticamente enquanto o jogo estiver aberto · Blockbet e Betano continuam manuais.'
-    + (ts ? " Última atualização: " + freshLabel(ts) + "." : "");
+    + (ts ? " Última atualização: " + freshLabel(ts) + "." : "")
+    + (quota.remaining != null ? ' <span class="kv">· Odds API: ' + quota.remaining + " pedidos restantes" + (quota.used != null ? " (" + quota.used + " usados)" : "") + "</span>" : "");
 }
 
 function stopCmpOddsTimer(): void {
