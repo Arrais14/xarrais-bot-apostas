@@ -718,10 +718,17 @@ function card(g: Game): string {
   // nem re-registar a mesma decisão sempre que o utilizador visita esse dia.
   const started = g.dt.getTime() <= Date.now();
   const pending = pendingBetsFor(g.id);
-  let valClass = "val-none";
+  let valClass: string;
   let decLine: string;
   let scoreHint = "";
   let freshNote = "";
+  // A cor da barra lateral reflete sempre a última decisão do modelo, mesmo em jogos já começados
+  // (ver histórico/navegação por dias) — só o texto principal (decLine) é que muda para mostrar o
+  // resultado em vez de recalcular EV sobre odds já fechadas.
+  const dec = getDecision(g);
+  if (dec.bet) valClass = "val-good";              // verde: apostar (EV >= limiar no mercado principal)
+  else if (dec.derived?.bet) valClass = "val-second"; // laranja: segunda hipótese decente (golos)
+  else valClass = "val-bad";                          // vermelho: não apostar
   if (started) {
     const score = api.getFinalScore(g);
     decLine = score
@@ -729,15 +736,11 @@ function card(g: Game): string {
       : '<div class="dec no">' + icon("target") + ' A decorrer / resultado ainda não disponível</div>';
     if (pending.length && score) scoreHint = '<div class="kv">' + icon("check") + ' Resultado: ' + score.home + "-" + score.away + " — abre o jogo para confirmar</div>";
   } else {
-    const dec = getDecision(g);
     autoRegisterIfEnabled(g, dec);
     trackRejectedIfEnabled(g, dec);
     decLine = dec.bet
       ? '<div class="dec bet">' + icon("target") + ' ' + esc(dec.lbl) + " @ " + fmt2(dec.od) + " · EV +" + (100 * (dec.ev as number)).toFixed(1) + "% · " + (dec.stakeTxt as string) + "</div>"
       : '<div class="dec no">' + icon("target") + ' ' + esc(dec.msg) + "</div>";
-    if (dec.bet) valClass = "val-good";                                          // verde: EV >= limiar no mercado principal
-    else if (dec.derived?.bet) valClass = "val-derived";                        // azul: sem valor no 1X2, mas há segunda oportunidade (golos)
-    else if (dec.best && (dec.best.ev as number) > 0) valClass = "val-marginal"; // laranja: EV>0 mas abaixo do limiar
     if (pending.length) {
       const score = api.getFinalScore(g);
       if (score) scoreHint = '<div class="kv">' + icon("check") + ' Resultado: ' + score.home + "-" + score.away + " — abre o jogo para confirmar</div>";

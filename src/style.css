@@ -51,9 +51,8 @@ header.top { display:flex; align-items:flex-start; justify-content:space-between
         border-left:4px solid var(--line); box-shadow:var(--shadow-sm); transition:box-shadow .15s, transform .15s; }
 .card:hover { box-shadow:var(--shadow-md); }
 .card.val-good { border-left-color:#6dd18e; }
-.card.val-derived { border-left-color:#4a9de0; }
-.card.val-marginal { border-left-color:#e0a530; }
-.card.val-none { border-left-color:var(--line); }
+.card.val-second { border-left-color:#e0a530; }
+.card.val-bad { border-left-color:#d9534f; }
 .row { display:flex; align-items:center; gap:14px; padding:14px 16px; cursor:pointer; }
 .row:hover { background:#191d24; }
 .time { width:54px; text-align:center; font-weight:600; font-size:12px; color:var(--accent2); flex-shrink:0; }
