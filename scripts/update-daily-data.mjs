@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-// ===== Tarefa diária: regenera src/data.ts com jogos/odds reais (ESPN + The-Odds-API) =====
+// ===== Tarefa diária: regenera public/data.json com jogos/odds reais (ESPN + The-Odds-API) =====
+// A app faz fetch disto em runtime (ver loadPreloadedData em src/main.ts) — atualizar os dados não
+// obriga a rebuild/redeploy do JS. src/data-fallback.ts é só um snapshot estático embutido no
+// bundle, usado como último recurso se o fetch falhar; não é escrito por este script.
 // Corre fora do grafo Vite/TS (Node puro, sem dependências) via .github/workflows/daily-data-update.yml.
 // Falha graciosamente por liga/jogo — nunca deixa o ficheiro inteiro vazio (ver runLeague/main).
 //
@@ -206,7 +209,7 @@ function recordStr(rec) {
   return rec.wins + "-" + rec.ties + "-" + rec.losses;
 }
 
-// ===== Odds já guardadas (por id de jogo ESPN, estável entre execuções) do último src/data.ts —
+// ===== Odds já guardadas (por id de jogo ESPN, estável entre execuções) do último public/data.json —
 // usadas como rede de segurança: sem isto, uma execução sem ODDS_API_KEY (ex.: teste local, como
 // aconteceu por engano em 2026-07-22/23) ou uma falha transitória da The-Odds-API APAGAVA as odds
 // reais já obtidas pela tarefa agendada, em vez de as preservar. Nunca sobrepõe odds novas e válidas,
@@ -214,14 +217,11 @@ function recordStr(rec) {
 async function loadOldOddsMap() {
   const map = new Map();
   try {
-    const raw = await readFile(new URL("../src/data.ts", import.meta.url), "utf8");
-    const marker = "PreloadedData = ";
-    const start = raw.indexOf(marker);
-    if (start === -1) return map;
-    const obj = JSON.parse(raw.slice(start + marker.length, raw.lastIndexOf("};") + 1));
+    const raw = await readFile(new URL("../public/data.json", import.meta.url), "utf8");
+    const obj = JSON.parse(raw);
     for (const g of obj.games || []) if (g.o) map.set(g.id, g.o);
   } catch {
-    // primeira execução (ainda sem src/data.ts) ou ficheiro nalgum formato inesperado — segue sem rede de segurança
+    // primeira execução (ainda sem public/data.json) ou ficheiro nalgum formato inesperado — segue sem rede de segurança
   }
   return map;
 }
@@ -297,7 +297,7 @@ async function main() {
   }
 
   if (!allGames.length) {
-    console.error("Nenhuma liga devolveu jogos — a manter src/data.ts como estava (nada escrito).");
+    console.error("Nenhuma liga devolveu jogos — a manter public/data.json como estava (nada escrito).");
     process.exitCode = 1;
     return;
   }
@@ -307,16 +307,10 @@ async function main() {
       + (failedLeagues.length ? " Falharam (mantidas de fora hoje): " + failedLeagues.join(", ") + "." : "")
     : undefined;
 
-  const fileContent = `import type { PreloadedData } from "./types";
-
-// ===== DADOS (atualizados automaticamente por scripts/update-daily-data.mjs via GitHub Actions) =====
-export const PRELOADED: PreloadedData = ${JSON.stringify({ fetchedAt: new Date().toISOString(), note, games: allGames }, null, 2)};
-// ===== FIM DOS DADOS =====
-`;
-
-  await writeFile(new URL("../src/data.ts", import.meta.url), fileContent, "utf8");
+  const payload = { fetchedAt: new Date().toISOString(), note, games: allGames };
+  await writeFile(new URL("../public/data.json", import.meta.url), JSON.stringify(payload, null, 2) + "\n", "utf8");
   const withOdds = allGames.filter(g => g.o).length;
-  console.log("src/data.ts atualizado: " + allGames.length + " jogo(s) em " + okLeagues.length + " liga(s), " + withOdds + " com odds.");
+  console.log("public/data.json atualizado: " + allGames.length + " jogo(s) em " + okLeagues.length + " liga(s), " + withOdds + " com odds.");
 
   console.log("\n% de jogos com odds por liga:");
   for (const lgName of okLeagues) {

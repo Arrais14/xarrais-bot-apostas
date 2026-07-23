@@ -6,7 +6,7 @@ import * as quant from "./quant";
 import * as storage from "./storage";
 import * as api from "./api";
 import { LS } from "./storage";
-import { PRELOADED } from "./data";
+import { PRELOADED_FALLBACK } from "./data-fallback";
 import {
   BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
   CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
@@ -15,12 +15,34 @@ import {
 } from "./config";
 import { esc, fmt2, fmtDate, formHtml, num, pct, ymd } from "./utils";
 import { icon } from "./icons";
-import type { Bet, BetStatus, DecisionContext, FinalScore, Game, ModelDecision, SharpQuote, StopLossStatus } from "./types";
+import type { Bet, BetStatus, DecisionContext, FinalScore, Game, ModelDecision, PreloadedData, SharpQuote, StopLossStatus } from "./types";
 
 // ===== Estado da aplicação (em memória, não persistido) =====
 let curDate = new Date();
 curDate.setHours(12, 0, 0, 0);   // ancora a meio-dia local para o nav de dias não escorregar em mudanças de hora (DST)
-const games: Game[] = PRELOADED.games.map(g => ({ ...g, dt: new Date(g.d) }));
+// Populados de forma assíncrona por loadPreloadedData() antes de bootstrapInner() correr —
+// começam vazios (nunca lidos antes disso, ver bootstrap()).
+let preloaded: PreloadedData = PRELOADED_FALLBACK;
+let games: Game[] = [];
+
+// Vai buscar os jogos/odds do dia a public/data.json (regenerado pela tarefa diária, ver
+// scripts/update-daily-data.mjs) em vez de os importar estaticamente do bundle — assim uma
+// atualização de dados não obriga a um rebuild/redeploy do JS. Cai para o snapshot embutido
+// (PRELOADED_FALLBACK, desatualizado por definição) só se o fetch falhar de vez — rede em baixo,
+// ficheiro ausente/corrompido — para a app nunca ficar com um ecrã vazio/partido.
+async function loadPreloadedData(): Promise<PreloadedData> {
+  try {
+    const url = import.meta.env.BASE_URL + "data.json";
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error("http-" + r.status);
+    const data = await r.json();
+    if (!data || !Array.isArray(data.games)) throw new Error("formato-invalido");
+    return data as PreloadedData;
+  } catch (e) {
+    console.warn("Falha ao carregar data.json em runtime — a usar o snapshot embutido (desatualizado):", e);
+    return PRELOADED_FALLBACK;
+  }
+}
 
 let curTab: "games" | "log" = "games";
 let gameFilter: "all" | "value" | "hideFriendly" = "all";
@@ -638,7 +660,7 @@ function renderInner(): void {
   else if (gameFilter === "hideFriendly") todays = todays.filter(g => !g.friendly);
   const content = document.getElementById("content");
   if (!content) return;
-  const fetched = new Date(PRELOADED.fetchedAt);
+  const fetched = new Date(preloaded.fetchedAt);
   const ageH = (Date.now() - fetched.getTime()) / 3600000;
   const ageWarn = ageH > 6
     ? ' <span style="color:#e0b080">' + icon("alert") + ' odds com ' + Math.floor(ageH) + 'h — podem estar desatualizadas; confirma antes de apostar</span>'
@@ -660,7 +682,7 @@ function renderInner(): void {
   }
   html += yesterdayResultBanner();
   html += reminderBanner();
-  if (PRELOADED.note) html += '<div class="banner">' + esc(PRELOADED.note) + "</div>";
+  if (preloaded.note) html += '<div class="banner">' + esc(preloaded.note) + "</div>";
   if (!todays.length && dayGames.length) {
     html += '<div class="status">Nenhum jogo corresponde ao filtro atual. <button class="btn copy" onclick="setGameFilter(\'all\')">Mostrar todos</button></div>';
     content.innerHTML = html;
@@ -1269,13 +1291,17 @@ function updUnit(): void {
 // elemento do DOM em falta, um dado malformado) não deixe a página completamente muda, sem
 // nenhuma pista do que correu mal.
 function bootstrap(): void {
-  try {
-    bootstrapInner();
-  } catch (e) {
-    console.error("Erro ao iniciar a aplicação:", e);
-    const content = document.getElementById("content");
-    if (content) content.innerHTML = '<div class="warnbox">' + icon("alert") + ' Erro ao iniciar a aplicação — recarrega a página. Se persistir, verifica a consola do browser (F12) para mais detalhes.</div>';
-  }
+  void loadPreloadedData().then(data => {
+    try {
+      preloaded = data;
+      games = data.games.map(g => ({ ...g, dt: new Date(g.d) }));
+      bootstrapInner();
+    } catch (e) {
+      console.error("Erro ao iniciar a aplicação:", e);
+      const content = document.getElementById("content");
+      if (content) content.innerHTML = '<div class="warnbox">' + icon("alert") + ' Erro ao iniciar a aplicação — recarrega a página. Se persistir, verifica a consola do browser (F12) para mais detalhes.</div>';
+    }
+  });
 }
 
 function bootstrapInner(): void {

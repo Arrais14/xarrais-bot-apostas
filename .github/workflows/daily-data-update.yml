@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Gerar src/data.ts (ESPN + The-Odds-API)
+      - name: Gerar public/data.json (ESPN + The-Odds-API)
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/update-daily-data.mjs
@@ -28,10 +28,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- src/data.ts; then
-            echo "Sem alterações a src/data.ts — nada para publicar."
+          if git diff --quiet -- public/data.json; then
+            echo "Sem alterações a public/data.json — nada para publicar."
           else
-            git add src/data.ts
+            git add public/data.json
             git commit -m "Atualização automática de jogos/odds ($(date -u +%Y-%m-%d))"
             git push
           fi

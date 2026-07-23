@@ -1,7 +1,4 @@
-import type { PreloadedData } from "./types";
-
-// ===== DADOS (atualizados automaticamente por scripts/update-daily-data.mjs via GitHub Actions) =====
-export const PRELOADED: PreloadedData = {
+{
   "fetchedAt": "2026-07-23T03:29:30.190Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
@@ -1892,5 +1889,4 @@ export const PRELOADED: PreloadedData = {
       "o": null
     }
   ]
-};
-// ===== FIM DOS DADOS =====
+}
