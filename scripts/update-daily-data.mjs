@@ -13,7 +13,7 @@
 // Mantém sincronizado à mão com src/api.ts:ESPN_LEAGUE_SLUG / ODDS_API_SPORT_MAP / normTeam —
 // o script não importa TS diretamente para não complicar o workflow com um passo de compilação.
 
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 const ESPN_LEAGUE_SLUG = {
   "Brasileirão": "bra.1",
@@ -29,7 +29,10 @@ const ESPN_LEAGUE_SLUG = {
   // Confirmados ao vivo em 2026-07-22 — ambos devolveram jogos reais da ronda de qualificação em
   // curso nesta altura do ano (meados de julho a agosto).
   "Champions League (Qualificação)": "uefa.champions_qual",
-  "Liga Europa (Qualificação)": "uefa.europa_qual"
+  "Liga Europa (Qualificação)": "uefa.europa_qual",
+  // Confirmado ao vivo em 2026-07-23 — devolveu 40 jogos reais só para hoje (a Champions League não
+  // teve nenhum jogo de qualificação agendado nesse dia, só a Conference; ver src/api.ts).
+  "Conference League (Qualificação)": "uefa.europa.conf_qual"
 };
 
 const ODDS_API_SPORT_MAP = {
@@ -47,7 +50,8 @@ const ODDS_API_SPORT_MAP = {
   // src/api.ts:ODDS_API_SPORT_MAP). Se a key estiver errada, fetchOddsForLeague falha em segurança
   // (liga sem odds, mas com jogos) — nunca impede o resto do script de correr.
   "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
-  "Liga Europa (Qualificação)": "soccer_uefa_europa_league_qualification"
+  "Liga Europa (Qualificação)": "soccer_uefa_europa_league_qualification",
+  "Conference League (Qualificação)": "soccer_uefa_conference_league_qualification"
 };
 
 const DAYS_AHEAD = 3;             // hoje + 3 dias, para cobrir efeitos de fuso horário
@@ -169,8 +173,28 @@ function recordStr(rec) {
   return rec.wins + "-" + rec.ties + "-" + rec.losses;
 }
 
+// ===== Odds já guardadas (por id de jogo ESPN, estável entre execuções) do último src/data.ts —
+// usadas como rede de segurança: sem isto, uma execução sem ODDS_API_KEY (ex.: teste local, como
+// aconteceu por engano em 2026-07-22/23) ou uma falha transitória da The-Odds-API APAGAVA as odds
+// reais já obtidas pela tarefa agendada, em vez de as preservar. Nunca sobrepõe odds novas e válidas,
+// só preenche quando o fetch desta execução não encontrou nada para esse jogo específico. =====
+async function loadOldOddsMap() {
+  const map = new Map();
+  try {
+    const raw = await readFile(new URL("../src/data.ts", import.meta.url), "utf8");
+    const marker = "PreloadedData = ";
+    const start = raw.indexOf(marker);
+    if (start === -1) return map;
+    const obj = JSON.parse(raw.slice(start + marker.length, raw.lastIndexOf("};") + 1));
+    for (const g of obj.games || []) if (g.o) map.set(g.id, g.o);
+  } catch {
+    // primeira execução (ainda sem src/data.ts) ou ficheiro nalgum formato inesperado — segue sem rede de segurança
+  }
+  return map;
+}
+
 // ===== Monta uma liga inteira — nunca lança, devolve { games, error } =====
-async function runLeague(lgName) {
+async function runLeague(lgName, oldOdds) {
   const slug = ESPN_LEAGUE_SLUG[lgName];
   const sportKey = ODDS_API_SPORT_MAP[lgName];
   console.log("A processar " + lgName + " (" + slug + ")...");
@@ -195,7 +219,7 @@ async function runLeague(lgName) {
       if (!formCache.has(homeId)) formCache.set(homeId, await fetchForm(slug, homeId));
       if (!formCache.has(awayId)) formCache.set(awayId, await fetchForm(slug, awayId));
 
-      const odds = matchOdds(oddsGames, homeC.team.displayName, awayC.team.displayName);
+      const odds = matchOdds(oddsGames, homeC.team.displayName, awayC.team.displayName) || oldOdds.get(String(ev.id)) || null;
 
       games.push({
         id: String(ev.id),
@@ -214,13 +238,16 @@ async function runLeague(lgName) {
 }
 
 async function main() {
+  const oldOdds = await loadOldOddsMap();
+  if (!ODDS_API_KEY) console.warn("[aviso] ODDS_API_KEY não definida — só se preenchem odds a partir do src/data.ts anterior (" + oldOdds.size + " jogo(s) com odds guardadas), nada novo é pedido à The-Odds-API.");
+
   const allGames = [];
   const okLeagues = [];
   const failedLeagues = [];
 
   for (const lgName of Object.keys(ESPN_LEAGUE_SLUG)) {
     try {
-      const { games } = await runLeague(lgName);
+      const { games } = await runLeague(lgName, oldOdds);
       if (games.length) { allGames.push(...games); okLeagues.push(lgName); }
     } catch (e) {
       console.warn("[aviso] liga " + lgName + " falhou por completo: " + e.message);
@@ -247,7 +274,8 @@ export const PRELOADED: PreloadedData = ${JSON.stringify({ fetchedAt: new Date()
 `;
 
   await writeFile(new URL("../src/data.ts", import.meta.url), fileContent, "utf8");
-  console.log("src/data.ts atualizado: " + allGames.length + " jogo(s) em " + okLeagues.length + " liga(s).");
+  const withOdds = allGames.filter(g => g.o).length;
+  console.log("src/data.ts atualizado: " + allGames.length + " jogo(s) em " + okLeagues.length + " liga(s), " + withOdds + " com odds.");
 }
 
 main().catch(e => {

@@ -30,7 +30,8 @@ export const ODDS_API_SPORT_MAP: Record<string, string> = {
   // segurança — o jogo continua a aparecer, só sem odds pré-carregadas. Confirma com
   // GET /v4/sports?apiKey=... antes de confiar às cegas.
   "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
-  "Liga Europa (Qualificação)": "soccer_uefa_europa_league_qualification"
+  "Liga Europa (Qualificação)": "soccer_uefa_europa_league_qualification",
+  "Conference League (Qualificação)": "soccer_uefa_conference_league_qualification"
 };
 // Verificado em 2026-07-22 contra a doc oficial (the-odds-api.com/sports-odds-data/bookmaker-apis.html):
 // a Betclic aparece com a key "betclic_fr" (secções FR e EU) — "betclic" sozinho não existe e nunca
@@ -60,7 +61,10 @@ export const ESPN_LEAGUE_SLUG: Record<string, string> = {
   // devolveram jogos reais da ronda de qualificação em curso nesta altura do ano (meados de
   // julho a agosto).
   "Champions League (Qualificação)": "uefa.champions_qual",
-  "Liga Europa (Qualificação)": "uefa.europa_qual"
+  "Liga Europa (Qualificação)": "uefa.europa_qual",
+  // Confirmado ao vivo em 2026-07-23: a Champions League não teve nenhum jogo de qualificação
+  // agendado nesse dia (só a de Europa), mas a Conference teve — 40 jogos reais no mesmo pedido.
+  "Conference League (Qualificação)": "uefa.europa.conf_qual"
 };
 
 function normTeam(s: string | null | undefined): string {
