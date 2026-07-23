@@ -5,75 +5,15 @@
 import type { Bet, FinalScore, Game, SharpQuote } from "./types";
 import { SETTLE_REMINDER_H, SHARP_BOOKMAKER_KEY } from "./config";
 import { LS } from "./storage";
+// Fonte única partilhada com scripts/update-daily-data.mjs (tarefa diária, Node puro sem passo de
+// compilação) — ver shared/leagues.mjs para o porquê de ser .mjs e não .ts, e para o histórico de
+// confirmação de cada slug/sport_key. allowJs em tsconfig.json permite este import.
+import { AUTO_BOOKMAKER_KEYS, ESPN_LEAGUE_SLUG, ODDS_API_SPORT_MAP, normTeam, teamMatches } from "../shared/leagues.mjs";
+
+export { AUTO_BOOKMAKER_KEYS, ESPN_LEAGUE_SLUG, ODDS_API_SPORT_MAP };
 
 // ===== Odds API (fetch automático — ver painel "APIs externas" na UI para a chave) =====
 export const ODDS_API_BASE = "https://api.the-odds-api.com/v4";
-// Chaves de sport da The-Odds-API por liga — verifica/atualiza em /v4/sports?apiKey=... (mudam por
-// época). As chaves das ligas europeias abaixo foram confirmadas em 2026-07-22 contra
-// the-odds-api.com/sports-odds-data/soccer-odds.html (não testadas contra uma chave real — faz essa
-// verificação com GET /v4/sports?apiKey=... antes de confiar nelas às cegas na tua conta/plano).
-export const ODDS_API_SPORT_MAP: Record<string, string> = {
-  "Brasileirão": "soccer_brazil_campeonato",
-  "Liga MX": "soccer_mexico_ligamx",
-  "Liga Portugal": "soccer_portugal_primeira_liga",
-  "Premier League": "soccer_epl",
-  "La Liga": "soccer_spain_la_liga",
-  "Serie A": "soccer_italy_serie_a",
-  "Bundesliga": "soccer_germany_bundesliga",
-  "Ligue 1": "soccer_france_ligue_one",
-  "Champions League": "soccer_uefa_champs_league",
-  "Liga Europa": "soccer_uefa_europa_league",
-  // "soccer_uefa_champs_league_qualification" confirmado (duas fontes independentes) como key
-  // real e distinta da fase de grupos. NÃO existe key própria de qualificação para a Liga Europa
-  // nem para a Conference (confirmado por ausência: o dropdown oficial do widget builder só lista
-  // "soccer_uefa_europa_league" e "soccer_uefa_europa_conference_league", sem variante
-  // "_qualification" para nenhuma das duas) — por isso usam-se as keys da fase principal, na
-  // aposta de que a The-Odds-API agrupa a pré-eliminatória sob o mesmo sport_key do torneio
-  // (ao contrário da ESPN, que separa por slug — ver ESPN_LEAGUE_SLUG). Ainda assim não
-  // testado contra uma chave real; confirma com GET /v4/sports?apiKey=... antes de confiar às
-  // cegas. Se estiver errado, fetchOddsForLeague/fetchLiveOdds falham em segurança — o jogo
-  // continua a aparecer, só sem odds pré-carregadas.
-  "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
-  "Liga Europa (Qualificação)": "soccer_uefa_europa_league",
-  "Conference League (Qualificação)": "soccer_uefa_europa_conference_league"
-};
-// Verificado em 2026-07-22 contra a doc oficial (the-odds-api.com/sports-odds-data/bookmaker-apis.html):
-// a Betclic aparece com a key "betclic_fr" (secções FR e EU) — "betclic" sozinho não existe e nunca
-// devolvia nada. Betano e Blockbet NÃO constam em nenhuma região documentada (US/UK/EU/FR/SE/AU);
-// não há forma de as pedir a esta API, por isso nem são tentadas — ficam só como preenchimento
-// manual no comparador (ver "bb"/"bt" em main.ts). Se um dia passarem a ser cobertas, adiciona-as
-// aqui com a key confirmada (idealmente testada com uma chave real, não só a partir da doc).
-export const AUTO_BOOKMAKER_KEYS: Record<string, string> = { bc: "betclic_fr" };
-
-// ===== Scoreboard da ESPN (a mesma fonte da odd de referência) — API pública não-oficial, sem
-// chave. Confirmada em 2026-07-22 contra a documentação comunitária (github.com/pseudo-r/Public-
-// ESPN-API/blob/main/docs/sports/soccer.md): endpoint scoreboard?dates=YYYYMMDD, com
-// events[].competitions[].competitors[] (homeAway/team.displayName/score) e
-// events[].status.type.completed. Slugs de liga por época, não garantidos a longo prazo.
-export const ESPN_LEAGUE_SLUG: Record<string, string> = {
-  "Brasileirão": "bra.1",
-  "Liga MX": "mex.1",
-  "Liga Portugal": "por.1",
-  "Premier League": "eng.1",
-  "La Liga": "esp.1",
-  "Serie A": "ita.1",
-  "Bundesliga": "ger.1",
-  "Ligue 1": "fra.1",
-  "Champions League": "uefa.champions",
-  "Liga Europa": "uefa.europa",
-  // Confirmados ao vivo em 2026-07-22 (pedidos reais ao scoreboard, não só documentação) — ambos
-  // devolveram jogos reais da ronda de qualificação em curso nesta altura do ano (meados de
-  // julho a agosto).
-  "Champions League (Qualificação)": "uefa.champions_qual",
-  "Liga Europa (Qualificação)": "uefa.europa_qual",
-  // Confirmado ao vivo em 2026-07-23: a Champions League não teve nenhum jogo de qualificação
-  // agendado nesse dia (só a de Europa), mas a Conference teve — 40 jogos reais no mesmo pedido.
-  "Conference League (Qualificação)": "uefa.europa.conf_qual"
-};
-
-function normTeam(s: string | null | undefined): string {
-  return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
-}
 
 interface ApiOutcome { name: string; price: number; }
 interface ApiMarket { key: string; outcomes: ApiOutcome[]; }
@@ -82,10 +22,7 @@ interface ApiGame { home_team?: string; away_team?: string; bookmakers?: ApiBook
 
 function findApiGame(apiGames: ApiGame[] | undefined, g: Game): ApiGame | undefined {
   const nh = normTeam(g.h.n), na = normTeam(g.a.n);
-  return (apiGames || []).find(ag => {
-    const ah = normTeam(ag.home_team || ""), aa = normTeam(ag.away_team || "");
-    return !!ah && !!aa && (ah.includes(nh) || nh.includes(ah)) && (aa.includes(na) || na.includes(aa));
-  });
+  return (apiGames || []).find(ag => teamMatches(nh, normTeam(ag.home_team || "")) && teamMatches(na, normTeam(ag.away_team || "")));
 }
 
 export type FetchOddsResult =

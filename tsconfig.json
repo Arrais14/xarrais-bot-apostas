@@ -13,7 +13,8 @@
     "noEmit": true,
     "strict": true,
     "noUncheckedIndexedAccess": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "allowJs": true
   },
-  "include": ["src"]
+  "include": ["src", "shared"]
 }

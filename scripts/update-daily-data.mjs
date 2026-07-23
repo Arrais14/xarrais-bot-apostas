@@ -13,59 +13,16 @@
 //   schedule   : https://site.api.espn.com/apis/site/v2/sports/soccer/{liga}/teams/{id}/schedule
 //                -> competitions[0].competitors[].winner (bool) dá para derivar a forma recente
 //
-// Mantém sincronizado à mão com src/api.ts:ESPN_LEAGUE_SLUG / ODDS_API_SPORT_MAP / normTeam —
-// o script não importa TS diretamente para não complicar o workflow com um passo de compilação.
+// ESPN_LEAGUE_SLUG / ODDS_API_SPORT_MAP / TEAM_ALIASES / normTeam vêm de ../shared/leagues.mjs —
+// fonte única partilhada com src/api.ts, para as duas cópias nunca mais divergirem em silêncio.
 
 import { readFile, writeFile } from "node:fs/promises";
-
-const ESPN_LEAGUE_SLUG = {
-  "Brasileirão": "bra.1",
-  "Liga MX": "mex.1",
-  "Liga Portugal": "por.1",
-  "Premier League": "eng.1",
-  "La Liga": "esp.1",
-  "Serie A": "ita.1",
-  "Bundesliga": "ger.1",
-  "Ligue 1": "fra.1",
-  "Champions League": "uefa.champions",
-  "Liga Europa": "uefa.europa",
-  // Confirmados ao vivo em 2026-07-22 — ambos devolveram jogos reais da ronda de qualificação em
-  // curso nesta altura do ano (meados de julho a agosto).
-  "Champions League (Qualificação)": "uefa.champions_qual",
-  "Liga Europa (Qualificação)": "uefa.europa_qual",
-  // Confirmado ao vivo em 2026-07-23 — devolveu 40 jogos reais só para hoje (a Champions League não
-  // teve nenhum jogo de qualificação agendado nesse dia, só a Conference; ver src/api.ts).
-  "Conference League (Qualificação)": "uefa.europa.conf_qual"
-};
-
-const ODDS_API_SPORT_MAP = {
-  "Brasileirão": "soccer_brazil_campeonato",
-  "Liga MX": "soccer_mexico_ligamx",
-  "Liga Portugal": "soccer_portugal_primeira_liga",
-  "Premier League": "soccer_epl",
-  "La Liga": "soccer_spain_la_liga",
-  "Serie A": "soccer_italy_serie_a",
-  "Bundesliga": "soccer_germany_bundesliga",
-  "Ligue 1": "soccer_france_ligue_one",
-  "Champions League": "soccer_uefa_champs_league",
-  "Liga Europa": "soccer_uefa_europa_league",
-  // Só a Champions League tem key própria de qualificação confirmada; Europa/Conference não têm
-  // variante "_qualification" nenhuma — usam-se as keys da fase principal (ver comentário completo
-  // em src/api.ts:ODDS_API_SPORT_MAP). Se a key estiver errada, fetchOddsForLeague falha em
-  // segurança (liga sem odds, mas com jogos) — nunca impede o resto do script de correr.
-  "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
-  "Liga Europa (Qualificação)": "soccer_uefa_europa_league",
-  "Conference League (Qualificação)": "soccer_uefa_europa_conference_league"
-};
+import { ESPN_LEAGUE_SLUG, ODDS_API_SPORT_MAP, normTeam, teamMatches } from "../shared/leagues.mjs";
 
 const DAYS_AHEAD = 3;             // hoje + 3 dias, para cobrir efeitos de fuso horário
 const DAYS_BEHIND = 2;            // + ontem/anteontem, para a app poder mostrar histórico recente
                                    // (ver "ver jogos dos últimos 1-2 dias" e liquidação automática)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || "";
-
-function normTeam(s) {
-  return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
-}
 
 function ymd(d) {
   return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
@@ -151,26 +108,8 @@ async function fetchOddsForLeague(sportKey) {
   }
 }
 
-// ===== Aliases ESPN -> The-Odds-API (ambos os lados já normalizados por normTeam) =====
-// Para os pares em que o fuzzy (includes bidirecional) não chega, porque as duas fontes usam
-// nomes genuinamente diferentes para a mesma equipa. Alimentado a partir dos logs "[sem-match]"
-// abaixo — quando aparecer um, acrescenta aqui o par normalizado correspondente.
-const TEAM_ALIASES = {
-  // Brasileirão
-  "atleticomg": "atleticomineiro",
-  "athleticopr": "athleticoparanaense",
-  "americamg": "americamineiro",
-  // Liga MX
-  "atleticodesanluis": "atleticosanluis"
-};
-
-// Fuzzy de src/api.ts:findApiGame (includes bidirecional) + aliases para o resto.
-function teamMatches(espnNorm, apiNorm) {
-  if (!espnNorm || !apiNorm) return false;
-  if (espnNorm === apiNorm || espnNorm.includes(apiNorm) || apiNorm.includes(espnNorm)) return true;
-  const alias = TEAM_ALIASES[espnNorm];
-  return !!alias && (alias === apiNorm || alias.includes(apiNorm) || apiNorm.includes(alias));
-}
+// teamMatches (fuzzy + TEAM_ALIASES) vem de ../shared/leagues.mjs — mesma função usada por
+// src/api.ts:findApiGame, para os aliases nunca divergirem entre a app e o script diário.
 
 // Prioridade DraftKings -> Betclic: DraftKings mantém-se a casa "por omissão" (é a que a UI já
 // rotula por defeito); Betclic só entra quando a DraftKings ainda não tem linha para este jogo em
@@ -280,7 +219,7 @@ async function runLeague(lgName, oldOdds) {
 
 async function main() {
   const oldOdds = await loadOldOddsMap();
-  if (!ODDS_API_KEY) console.warn("[aviso] ODDS_API_KEY não definida — só se preenchem odds a partir do src/data.ts anterior (" + oldOdds.size + " jogo(s) com odds guardadas), nada novo é pedido à The-Odds-API.");
+  if (!ODDS_API_KEY) console.warn("[aviso] ODDS_API_KEY não definida — só se preenchem odds a partir do public/data.json anterior (" + oldOdds.size + " jogo(s) com odds guardadas), nada novo é pedido à The-Odds-API.");
 
   const allGames = [];
   const okLeagues = [];
