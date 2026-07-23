@@ -23,15 +23,19 @@ export const ODDS_API_SPORT_MAP: Record<string, string> = {
   "Ligue 1": "soccer_france_ligue_one",
   "Champions League": "soccer_uefa_champs_league",
   "Liga Europa": "soccer_uefa_europa_league",
-  // Chaves de qualificação NÃO confirmadas contra uma chave real (só encontradas via pesquisa —
-  // "soccer_uefa_champs_league_qualification" aparece no widget builder da própria The-Odds-API;
-  // a de Liga Europa é uma extrapolação do mesmo padrão de nomes, sem confirmação nenhuma). Se a
-  // key estiver errada, fetchOddsForLeague (script diário) e fetchLiveOdds (app) falham em
-  // segurança — o jogo continua a aparecer, só sem odds pré-carregadas. Confirma com
-  // GET /v4/sports?apiKey=... antes de confiar às cegas.
+  // "soccer_uefa_champs_league_qualification" confirmado (duas fontes independentes) como key
+  // real e distinta da fase de grupos. NÃO existe key própria de qualificação para a Liga Europa
+  // nem para a Conference (confirmado por ausência: o dropdown oficial do widget builder só lista
+  // "soccer_uefa_europa_league" e "soccer_uefa_europa_conference_league", sem variante
+  // "_qualification" para nenhuma das duas) — por isso usam-se as keys da fase principal, na
+  // aposta de que a The-Odds-API agrupa a pré-eliminatória sob o mesmo sport_key do torneio
+  // (ao contrário da ESPN, que separa por slug — ver ESPN_LEAGUE_SLUG). Ainda assim não
+  // testado contra uma chave real; confirma com GET /v4/sports?apiKey=... antes de confiar às
+  // cegas. Se estiver errado, fetchOddsForLeague/fetchLiveOdds falham em segurança — o jogo
+  // continua a aparecer, só sem odds pré-carregadas.
   "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
-  "Liga Europa (Qualificação)": "soccer_uefa_europa_league_qualification",
-  "Conference League (Qualificação)": "soccer_uefa_conference_league_qualification"
+  "Liga Europa (Qualificação)": "soccer_uefa_europa_league",
+  "Conference League (Qualificação)": "soccer_uefa_europa_conference_league"
 };
 // Verificado em 2026-07-22 contra a doc oficial (the-odds-api.com/sports-odds-data/bookmaker-apis.html):
 // a Betclic aparece com a key "betclic_fr" (secções FR e EU) — "betclic" sozinho não existe e nunca

@@ -46,12 +46,13 @@ const ODDS_API_SPORT_MAP = {
   "Ligue 1": "soccer_france_ligue_one",
   "Champions League": "soccer_uefa_champs_league",
   "Liga Europa": "soccer_uefa_europa_league",
-  // NÃO confirmadas contra uma chave real (só encontradas via pesquisa — ver comentário igual em
-  // src/api.ts:ODDS_API_SPORT_MAP). Se a key estiver errada, fetchOddsForLeague falha em segurança
-  // (liga sem odds, mas com jogos) — nunca impede o resto do script de correr.
+  // Só a Champions League tem key própria de qualificação confirmada; Europa/Conference não têm
+  // variante "_qualification" nenhuma — usam-se as keys da fase principal (ver comentário completo
+  // em src/api.ts:ODDS_API_SPORT_MAP). Se a key estiver errada, fetchOddsForLeague falha em
+  // segurança (liga sem odds, mas com jogos) — nunca impede o resto do script de correr.
   "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
-  "Liga Europa (Qualificação)": "soccer_uefa_europa_league_qualification",
-  "Conference League (Qualificação)": "soccer_uefa_conference_league_qualification"
+  "Liga Europa (Qualificação)": "soccer_uefa_europa_league",
+  "Conference League (Qualificação)": "soccer_uefa_europa_conference_league"
 };
 
 const DAYS_AHEAD = 3;             // hoje + 3 dias, para cobrir efeitos de fuso horário
