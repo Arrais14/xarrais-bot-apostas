@@ -2,7 +2,7 @@ import type { PreloadedData } from "./types";
 
 // ===== DADOS (atualizados automaticamente por scripts/update-daily-data.mjs via GitHub Actions) =====
 export const PRELOADED: PreloadedData = {
-  "fetchedAt": "2026-07-23T03:21:14.108Z",
+  "fetchedAt": "2026-07-23T03:29:30.190Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
@@ -117,7 +117,11 @@ export const PRELOADED: PreloadedData = {
         "r": "7-4-7",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.77,
+        "d": 3.55,
+        "a": 4.8
+      }
     },
     {
       "id": "401841151",
@@ -136,7 +140,11 @@ export const PRELOADED: PreloadedData = {
         "r": "4-6-8",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.51,
+        "d": 4.1,
+        "a": 6.5
+      }
     },
     {
       "id": "401841158",
@@ -193,7 +201,11 @@ export const PRELOADED: PreloadedData = {
         "r": "5-4-9",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 2,
+        "d": 3.35,
+        "a": 3.6
+      }
     },
     {
       "id": "401841159",
@@ -269,7 +281,11 @@ export const PRELOADED: PreloadedData = {
         "r": "9-5-5",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 2.55,
+        "d": 3.25,
+        "a": 2.65
+      }
     },
     {
       "id": "401841163",
@@ -402,7 +418,11 @@ export const PRELOADED: PreloadedData = {
         "r": "0-0-1",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.95,
+        "d": 3.75,
+        "a": 3.35
+      }
     },
     {
       "id": "401877031",
@@ -421,7 +441,11 @@ export const PRELOADED: PreloadedData = {
         "r": "0-0-1",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.43,
+        "d": 4.8,
+        "a": 6
+      }
     },
     {
       "id": "401877030",
@@ -478,7 +502,11 @@ export const PRELOADED: PreloadedData = {
         "r": "1-0-0",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 2.95,
+        "d": 3.75,
+        "a": 2.1
+      }
     },
     {
       "id": "401877028",
@@ -497,7 +525,11 @@ export const PRELOADED: PreloadedData = {
         "r": "0-0-1",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.57,
+        "d": 3.8,
+        "a": 5.5
+      }
     },
     {
       "id": "401891670",
