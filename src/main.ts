@@ -8,7 +8,7 @@ import * as api from "./api";
 import { LS } from "./storage";
 import { PRELOADED_FALLBACK } from "./data-fallback";
 import {
-  BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
+  BACKUP_STALE_DAYS, CARD_ODDS_REFRESH_MS, CLOSE_ODDS_CAPTURE_MS, CLOSE_ODDS_WINDOW_H, CLV_MIN_N,
   CMP_ODDS_REFRESH_MS, CMP_ODDS_TICK_MS, EV_MIN, EV_MIN_FRIENDLY, LINE_MOVEMENT_ALERT,
   MODEL_BLEND_W, MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, SETTLE_REMINDER_H, STAKE_CAP_FRAC,
   STOP_LOSS_DRAWDOWN_FRAC
@@ -57,6 +57,7 @@ const cardOddsFreshness = new Map<string, number>();
 const cmpOddsFreshness = new Map<string, number>();
 let cardOddsTimer: ReturnType<typeof setInterval> | null = null;
 let cmpOddsTimer: ReturnType<typeof setInterval> | null = null;
+let closeOddsTimer: ReturnType<typeof setInterval> | null = null;
 
 function freshLabel(ts: number | undefined): string {
   if (!ts) return "";
@@ -797,6 +798,41 @@ function startCardOddsTimer(): void {
   }, CARD_ODDS_REFRESH_MS);
 }
 
+// ===== Captura automática da odd de fecho (CLV) — corre independentemente da aba/jogo aberto,
+// porque as apostas a apanhar não têm relação nenhuma com o que está visível no ecrã neste momento.
+// Janela simétrica (± CLOSE_ODDS_WINDOW_H à volta do kickoff): antes disso o mercado ainda está a
+// mover-se (não seria "o fecho"); muito depois disso o mercado pré-jogo já pode ter sido suspenso/
+// removido, sem ganho em continuar a tentar. Corre para QUALQUER estado da aposta (pending/win/
+// loss/void) — o fecho aconteceu no kickoff, independentemente de quando a aposta acabou por ser
+// liquidada (com a liquidação automática de apostas reais, isso pode ser quase de imediato após o
+// jogo acabar, bem dentro desta janela). Nunca sobrepõe oddClose já preenchida (à mão ou por aqui).
+async function autoCaptureCloseOdds(): Promise<void> {
+  if (!LS.oddsApiKey) return;
+  const now = Date.now();
+  const windowMs = CLOSE_ODDS_WINDOW_H * 3600000;
+  const candidates = LS.bets.filter(b =>
+    !b.oddClose && b.lg && b.kickoff && b.homeTeam && b.awayTeam
+    && Math.abs(new Date(b.kickoff).getTime() - now) <= windowMs
+  );
+  if (!candidates.length) return;
+  let captured = 0;
+  for (const b of candidates) {
+    const odd = await api.fetchClosingOdd(b.lg as string, b.homeTeam as string, b.awayTeam as string, b.selKey);
+    if (odd) { storage.setOddClose(b.id, String(odd)); captured++; }
+  }
+  if (captured && curTab === "log") renderLog();
+}
+
+function stopCloseOddsTimer(): void {
+  if (closeOddsTimer) { clearInterval(closeOddsTimer); closeOddsTimer = null; }
+}
+function startCloseOddsTimer(): void {
+  stopCloseOddsTimer();
+  if (!LS.oddsApiKey) return;
+  void autoCaptureCloseOdds();   // primeira tentativa já, sem esperar pelo primeiro tick
+  closeOddsTimer = setInterval(() => void autoCaptureCloseOdds(), CLOSE_ODDS_CAPTURE_MS);
+}
+
 function toggle(id: string): void {
   const d = document.getElementById("d" + id);
   if (!d) return;
@@ -1322,6 +1358,7 @@ function bootstrapInner(): void {
   oddsApiKeyEl.onchange = () => {
     LS.oddsApiKey = oddsApiKeyEl.value.trim();
     if (curTab === "games") startCardOddsTimer();   // liga/desliga o refresco consoante a chave ficou definida ou não
+    startCloseOddsTimer();   // idem para a captura de odd de fecho — independente da aba, por isso sempre
   };
   aiProviderEl.onchange = () => { LS.aiProvider = aiProviderEl.value; aiCache.clear(); };
   aiKeyEl.onchange = () => { LS.aiKey = aiKeyEl.value.trim(); aiCache.clear(); };
@@ -1376,6 +1413,7 @@ function bootstrapInner(): void {
 
   updUnit(); updLogCount(); render();
   startCardOddsTimer();   // arranca já — o tab por defeito é "games"
+  startCloseOddsTimer();  // independente da aba — corre sempre que houver chave, ver switchTab
 }
 
 // Expostas no window porque o HTML gerado dinamicamente usa onclick="..." inline (mesma

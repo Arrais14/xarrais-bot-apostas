@@ -52,6 +52,11 @@ export const CMP_ODDS_REFRESH_MS = 60_000;        // idem, pedido real (Betclic)
                                                    // liga (cache de 55s, ver src/api.ts) entre todos os
                                                    // jogos dessa liga, não gasta 1 crédito por jogo
 
+// Captura automática da odd de fecho (CLV, ver api.fetchClosingOdd/main.autoCaptureCloseOdds) —
+// corre em segundo plano sempre que há Odds API key, independente da aba/jogo aberto. Barato:
+// reaproveita o mesmo cache por liga de 55s dos timers acima, nunca gasta um pedido só para isto.
+export const CLOSE_ODDS_CAPTURE_MS = 5 * 60_000;
+
 // ===== Casa de referência "sharp" para o no-vig (ver src/api.ts) =====
 // A Pinnacle normalmente exige o plano pago ("Business") da The-Odds-API; se a chave não tiver
 // acesso, a resposta simplesmente não traz este bookmaker e o modelo cai de volta para a odd

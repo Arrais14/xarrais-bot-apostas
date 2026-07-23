@@ -122,6 +122,36 @@ export async function fetchLiveOdds(g: Game): Promise<FetchOddsResult> {
   return { ok: true, odds: out };
 }
 
+// ===== Odd de fecho automática (CLV, ver main.autoCaptureCloseOdds) =====
+// Só cobre "1"/"X"/"2" (com prefixo "AUTO:" ou sem) — é a única leitura direta de preço que temos
+// (h2h outcomes); dupla hipótese/handicap/golos exigiriam recompor um preço a partir de vários
+// outcomes, o que já não é "a odd de fecho" no sentido estrito, e ficam de fora (o utilizador
+// continua a poder preencher esses à mão). Usa a Pinnacle (SHARP_BOOKMAKER_KEY) como referência de
+// fecho, não a casa onde a aposta foi realmente registada — é a convenção padrão da indústria para
+// medir CLV (o "closing line" mais eficiente do mercado), e a mesma fonte já pedida para o modelo,
+// por isso não gasta pedidos extra (reaproveita fetchLeagueOddsCached).
+export async function fetchClosingOdd(lg: string, homeName: string, awayName: string, selKey: string): Promise<number | null> {
+  const key = selKey.startsWith("AUTO:") ? selKey.slice(5) : selKey;
+  if (key !== "1" && key !== "X" && key !== "2") return null;
+  const apiKey = LS.oddsApiKey;
+  if (!apiKey) return null;
+  const sportKey = ODDS_API_SPORT_MAP[lg];
+  if (!sportKey) return null;
+  const league = await fetchLeagueOddsCached(sportKey, apiKey);
+  if (!league.ok) return null;
+  const nh = normTeam(homeName), na = normTeam(awayName);
+  const match = league.data.find(ag => teamMatches(nh, normTeam(ag.home_team || "")) && teamMatches(na, normTeam(ag.away_team || "")));
+  if (!match) return null;
+  const bk = (match.bookmakers || []).find(b => b.key === SHARP_BOOKMAKER_KEY);
+  const h2h = bk && (bk.markets || []).find(m => m.key === "h2h");
+  if (!h2h) return null;
+  const homeOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.home_team || ""));
+  const awayOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.away_team || ""));
+  const drawOc = h2h.outcomes.find(o => o.name === "Draw");
+  if (!homeOc || !awayOc || !drawOc) return null;
+  return key === "1" ? homeOc.price : key === "2" ? awayOc.price : drawOc.price;
+}
+
 // Interface síncrona: se já houver Pinnacle em cache devolve-a já; caso contrário dispara
 // fetchLiveOdds em segundo plano (que também alimenta o comparador de Betano/Betclic) e devolve
 // null nesta primeira chamada — o modelo cai para a odd de referência (DraftKings/ESPN)
