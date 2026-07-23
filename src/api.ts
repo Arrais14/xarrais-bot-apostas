@@ -181,31 +181,40 @@ export async function fetchFinalScoreRaw(lg: string, kickoffIso: string, homeNam
   if (hoursSinceKickoff < SETTLE_REMINDER_H) return { ok: false, reason: "cedo-demais" };
   const slug = ESPN_LEAGUE_SLUG[lg];
   if (!slug) return { ok: false, reason: "liga-nao-mapeada" };
-  const dateStr = new Date(kickoffMs).toISOString().slice(0, 10).replace(/-/g, "");
-  const url = "https://site.api.espn.com/apis/site/v2/sports/soccer/" + encodeURIComponent(slug) + "/scoreboard?dates=" + dateStr;
-  let data: EspnScoreboard;
-  try {
-    const r = await fetch(url);
-    if (!r.ok) return { ok: false, reason: "http-" + r.status };
-    data = await r.json();
-  } catch {
-    return { ok: false, reason: "erro-rede" };
-  }
-  const match = (data.events || []).find(ev => {
-    const comp = ev.competitions?.[0];
+  // O scoreboard da ESPN agrupa jogos pela data US Eastern, não UTC — um jogo às 00:30Z do dia N
+  // aparece no scoreboard do dia N-1 e "jogo-nao-encontrado" ficava permanente. Tentam-se até 3
+  // datas (dia UTC do kickoff, anterior, seguinte), parando na primeira que devolve o jogo.
+  const dayMs = 86400000;
+  let lastReason = "jogo-nao-encontrado";
+  for (const offset of [0, -1, 1]) {
+    const dateStr = new Date(kickoffMs + offset * dayMs).toISOString().slice(0, 10).replace(/-/g, "");
+    const url = "https://site.api.espn.com/apis/site/v2/sports/soccer/" + encodeURIComponent(slug) + "/scoreboard?dates=" + dateStr;
+    let data: EspnScoreboard;
+    try {
+      const r = await fetch(url);
+      if (!r.ok) { lastReason = "http-" + r.status; continue; }
+      data = await r.json();
+    } catch {
+      lastReason = "erro-rede";
+      continue;
+    }
+    const match = (data.events || []).find(ev => {
+      const comp = ev.competitions?.[0];
+      const home = comp?.competitors?.find(c => c.homeAway === "home");
+      const away = comp?.competitors?.find(c => c.homeAway === "away");
+      return !!home && !!away && normTeam(home.team?.displayName) === normTeam(homeName) && normTeam(away.team?.displayName) === normTeam(awayName);
+    });
+    if (!match) continue;
+    if (!match.status?.type?.completed) return { ok: false, reason: "ainda-a-decorrer" };
+    const comp = match.competitions?.[0];
     const home = comp?.competitors?.find(c => c.homeAway === "home");
     const away = comp?.competitors?.find(c => c.homeAway === "away");
-    return !!home && !!away && normTeam(home.team?.displayName) === normTeam(homeName) && normTeam(away.team?.displayName) === normTeam(awayName);
-  });
-  if (!match) return { ok: false, reason: "jogo-nao-encontrado" };
-  if (!match.status?.type?.completed) return { ok: false, reason: "ainda-a-decorrer" };
-  const comp = match.competitions?.[0];
-  const home = comp?.competitors?.find(c => c.homeAway === "home");
-  const away = comp?.competitors?.find(c => c.homeAway === "away");
-  const homeScore = home?.score != null ? parseInt(home.score, 10) : NaN;
-  const awayScore = away?.score != null ? parseInt(away.score, 10) : NaN;
-  if (isNaN(homeScore) || isNaN(awayScore)) return { ok: false, reason: "sem-resultado" };
-  return { ok: true, score: { home: homeScore, away: awayScore } };
+    const homeScore = home?.score != null ? parseInt(home.score, 10) : NaN;
+    const awayScore = away?.score != null ? parseInt(away.score, 10) : NaN;
+    if (isNaN(homeScore) || isNaN(awayScore)) return { ok: false, reason: "sem-resultado" };
+    return { ok: true, score: { home: homeScore, away: awayScore } };
+  }
+  return { ok: false, reason: lastReason };
 }
 
 export async function fetchFinalScore(g: Game): Promise<FetchScoreResult> {
