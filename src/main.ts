@@ -168,13 +168,15 @@ function resolveScoreForBet(b: Bet): FinalScore | null {
 // só existe como texto na label da aposta, não em campo estruturado. Chamada a cada render (ver
 // renderInner/renderLog) — idempotente, só toca em bets ainda "pending".
 function autoSettlePending(bets: Bet[]): void {
+  let settled = false;
   for (const b of bets) {
     if (b.status !== "pending") continue;
     const score = resolveScoreForBet(b);
     if (!score) continue;
     const suggestion = suggestOutcome(b.selKey, score);
-    if (suggestion) storage.settleBet(b.id, suggestion);
+    if (suggestion) { storage.settleBet(b.id, suggestion); settled = true; }
   }
+  if (settled) void autoSyncExternalIfEnabled();
 }
 
 // ===== Registo automático e não enviesado das sugestões do modelo =====
@@ -1241,7 +1243,7 @@ function logFromDerived(id: string): void {
 
 // ===== Wrappers de UI para as ações de persistência (storage.ts é puro; aqui decide-se o que
 // re-renderizar depois de cada uma, à semelhança do que o monólito fazia inline) =====
-function settleBetUI(id: string, status: BetStatus): void { storage.settleBet(id, status); renderLog(); }
+function settleBetUI(id: string, status: BetStatus): void { storage.settleBet(id, status); void autoSyncExternalIfEnabled(); renderLog(); }
 function deleteBetUI(id: string): void { storage.deleteBet(id); updLogCount(); renderLog(); }
 function setOddCloseUI(id: string, val: string): void { storage.setOddClose(id, val); renderLog(); }
 function exportJSONUI(): void { storage.exportJSON(ymd(new Date())); }
@@ -1253,8 +1255,20 @@ function exportCSVUI(): void { storage.exportCSV(ymd(new Date())); }
 function canSyncExternal(): boolean {
   return !!LS.mcpSyncTool && typeof window.cowork?.callMcpTool === "function";
 }
+function resolvedBetsForSync(): Bet[] {
+  return LS.bets.filter(b => (b.status === "win" || b.status === "loss") && !b.paper && !b.auto);
+}
+// Espelha o histórico automaticamente depois de QUALQUER liquidação (manual ou automática, ver
+// settleBetTracked) quando há uma ferramenta MCP configurada — sem isto, sincronizar dependia de
+// alguém se lembrar de clicar no botão manual, o que na prática significava nunca ficar realmente
+// espelhado. Silencioso de propósito (sem toast/erro visível): falha do mesmo jeito gracioso que
+// api.syncBetsToExternalSheet já garante, e o botão manual continua disponível para diagnosticar.
+async function autoSyncExternalIfEnabled(): Promise<void> {
+  if (!canSyncExternal()) return;
+  await api.syncBetsToExternalSheet(resolvedBetsForSync());
+}
 async function syncExternal(btn: HTMLButtonElement): Promise<void> {
-  const resolved = LS.bets.filter(b => (b.status === "win" || b.status === "loss") && !b.paper && !b.auto);
+  const resolved = resolvedBetsForSync();
   const orig = btn.innerHTML;
   btn.setAttribute("disabled", "true");
   btn.innerHTML = icon("refresh") + " A sincronizar…";
