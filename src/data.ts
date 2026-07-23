@@ -2,7 +2,7 @@ import type { PreloadedData } from "./types";
 
 // ===== DADOS (atualizados automaticamente por scripts/update-daily-data.mjs via GitHub Actions) =====
 export const PRELOADED: PreloadedData = {
-  "fetchedAt": "2026-07-23T03:29:30.190Z",
+  "fetchedAt": "2026-07-23T09:16:44.059Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
@@ -182,7 +182,11 @@ export const PRELOADED: PreloadedData = {
         "r": "1-6-12",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.42,
+        "d": 4.7,
+        "a": 6.5
+      }
     },
     {
       "id": "401841160",
@@ -224,7 +228,12 @@ export const PRELOADED: PreloadedData = {
         "r": "6-6-6",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.94,
+        "d": 3.15,
+        "a": 3.25,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401841167",
@@ -243,7 +252,12 @@ export const PRELOADED: PreloadedData = {
         "r": "7-4-7",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.64,
+        "d": 3.38,
+        "a": 4.3,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401841166",
@@ -262,7 +276,11 @@ export const PRELOADED: PreloadedData = {
         "r": "7-4-8",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.49,
+        "d": 4.1,
+        "a": 6
+      }
     },
     {
       "id": "401841165",
@@ -342,7 +360,12 @@ export const PRELOADED: PreloadedData = {
         "r": "7-4-7",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 2.03,
+        "d": 3.08,
+        "a": 3.1,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401877036",
@@ -421,7 +444,7 @@ export const PRELOADED: PreloadedData = {
       "o": {
         "h": 1.95,
         "d": 3.75,
-        "a": 3.35
+        "a": 3.45
       }
     },
     {
@@ -511,7 +534,7 @@ export const PRELOADED: PreloadedData = {
     {
       "id": "401877028",
       "lg": "Liga MX",
-      "d": "2026-07-27T01:00Z",
+      "d": "2026-07-27T01:06Z",
       "v": "Estadio Hidalgo",
       "h": {
         "n": "Pachuca",
