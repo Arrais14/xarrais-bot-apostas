@@ -133,11 +133,12 @@ async function fetchForm(slug, teamId) {
   }
 }
 
-// ===== The-Odds-API: h2h + totais (bookmaker DraftKings, mantém a legenda "DraftKings via ESPN") =====
+// ===== The-Odds-API: h2h + totais (DraftKings; Betclic incluída no mesmo pedido como fallback —
+// ver matchOdds — para jogos a alguns dias em que a DraftKings ainda não publicou linha) =====
 async function fetchOddsForLeague(sportKey) {
   if (!ODDS_API_KEY) return [];
   const url = "https://api.the-odds-api.com/v4/sports/" + encodeURIComponent(sportKey)
-    + "/odds/?apiKey=" + encodeURIComponent(ODDS_API_KEY) + "&regions=us,eu&markets=h2h,totals&oddsFormat=decimal&bookmakers=draftkings";
+    + "/odds/?apiKey=" + encodeURIComponent(ODDS_API_KEY) + "&regions=us,eu,fr&markets=h2h,totals&oddsFormat=decimal&bookmakers=draftkings,betclic_fr";
   try {
     return await fetchJson(url);
   } catch (e) {
@@ -146,11 +147,18 @@ async function fetchOddsForLeague(sportKey) {
   }
 }
 
+// Prioridade DraftKings -> Betclic: DraftKings mantém-se a casa "por omissão" (é a que a UI já
+// rotula por defeito); Betclic só entra quando a DraftKings ainda não tem linha para este jogo em
+// concreto — nesse caso out.src fica marcado para a UI anotar a fonte (ver marketSourceNote/oddsT
+// em main.ts). Nunca prefere Betclic quando a DraftKings já responde, mesmo que a Betclic também exista.
 function matchOdds(oddsGames, homeName, awayName) {
   const nh = normTeam(homeName), na = normTeam(awayName);
   const match = oddsGames.find(g => normTeam(g.home_team) === nh && normTeam(g.away_team) === na);
   if (!match) return null;
-  const bk = (match.bookmakers || []).find(b => b.key === "draftkings");
+  const bookmakers = match.bookmakers || [];
+  let bk = bookmakers.find(b => b.key === "draftkings");
+  let src = null;
+  if (!bk) { bk = bookmakers.find(b => b.key === "betclic_fr"); src = "betclic_fr"; }
   if (!bk) return null;
   const h2h = (bk.markets || []).find(m => m.key === "h2h");
   const totals = (bk.markets || []).find(m => m.key === "totals");
@@ -160,6 +168,7 @@ function matchOdds(oddsGames, homeName, awayName) {
   const dOc = h2h.outcomes.find(o => o.name === "Draw");
   if (!hOc || !aOc || !dOc) return null;
   const out = { h: hOc.price, d: dOc.price, a: aOc.price };
+  if (src) out.src = src;
   if (totals && totals.outcomes.length === 2) {
     const over = totals.outcomes.find(o => o.name === "Over");
     const under = totals.outcomes.find(o => o.name === "Under");

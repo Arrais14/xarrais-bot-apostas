@@ -13,7 +13,8 @@ export interface TeamInfo {
   s: string | null;       // melhor marcador
 }
 
-/** Odds de referência (DraftKings via ESPN) para um jogo. */
+/** Odds de referência para um jogo — normalmente DraftKings via ESPN; ver `src` quando vem de
+ * outra casa (fallback do script diário para quando a DraftKings ainda não tem linha). */
 export interface Odds {
   h: number;               // odd casa (1)
   d: number;               // odd empate (X)
@@ -25,6 +26,7 @@ export interface Odds {
   un?: number;              // odd "menos de" l golos
   sh?: string;              // handicap asiático casa, ex. "-0,5 @ 2.00"
   sa?: string;              // handicap asiático fora, ex. "+0,5 @ 1.69"
+  src?: string;             // key da casa de apostas quando não é a DraftKings (ex. "betclic_fr")
 }
 
 /** Forma como um jogo chega no feed diário (PRELOADED.games). */

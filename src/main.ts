@@ -62,9 +62,14 @@ function buildDecisionContext(): DecisionContext {
 function getSharp(g: Game): SharpQuote | null {
   return api.getSharpOdds(g);
 }
+// Nome amigável da casa de apostas por trás da odd de referência — normalmente DraftKings; ver
+// Odds.src (script diário) para quando a DraftKings não tinha linha e se caiu para a Betclic.
+function referenceBookLabel(g: Game): string {
+  return g.o?.src === "betclic_fr" ? "Betclic" : "DraftKings";
+}
 // Nota de transparência: de onde veio a probabilidade de mercado usada no no-vig deste jogo.
 function marketSourceNote(g: Game): string {
-  return getSharp(g) ? " · mercado: Pinnacle (sharp)" : " · mercado: DraftKings/ESPN (referência)";
+  return getSharp(g) ? " · mercado: Pinnacle (sharp)" : " · mercado: " + referenceBookLabel(g) + "/ESPN (referência)";
 }
 function getDecision(g: Game): ModelDecision {
   return quant.autoDecide(g, buildDecisionContext(), getSharp(g));
@@ -639,7 +644,7 @@ function renderInner(): void {
     ? ' <span style="color:#e0b080">' + icon("alert") + ' odds com ' + Math.floor(ageH) + 'h — podem estar desatualizadas; confirma antes de apostar</span>'
     : '';
   const loadedAtEl = document.getElementById("loadedAt");
-  if (loadedAtEl) loadedAtEl.innerHTML = "Dados de " + fetched.toLocaleString("pt-PT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " · atualização automática diária às 08:00 · odds DraftKings via ESPN" + ageWarn;
+  if (loadedAtEl) loadedAtEl.innerHTML = "Dados de " + fetched.toLocaleString("pt-PT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " · atualização automática diária às 08:00 · odds DraftKings (ou Betclic, quando a DraftKings ainda não tem linha) via ESPN" + ageWarn;
   let html = "";
   // Acima de 24h a idade dos dados merece mais destaque do que uma cor de texto — decisões
   // (e stakes) baseadas nisto ficam cada vez menos fiáveis quanto mais velhas as odds forem.
@@ -886,6 +891,7 @@ function detailHtml(g: Game): string {
       + rows.map(r => "<tr><td>" + esc(r[0]) + "</td><td><b>" + fmt2(r[1]) + "</b></td><td>" + pct(r[1] ? 1 / r[1] : null) + "</td><td>" + pct(r[2]) + "</td><td>" + (r[2] ? fmt2(1 / r[2]) : "—") + "</td><td>" + fmt2(r[3] ?? null) + "</td></tr>").join("")
       + "</table>";
     const extra: string[] = [];
+    if (o.src === "betclic_fr") extra.push("Casa: Betclic (a DraftKings ainda não tinha linha para este jogo)");
     if (o.l != null) extra.push("Total " + o.l + ": Mais " + fmt2(o.ov) + " / Menos " + fmt2(o.un));
     if (o.sh) extra.push("Handicap casa " + esc(o.sh) + " · fora " + esc(o.sa || ""));
     if (nv) extra.push("Margem do bookmaker: " + (100 * nv.margin).toFixed(1) + "%");
