@@ -2,7 +2,7 @@ import type { PreloadedData } from "./types";
 
 // ===== DADOS (atualizados automaticamente por scripts/update-daily-data.mjs via GitHub Actions) =====
 export const PRELOADED: PreloadedData = {
-  "fetchedAt": "2026-07-22T18:16:32.924Z",
+  "fetchedAt": "2026-07-23T03:00:11.727Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação).",
   "games": [
     {
@@ -32,13 +32,13 @@ export const PRELOADED: PreloadedData = {
       "h": {
         "n": "Coritiba",
         "f": "WLDWL",
-        "r": "7-5-6",
+        "r": "7-5-7",
         "s": null
       },
       "a": {
         "n": "Palmeiras",
         "f": "LWWWD",
-        "r": "12-5-1",
+        "r": "13-5-1",
         "s": null
       },
       "o": null
@@ -51,13 +51,13 @@ export const PRELOADED: PreloadedData = {
       "h": {
         "n": "Chapecoense",
         "f": "DLDDW",
-        "r": "1-6-11",
+        "r": "1-6-12",
         "s": null
       },
       "a": {
         "n": "Flamengo",
         "f": "WWWDL",
-        "r": "10-4-3",
+        "r": "11-4-3",
         "s": null
       },
       "o": null
@@ -70,13 +70,13 @@ export const PRELOADED: PreloadedData = {
       "h": {
         "n": "Internacional",
         "f": "LDLDL",
-        "r": "5-6-7",
+        "r": "5-6-8",
         "s": null
       },
       "a": {
         "n": "Cruzeiro",
         "f": "LDDLL",
-        "r": "6-6-6",
+        "r": "7-6-6",
         "s": null
       },
       "o": null
@@ -89,13 +89,13 @@ export const PRELOADED: PreloadedData = {
       "h": {
         "n": "São Paulo",
         "f": "WWWDW",
-        "r": "7-4-7",
+        "r": "7-4-8",
         "s": null
       },
       "a": {
         "n": "Athletico-PR",
         "f": "LDLWW",
-        "r": "9-3-6",
+        "r": "10-3-6",
         "s": null
       },
       "o": null
@@ -146,13 +146,13 @@ export const PRELOADED: PreloadedData = {
       "h": {
         "n": "Athletico-PR",
         "f": "LDLWW",
-        "r": "9-3-6",
+        "r": "10-3-6",
         "s": null
       },
       "a": {
         "n": "Internacional",
         "f": "LDLDL",
-        "r": "5-6-7",
+        "r": "5-6-8",
         "s": null
       },
       "o": null
@@ -171,7 +171,7 @@ export const PRELOADED: PreloadedData = {
       "a": {
         "n": "Chapecoense",
         "f": "DLDDW",
-        "r": "1-6-11",
+        "r": "1-6-12",
         "s": null
       },
       "o": null
@@ -191,6 +191,139 @@ export const PRELOADED: PreloadedData = {
         "n": "Mirassol",
         "f": "LDDDW",
         "r": "5-4-9",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841159",
+      "lg": "Brasileirão",
+      "d": "2026-07-26T19:00Z",
+      "v": "Arena Fonte Nova",
+      "h": {
+        "n": "Bahia",
+        "f": "WDWDW",
+        "r": "8-6-5",
+        "s": null
+      },
+      "a": {
+        "n": "Corinthians",
+        "f": "LDWWL",
+        "r": "6-6-6",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841167",
+      "lg": "Brasileirão",
+      "d": "2026-07-26T19:00Z",
+      "v": "Estadio Mineirão",
+      "h": {
+        "n": "Cruzeiro",
+        "f": "LDDLL",
+        "r": "7-6-6",
+        "s": null
+      },
+      "a": {
+        "n": "Botafogo",
+        "f": "LLLLW",
+        "r": "7-4-7",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841166",
+      "lg": "Brasileirão",
+      "d": "2026-07-26T21:30Z",
+      "v": "Estadio do Maracana",
+      "h": {
+        "n": "Flamengo",
+        "f": "WWWDL",
+        "r": "11-4-3",
+        "s": null
+      },
+      "a": {
+        "n": "São Paulo",
+        "f": "WWWDW",
+        "r": "7-4-8",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841165",
+      "lg": "Brasileirão",
+      "d": "2026-07-26T21:30Z",
+      "v": "Arena do Grêmio",
+      "h": {
+        "n": "Grêmio",
+        "f": "DWLWL",
+        "r": "5-6-8",
+        "s": null
+      },
+      "a": {
+        "n": "Fluminense",
+        "f": "WLWDW",
+        "r": "9-5-5",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841163",
+      "lg": "Brasileirão",
+      "d": "2026-07-26T21:30Z",
+      "v": "Estádio Municipal Cicero de Souza Marques",
+      "h": {
+        "n": "Red Bull Bragantino",
+        "f": "DDLWW",
+        "r": "9-3-7",
+        "s": null
+      },
+      "a": {
+        "n": "Coritiba",
+        "f": "WLDWL",
+        "r": "7-5-7",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841164",
+      "lg": "Brasileirão",
+      "d": "2026-07-26T22:30Z",
+      "v": "Allianz Parque",
+      "h": {
+        "n": "Palmeiras",
+        "f": "LWWWD",
+        "r": "13-5-1",
+        "s": null
+      },
+      "a": {
+        "n": "Atlético-MG",
+        "f": "WLDLD",
+        "r": "7-4-8",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841162",
+      "lg": "Brasileirão",
+      "d": "2026-07-26T22:30Z",
+      "v": "Mangueirão",
+      "h": {
+        "n": "Remo",
+        "f": "LDDDL",
+        "r": "4-6-8",
+        "s": null
+      },
+      "a": {
+        "n": "Vitória",
+        "f": "WDLLW",
+        "r": "7-4-7",
         "s": null
       },
       "o": null
@@ -322,6 +455,44 @@ export const PRELOADED: PreloadedData = {
       },
       "a": {
         "n": "Atlético de San Luis",
+        "f": "L",
+        "r": "0-0-1",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401877029",
+      "lg": "Liga MX",
+      "d": "2026-07-26T23:00Z",
+      "v": "Estadio Victoria",
+      "h": {
+        "n": "Necaxa",
+        "f": "W",
+        "r": "1-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "Monterrey",
+        "f": "W",
+        "r": "1-0-0",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401877028",
+      "lg": "Liga MX",
+      "d": "2026-07-27T01:00Z",
+      "v": "Estadio Hidalgo",
+      "h": {
+        "n": "Pachuca",
+        "f": "W",
+        "r": "1-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "Querétaro",
         "f": "L",
         "r": "0-0-1",
         "s": null
@@ -544,13 +715,13 @@ export const PRELOADED: PreloadedData = {
       "v": "GSP Stadium",
       "h": {
         "n": "Omonia Nicosia",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Kairat Almaty",
-        "f": "WW",
+        "f": "LWW",
         "r": "0-0-0",
         "s": null
       },
@@ -563,13 +734,13 @@ export const PRELOADED: PreloadedData = {
       "v": "Georgi Asparuhov Stadium",
       "h": {
         "n": "Levski Sofia",
-        "f": "WD",
+        "f": "WWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "CSU Craiova",
-        "f": "WW",
+        "f": "LWW",
         "r": "0-0-0",
         "s": null
       },
@@ -582,13 +753,13 @@ export const PRELOADED: PreloadedData = {
       "v": "Arena Egnatia",
       "h": {
         "n": "Egnatia",
-        "f": "WD",
+        "f": "DWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "NK Celje",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
