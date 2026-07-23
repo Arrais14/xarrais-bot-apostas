@@ -82,13 +82,20 @@ function pendingBetsFor(gameId: string): Bet[] {
 }
 
 // Sugestão de Ganhou/Perdeu a partir do resultado final — só para os mercados que dão para
-// inferir com confiança direta do placar (1/X/2, dupla hipótese). Handicaps e golos (HH/HA/D:GOV/
-// D:GUN/D:GHH/D:GHA) têm a linha só como texto na label da aposta, não em campo estruturado —
-// para esses devolve-se null e o utilizador confirma manualmente, para não arriscar uma leitura
-// errada da linha corromper o P&L (ver Ponto 4 do pedido: nunca liquidar sem confirmação).
+// inferir com confiança direta do placar (1/X/2, dupla hipótese); esses liquidam-se sozinhos (ver
+// autoSettlePending). Handicaps e golos (HH/HA/D:GOV/D:GUN/D:GHH/D:GHA) têm a linha só como texto
+// na label da aposta, não em campo estruturado — para esses devolve-se null e o utilizador continua
+// a confirmar manualmente (botões Ganhou/Perdeu/Anulada), para não arriscar uma leitura errada da
+// linha corromper o P&L.
 function suggestOutcome(selKey: string, score: FinalScore): "win" | "loss" | null {
   const homeWin = score.home > score.away, draw = score.home === score.away, awayWin = score.away > score.home;
-  const key = selKey.startsWith("D:") ? selKey.slice(2) : selKey;
+  // Despe qualquer prefixo de proveniência (REJ:/AUTO:D:/AUTO:/D:, ver autoRegisterIfEnabled/
+  // trackRejectedIfEnabled/logFromDerived) para chegar à chave de mercado nua (1/X/2/1X/12/X2).
+  let key = selKey;
+  if (key.startsWith("REJ:")) key = key.slice(4);
+  else if (key.startsWith("AUTO:D:")) key = key.slice(7);
+  else if (key.startsWith("AUTO:")) key = key.slice(5);
+  else if (key.startsWith("D:")) key = key.slice(2);
   switch (key) {
     case "1": return homeWin ? "win" : "loss";
     case "X": return draw ? "win" : "loss";
@@ -100,26 +107,18 @@ function suggestOutcome(selKey: string, score: FinalScore): "win" | "loss" | nul
   }
 }
 
+// Só chega a mostrar-se para apostas que autoSettlePending não conseguiu liquidar sozinho (linhas
+// de handicap/golos, onde suggestOutcome não infere o resultado com confiança a partir do placar) —
+// 1X2/dupla-hipótese já vêm liquidados antes de qualquer card/detalhe ser construído (ver renderInner/renderLog).
 function finalScoreBox(g: Game): string {
   const pending = pendingBetsFor(g.id);
   if (!pending.length) return "";
   const score = api.getFinalScore(g);
   if (!score) return "";
-  const lines = pending.map(b => {
-    const suggestion = suggestOutcome(b.selKey, score);
-    if (suggestion) {
-      const lbl = suggestion === "win" ? "Ganhou" : "Perdeu";
-      return '<div class="kv" style="margin-top:6px">' + esc(b.sel) + " — sugestão: <b>" + lbl + "</b> "
-        + '<button class="logbtn" onclick="confirmSettle(\'' + b.id + '\',\'' + suggestion + '\',\'' + g.id + '\')">' + icon("check") + ' Confirmar resultado e liquidar</button></div>';
-    }
-    return '<div class="kv" style="margin-top:6px">' + esc(b.sel) + ' — linha específica (handicap/golos): confirma manualmente na aba "Os meus resultados".</div>';
-  }).join("");
+  const lines = pending.map(b =>
+    '<div class="kv" style="margin-top:6px">' + esc(b.sel) + ' — linha específica (handicap/golos): confirma manualmente na aba "Os meus resultados".</div>'
+  ).join("");
   return '<div class="banner">' + icon("check") + ' Resultado final: <b>' + esc(g.h.n) + " " + score.home + "-" + score.away + " " + esc(g.a.n) + '</b> (ESPN)' + lines + '</div>';
-}
-
-function confirmSettle(betId: string, status: string, gameId: string): void {
-  storage.settleBet(betId, status as BetStatus);
-  refreshDetail(gameId);
 }
 
 // Resolve o resultado de uma aposta pendente independentemente de o Game original ainda estar em
@@ -134,21 +133,18 @@ function resolveScoreForBet(b: Bet): FinalScore | null {
   return g ? api.getFinalScore(g) : null;
 }
 
-// Confirmação a partir da tabela de "Os meus resultados" (não do detalhe do jogo) — torna a
-// sugestão de liquidação alcançável mesmo para apostas cujo jogo já saiu de `games` há dias.
-function confirmSettleLog(betId: string, status: string): void {
-  storage.settleBet(betId, status as BetStatus);
-  renderLog();
-}
-
-// ===== Liquidação automática das "não-apostas" (Bet.rejected) — sem clique, ao contrário das
-// apostas reais: não há dinheiro em risco, por isso não faz sentido exigir confirmação manual. =====
-function autoSettleRejected(bets: Bet[]): void {
+// ===== Liquidação automática de TODAS as apostas pendentes (reais, automáticas e "não-apostas") —
+// sem clique. O resultado (Ganhou/Perdeu) é lido diretamente do placar final (ESPN) sempre que o
+// mercado permite uma leitura sem ambiguidade (1X2/dupla hipótese, ver suggestOutcome); handicaps e
+// golos continuam a exigir confirmação manual (Ganhou/Perdeu/Anulada na tabela), porque a linha exata
+// só existe como texto na label da aposta, não em campo estruturado. Chamada a cada render (ver
+// renderInner/renderLog) — idempotente, só toca em bets ainda "pending".
+function autoSettlePending(bets: Bet[]): void {
   for (const b of bets) {
-    if (!b.rejected || b.status !== "pending") continue;
+    if (b.status !== "pending") continue;
     const score = resolveScoreForBet(b);
     if (!score) continue;
-    const suggestion = suggestOutcome(b.selKey.slice(4), score);   // "REJ:1" -> "1"
+    const suggestion = suggestOutcome(b.selKey, score);
     if (suggestion) storage.settleBet(b.id, suggestion);
   }
 }
@@ -449,7 +445,7 @@ function renderLog(): void {
   const clv = storage.avgCLV(allBets);
   const gate = quant.clvGate(allBets);
 
-  autoSettleRejected(allBets);
+  autoSettlePending(allBets);
 
   // Backup automático: se já lá vão BACKUP_STALE_DAYS dias sem exportar, faz-se sozinho e avisa.
   let autoBackupMsg = "";
@@ -554,16 +550,6 @@ function renderLog(): void {
     const stat = b.status;
     const bClv = (num(b.oddClose) > 0) ? (num(b.odd) / num(b.oddClose) - 1) : null;
     const rowClasses = [b.paper ? "paper-row" : "", b.auto ? "auto-row" : "", b.rejected ? "rejected-row" : ""].filter(Boolean).join(" ");
-    let settleSuggestion = "";
-    if (stat === "pending" && !b.rejected) {
-      const score = resolveScoreForBet(b);
-      const suggestion = score ? suggestOutcome(b.selKey, score) : null;
-      if (suggestion) {
-        const lbl = suggestion === "win" ? "Ganhou" : "Perdeu";
-        settleSuggestion = '<div class="kv" style="margin-top:4px">ESPN: ' + score!.home + "-" + score!.away + " — sugestão: <b>" + lbl + "</b> "
-          + '<button class="logbtn" onclick="confirmSettleLog(\'' + b.id + '\',\'' + suggestion + '\')">' + icon("check") + ' Confirmar</button></div>';
-      }
-    }
     html += '<tr' + (rowClasses ? ' class="' + rowClasses + '"' : '') + '>'
       + '<td>' + d + '</td>'
       + '<td><b>' + esc(b.sel) + '</b>' + (b.paper ? ' <span class="pill pend">📝 papel</span>' : '') + (b.auto ? ' <span class="pill pend">🤖 auto</span>' : '') + (b.rejected ? ' <span class="pill pend">🚫 não-aposta</span>' : '') + '<br><span class="kv">' + esc(b.game) + '</span></td>'
@@ -573,7 +559,6 @@ function renderLog(): void {
       + '<button type="button" class="pill win ' + (stat === "win" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'win\')" aria-label="Marcar aposta como ganha">Ganhou</button>'
       + '<button type="button" class="pill loss ' + (stat === "loss" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'loss\')" aria-label="Marcar aposta como perdida">Perdeu</button>'
       + '<button type="button" class="pill void ' + (stat === "void" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'void\')" aria-label="Marcar aposta como anulada">Anulada</button>'
-      + settleSuggestion
       + '</div></td>'
       + '<td class="num"><input type="number" step="0.01" min="1" value="' + (b.oddClose ? b.oddClose : "") + '" style="width:64px;padding:4px;border:1px solid var(--line);border-radius:6px;background:#1d2129;color:var(--ink);font-size:11px;text-align:right" onchange="setOddClose(\'' + b.id + '\', this.value)" aria-label="Odd de fecho"></td>'
       + '<td class="num" style="' + (bClv != null ? ('color:' + (bClv >= 0 ? "#6dd18e" : "var(--bad)") + ';font-weight:700') : 'color:var(--muted)') + '">' + (bClv != null ? ((bClv >= 0 ? "+" : "") + (100 * bClv).toFixed(1) + "%") : "—") + '</td>'
@@ -638,6 +623,7 @@ function render(): void {
 }
 
 function renderInner(): void {
+  autoSettlePending(LS.bets);   // liquida sozinho o que já der para ler do placar, mesmo fora da aba "log"
   const curDEl = document.getElementById("curD");
   if (curDEl) curDEl.textContent = fmtDate(curDate);
   const key = ymd(curDate);
@@ -1366,7 +1352,7 @@ Object.assign(window, {
   logFromDecision, logFromDerived, copyPrompt, jumpTo,
   exportJSON: exportJSONUI, exportCSV: exportCSVUI, importJSON: importJSONUI,
   settleBet: settleBetUI, deleteBet: deleteBetUI, setOddClose: setOddCloseUI,
-  syncExternal, confirmSettle, confirmSettleLog
+  syncExternal
 });
 
 bootstrap();
