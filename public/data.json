@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-23T20:00:19.183Z",
+  "fetchedAt": "2026-07-23T09:16:44.059Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
@@ -179,7 +179,11 @@
         "r": "1-6-12",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.42,
+        "d": 4.7,
+        "a": 6.5
+      }
     },
     {
       "id": "401841160",
@@ -221,7 +225,12 @@
         "r": "6-6-6",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.94,
+        "d": 3.15,
+        "a": 3.25,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401841167",
@@ -240,7 +249,12 @@
         "r": "7-4-7",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.64,
+        "d": 3.38,
+        "a": 4.3,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401841166",
@@ -259,7 +273,11 @@
         "r": "7-4-8",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.49,
+        "d": 4.1,
+        "a": 6
+      }
     },
     {
       "id": "401841165",
@@ -339,7 +357,12 @@
         "r": "7-4-7",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 2.03,
+        "d": 3.08,
+        "a": 3.1,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401877036",
@@ -418,7 +441,7 @@
       "o": {
         "h": 1.95,
         "d": 3.75,
-        "a": 3.35
+        "a": 3.45
       }
     },
     {
@@ -801,13 +824,13 @@
       "v": "Tofiq Bahramov Republican Stadium",
       "h": {
         "n": "FK Qarabag",
-        "f": "DWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "CSKA Sofia",
-        "f": "DWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -820,13 +843,13 @@
       "v": "Arena Lublin",
       "h": {
         "n": "Dynamo Kyiv",
-        "f": "LDD",
+        "f": "DD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
-        "n": "PAOK",
-        "f": "W",
+        "n": "PAOK Salonika",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -839,13 +862,13 @@
       "v": "Tele2 Arena",
       "h": {
         "n": "Hammarby IF",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Anderlecht",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -858,13 +881,13 @@
       "v": "Sheriff Stadium",
       "h": {
         "n": "Sheriff Tiraspol",
-        "f": "LWD",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Maccabi Tel-Aviv",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -877,13 +900,13 @@
       "v": "Romssa Arena",
       "h": {
         "n": "Tromso",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Hradec Králové",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -902,7 +925,7 @@
       },
       "a": {
         "n": "FC Midtjylland",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -934,13 +957,13 @@
       "v": "Kybunpark",
       "h": {
         "n": "St. Gallen",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Benfica",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1142,13 +1165,13 @@
       "v": "Stadiumi Fadil Vokrri",
       "h": {
         "n": "KF Malisheva",
-        "f": "WWL",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Hibernian",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1161,13 +1184,13 @@
       "v": "FFA Academy Stadium",
       "h": {
         "n": "Alashkert FC",
-        "f": "DDD",
+        "f": "DD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "CFR Cluj-Napoca",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1179,13 +1202,13 @@
       "d": "2026-07-23T15:00Z",
       "h": {
         "n": "FK Liepaja",
-        "f": "LWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Austria Vienna",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1197,13 +1220,13 @@
       "d": "2026-07-23T15:30Z",
       "h": {
         "n": "Panevezys",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Tobol Kostanay",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1216,13 +1239,13 @@
       "v": "Nagyerdei Stadium",
       "h": {
         "n": "Debrecen",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Pyunik",
-        "f": "LWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1235,13 +1258,13 @@
       "v": "Tengiz Burjanadze Stadium",
       "h": {
         "n": "Dila Gori",
-        "f": "LLW",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Apollon Limassol",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1254,13 +1277,13 @@
       "v": "A. Le Coq Arena",
       "h": {
         "n": "Flora",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "The New Saints",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1273,13 +1296,13 @@
       "v": "Bolt Arena",
       "h": {
         "n": "HJK Helsinki",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Coleraine",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1292,13 +1315,13 @@
       "v": "Pärnu Rannastaadion",
       "h": {
         "n": "Paide Linnameeskond",
-        "f": "WWD",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Zira FK",
-        "f": "LWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1311,13 +1334,13 @@
       "v": "AEK Arena",
       "h": {
         "n": "AEK Larnaca",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Beitar Jerusalem",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1330,13 +1353,13 @@
       "v": "MOL Aréna",
       "h": {
         "n": "Dunajska Streda",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Velez Mostar",
-        "f": "LWD",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
@@ -1349,13 +1372,13 @@
       "v": "Miejski Stadion Pilkarski Raków",
       "h": {
         "n": "Raków Czestochowa",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Valletta",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1368,13 +1391,13 @@
       "v": "LNK Sports Park",
       "h": {
         "n": "Rigas Futbola Skola",
-        "f": "WWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Vestri",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1387,13 +1410,13 @@
       "v": "Mehdi Huseynzade Stadium",
       "h": {
         "n": "BATE Borisov",
-        "f": "DDD",
+        "f": "DD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Sion",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1406,13 +1429,13 @@
       "v": "Mikheil Meskhi Stadioni",
       "h": {
         "n": "Dinamo Tbilisi",
-        "f": "WDW",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Zalgiris Vilnius",
-        "f": "LWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1425,13 +1448,13 @@
       "v": "Gamla Ullevi",
       "h": {
         "n": "GAIS",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Nordsjælland",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1444,13 +1467,13 @@
       "v": "Mezokovesdi Varosi Stadion",
       "h": {
         "n": "ML Vitebsk",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FK Sutjeska",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1463,13 +1486,13 @@
       "v": "Estadi Nacional d'Andorra",
       "h": {
         "n": "Santa Coloma",
-        "f": "LWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Rapid Vienna",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1482,13 +1505,13 @@
       "v": "Arena Sepsi OSK",
       "h": {
         "n": "Universitatea Cluj",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "SK Brann",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1501,13 +1524,13 @@
       "v": "Stadionul Zimbru",
       "h": {
         "n": "Zimbru Chisinau",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Noah",
-        "f": "D",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1520,13 +1543,13 @@
       "v": "Rheinpark Stadion",
       "h": {
         "n": "FC Vaduz",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Atlètic Club d'Escaldes",
-        "f": "LWW",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1576,7 +1599,7 @@
       "d": "2026-07-23T18:00Z",
       "h": {
         "n": "Paksi SE",
-        "f": "L",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1638,7 +1661,7 @@
       },
       "a": {
         "n": "Ajax Amsterdam",
-        "f": "W",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1760,7 +1783,7 @@
       "id": "401892166",
       "lg": "Conference League (Qualificação)",
       "d": "2026-07-23T18:45Z",
-      "v": "Stadion Stozice",
+      "v": "SRC Bonifika",
       "h": {
         "n": "NK Bravo",
         "f": "",
