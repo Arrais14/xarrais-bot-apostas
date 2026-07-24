@@ -17,7 +17,7 @@
 // fonte única partilhada com src/api.ts, para as duas cópias nunca mais divergirem em silêncio.
 
 import { readFile, writeFile } from "node:fs/promises";
-import { ESPN_LEAGUE_SLUG, ODDS_API_SPORT_MAP, normTeam, teamMatches } from "../shared/leagues.mjs";
+import { ESPN_LEAGUE_SLUG, ODDS_API_SPORT_MAP, REFERENCE_BOOKMAKER_PRIORITY, normTeam, teamMatches } from "../shared/leagues.mjs";
 
 const DAYS_AHEAD = 3;             // hoje + 3 dias, para cobrir efeitos de fuso horário
 const DAYS_BEHIND = 2;            // + ontem/anteontem, para a app poder mostrar histórico recente
@@ -94,15 +94,15 @@ async function fetchForm(slug, teamId) {
   }
 }
 
-// ===== The-Odds-API: h2h + totais (DraftKings; Betclic incluída no mesmo pedido como fallback —
-// ver matchOdds — para jogos a alguns dias em que a DraftKings ainda não publicou linha) =====
+// ===== The-Odds-API: h2h + totais (pede todas as casas de REFERENCE_BOOKMAKER_PRIORITY na mesma
+// chamada — ver matchOdds para a ordem em que são preferidas) =====
 // Devolve o status/corpo da resposta em caso de falha (em vez de só []) — sem isto não dava para
 // distinguir "liga sem cobertura nesta conta/plano" (401/403, sport_key inválido, etc.) de "a liga
 // simplesmente não tem jogos publicados agora" — os dois pareciam o mesmo "[] sem explicação".
 async function fetchOddsForLeague(sportKey) {
   if (!ODDS_API_KEY) return { ok: false, status: null, body: "ODDS_API_KEY não definida" };
   const url = "https://api.the-odds-api.com/v4/sports/" + encodeURIComponent(sportKey)
-    + "/odds/?apiKey=" + encodeURIComponent(ODDS_API_KEY) + "&regions=us,eu,fr&markets=h2h,totals&oddsFormat=decimal&bookmakers=draftkings,betclic_fr";
+    + "/odds/?apiKey=" + encodeURIComponent(ODDS_API_KEY) + "&regions=us,eu,uk,fr&markets=h2h,totals&oddsFormat=decimal&bookmakers=" + REFERENCE_BOOKMAKER_PRIORITY.join(",");
   let bodyText;
   try {
     const r = await fetch(url);
@@ -147,61 +147,43 @@ function closestCandidates(oddsGames, nh, na, n = 3) {
     .map(c => c.label + " (score " + c.score.toFixed(2) + ")");
 }
 
-// Prioridade DraftKings -> Betclic: DraftKings mantém-se a casa "por omissão" (é a que a UI já
-// rotula por defeito); Betclic só entra quando a DraftKings ainda não tem linha para este jogo em
-// concreto — nesse caso out.src fica marcado para a UI anotar a fonte (ver marketSourceNote/oddsT
-// em main.ts). Nunca prefere Betclic quando a DraftKings já responde, mesmo que a Betclic também exista.
+// Prioridade REFERENCE_BOOKMAKER_PRIORITY (Betclic > Betano > DraftKings, ver shared/leagues.mjs):
+// casas europeias "soccer-first" primeiro (publicam linhas mais cedo e com mais profundidade nas
+// ligas já cobertas), DraftKings como último recurso — não porque seja pior, mas porque continua a
+// ser a mais estável historicamente. DraftKings mantém-se a casa "por omissão" da UI (sem etiqueta
+// de fonte); qualquer outra marca out.src (ver marketSourceNote/oddsT em main.ts). Percorre a lista
+// por ordem e usa a PRIMEIRA que tiver h2h completo — nunca a que calhar estar primeiro no array da
+// API, sempre a de maior prioridade que responda de facto.
 // Devolve um resultado com motivo explícito de falha (nunca só null) — ver Fase 1 do diagnóstico:
 // "sem-match-equipa" (nenhum jogo da API bate com este) vs "sem-bookmaker" (jogo encontrado, mas
-// nem draftkings nem betclic_fr têm h2h publicado ainda) são causas bem diferentes.
+// nenhuma casa da prioridade tem h2h publicado ainda) são causas bem diferentes.
 function matchOdds(oddsGames, homeName, awayName) {
   const nh = normTeam(homeName), na = normTeam(awayName);
   const match = oddsGames.find(g => teamMatches(nh, normTeam(g.home_team)) && teamMatches(na, normTeam(g.away_team)));
   if (!match) return { ok: false, reason: "sem-match-equipa" };
   const bookmakers = match.bookmakers || [];
-  let bk = bookmakers.find(b => b.key === "draftkings");
-  let src = null;
-  if (!bk) { bk = bookmakers.find(b => b.key === "betclic_fr"); src = "betclic_fr"; }
-  if (!bk) return { ok: false, reason: "sem-bookmaker" };
-  const h2h = (bk.markets || []).find(m => m.key === "h2h");
-  const totals = (bk.markets || []).find(m => m.key === "totals");
-  if (!h2h) return { ok: false, reason: "sem-bookmaker" };
-  // Os outcomes h2h usam os nomes PRÓPRIOS da The-Odds-API (home_team/away_team verbatim), não os
-  // da ESPN — comparar com o match, nunca com nh/na, senão o alias/fuzzy de cima seria desfeito aqui.
-  const hOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.home_team));
-  const aOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.away_team));
-  const dOc = h2h.outcomes.find(o => o.name === "Draw");
-  if (!hOc || !aOc || !dOc) return { ok: false, reason: "sem-bookmaker" };
-  const out = { h: hOc.price, d: dOc.price, a: aOc.price };
-  if (src) out.src = src;
-  if (totals && totals.outcomes.length === 2) {
-    const over = totals.outcomes.find(o => o.name === "Over");
-    const under = totals.outcomes.find(o => o.name === "Under");
-    if (over && under) { out.l = over.point; out.ov = over.price; out.un = under.price; }
+  for (const bkKey of REFERENCE_BOOKMAKER_PRIORITY) {
+    const bk = bookmakers.find(b => b.key === bkKey);
+    if (!bk) continue;
+    const h2h = (bk.markets || []).find(m => m.key === "h2h");
+    if (!h2h) continue;
+    // Os outcomes h2h usam os nomes PRÓPRIOS da The-Odds-API (home_team/away_team verbatim), não os
+    // da ESPN — comparar com o match, nunca com nh/na, senão o alias/fuzzy de cima seria desfeito aqui.
+    const hOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.home_team));
+    const aOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.away_team));
+    const dOc = h2h.outcomes.find(o => o.name === "Draw");
+    if (!hOc || !aOc || !dOc) continue;
+    const out = { h: hOc.price, d: dOc.price, a: aOc.price };
+    if (bkKey !== "draftkings") out.src = bkKey;
+    const totals = (bk.markets || []).find(m => m.key === "totals");
+    if (totals && totals.outcomes.length === 2) {
+      const over = totals.outcomes.find(o => o.name === "Over");
+      const under = totals.outcomes.find(o => o.name === "Under");
+      if (over && under) { out.l = over.point; out.ov = over.price; out.un = under.price; }
+    }
+    return { ok: true, odds: out };
   }
-  return { ok: true, odds: out };
-}
-
-// ===== DIAGNÓSTICO TEMPORÁRIO (Fase 1 do pedido) — remover depois de confirmar as keys reais =====
-// Pedido SEM filtro de bookmakers (nem "bookmakers=" no URL) e com regions=eu,uk,fr — para ver TODAS
-// as casas que a conta/plano atual realmente devolve para Brasileirão/Liga MX, sem assumir nomes de
-// key à partida (Betano pode não se chamar "betano"). Só corre para estas 2 ligas, custa 2 pedidos
-// extra a esta execução.
-async function diagnoseBookmakers(lgName, sportKey) {
-  if (!ODDS_API_KEY) return;
-  const url = "https://api.the-odds-api.com/v4/sports/" + encodeURIComponent(sportKey)
-    + "/odds/?apiKey=" + encodeURIComponent(ODDS_API_KEY) + "&regions=eu,uk,fr&markets=h2h&oddsFormat=decimal";
-  try {
-    const r = await fetch(url);
-    const bodyText = await r.text();
-    if (!r.ok) { console.log("  [diagnostico-bookmakers] " + lgName + ": HTTP " + r.status + " " + bodyText.slice(0, 200)); return; }
-    const data = JSON.parse(bodyText);
-    const keys = new Set();
-    for (const g of data) for (const bk of g.bookmakers || []) keys.add(bk.key);
-    console.log("  [diagnostico-bookmakers] " + lgName + " (regions=eu,uk,fr, sem filtro): " + data.length + " jogo(s), bookmaker.key distintos: " + (keys.size ? [...keys].sort().join(", ") : "nenhum"));
-  } catch (e) {
-    console.log("  [diagnostico-bookmakers] " + lgName + ": erro — " + e.message);
-  }
+  return { ok: false, reason: "sem-bookmaker" };
 }
 
 function recordStr(rec) {
@@ -236,8 +218,8 @@ async function loadOldOddsMap() {
 //    match" com "candidatos: nenhum na resposta" sempre, sem dizer que a causa é estrutural.
 //  - semMatchEquipa: a liga respondeu com jogos mas nenhum bate com este (nome diferente OU o jogo
 //    já começou e saiu do feed pré-jogo da API, ver candidatos logados para distinguir os dois).
-//  - semBookmaker: jogo encontrado, mas nem draftkings nem betclic_fr têm h2h publicado ainda
-//    (caso legítimo, não uma falha).
+//  - semBookmaker: jogo encontrado, mas nenhuma casa de REFERENCE_BOOKMAKER_PRIORITY tem h2h
+//    publicado ainda (caso legítimo, não uma falha).
 // recuperadoAnterior conta, à parte, quantos desses foram tapados pelo fallback do
 // public/data.json anterior (ver loadOldOddsMap).
 async function runLeague(lgName, oldOdds) {
@@ -291,7 +273,7 @@ async function runLeague(lgName, oldOdds) {
             + " — candidatos mais próximos: " + (candidatos.length ? candidatos.join(" | ") : "nenhum na resposta"));
         } else {
           diag.semBookmaker++;
-          console.log("  [sem-bookmaker] " + homeC.team.displayName + " vs " + awayC.team.displayName + " — jogo encontrado, sem h2h draftkings/betclic_fr ainda (normal a alguns dias do jogo)");
+          console.log("  [sem-bookmaker] " + homeC.team.displayName + " vs " + awayC.team.displayName + " — jogo encontrado, sem h2h em nenhuma casa da prioridade ainda (normal a alguns dias do jogo)");
         }
       }
 
@@ -318,12 +300,6 @@ async function runLeague(lgName, oldOdds) {
 async function main() {
   const oldOdds = await loadOldOddsMap();
   if (!ODDS_API_KEY) console.warn("[aviso] ODDS_API_KEY não definida — só se preenchem odds a partir do public/data.json anterior (" + oldOdds.size + " jogo(s) com odds guardadas), nada novo é pedido à The-Odds-API.");
-
-  // DIAGNÓSTICO TEMPORÁRIO (Fase 1) — remover depois de confirmar as keys reais de Betano/bwin.
-  if (ODDS_API_KEY) {
-    await diagnoseBookmakers("Brasileirão", ODDS_API_SPORT_MAP["Brasileirão"]);
-    await diagnoseBookmakers("Liga MX", ODDS_API_SPORT_MAP["Liga MX"]);
-  }
 
   const allGames = [];
   const okLeagues = [];

@@ -95,9 +95,9 @@ async function fetchLeagueOddsCached(sportKey: string, apiKey: string): Promise<
   return p;
 }
 
-// Substitui a cópia manual da odd da Betclic no comparador (a única casa local confirmada nesta
-// API — ver AUTO_BOOKMAKER_KEYS). Se não houver chave, a liga não estiver mapeada, ou o jogo não
-// for encontrado na API, cai-se sempre para os campos manuais — nunca bloqueia o resto da app.
+// Substitui a cópia manual da odd da Betclic/Betano no comparador (casas confirmadas nesta API —
+// ver AUTO_BOOKMAKER_KEYS). Se não houver chave, a liga não estiver mapeada, ou o jogo não for
+// encontrado na API, cai-se sempre para os campos manuais — nunca bloqueia o resto da app.
 // De caminho, se a Pinnacle vier na resposta, guarda-se em sharpCache para o motor quantitativo
 // usar como referência "sharp".
 export async function fetchLiveOdds(g: Game): Promise<FetchOddsResult> {

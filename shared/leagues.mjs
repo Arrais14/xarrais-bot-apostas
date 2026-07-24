@@ -52,9 +52,21 @@ export const ODDS_API_SPORT_MAP = {
   "Conference League (Qualificação)": "soccer_uefa_europa_conference_league"
 };
 
-// ===== Casas de apostas confirmadas nesta API (the-odds-api.com/sports-odds-data/bookmaker-apis.html) =====
-// Betano e Blockbet NÃO constam em nenhuma região documentada — ficam só como preenchimento manual.
-export const AUTO_BOOKMAKER_KEYS = { bc: "betclic_fr" };
+// ===== Casas de apostas confirmadas nesta API =====
+// betclic_fr: doc oficial (the-odds-api.com/sports-odds-data/bookmaker-apis.html), 2026-07-22.
+// betano_uk: confirmado ao vivo em 2026-07-24 via diagnóstico sem filtro (regions=eu,uk,fr) contra
+// Brasileirão e Liga MX — a Betano aparece com esta key exata (não "betano" sozinho). "bwin" NÃO
+// apareceu em nenhuma das duas listas (nem lá está o Blockbet) — sem essa key confirmada, não entra
+// no fallback nenhum; fica só preenchimento manual no comparador, tal como Blockbet.
+export const AUTO_BOOKMAKER_KEYS = { bc: "betclic_fr", bt: "betano_uk" };
+
+// ===== Prioridade da odd de referência (g.o) quando há mais que uma casa disponível para o mesmo
+// jogo — ver matchOdds em scripts/update-daily-data.mjs. Betclic e Betano (casas europeias
+// "soccer-first") tendem a publicar linhas mais cedo e com mais profundidade que a DraftKings (US,
+// coberta aqui só por ser a mais estável historicamente); DraftKings fica como último recurso, não
+// como preferida. "bwin" ficaria a seguir à Betano se um dia aparecer confirmada numa destas ligas —
+// por agora não existe na resposta real (ver comentário de AUTO_BOOKMAKER_KEYS), não é incluída.
+export const REFERENCE_BOOKMAKER_PRIORITY = ["betclic_fr", "betano_uk", "draftkings"];
 
 // ===== Aliases ESPN -> The-Odds-API (ambos os lados já normalizados por normTeam) =====
 // Para os pares em que o fuzzy (includes bidirecional, ver teamMatches/findApiGame) não chega,
