@@ -5,6 +5,7 @@
 import type { Bet, FinalScore, Game, SharpQuote } from "./types";
 import { SETTLE_REMINDER_H, SHARP_BOOKMAKER_KEY } from "./config";
 import { LS } from "./storage";
+import { stripSelKeyPrefix } from "./quant";
 // Fonte única partilhada com scripts/update-daily-data.mjs (tarefa diária, Node puro sem passo de
 // compilação) — ver shared/leagues.mjs para o porquê de ser .mjs e não .ts, e para o histórico de
 // confirmação de cada slug/sport_key. allowJs em tsconfig.json permite este import.
@@ -123,15 +124,16 @@ export async function fetchLiveOdds(g: Game): Promise<FetchOddsResult> {
 }
 
 // ===== Odd de fecho automática (CLV, ver main.autoCaptureCloseOdds) =====
-// Só cobre "1"/"X"/"2" (com prefixo "AUTO:" ou sem) — é a única leitura direta de preço que temos
-// (h2h outcomes); dupla hipótese/handicap/golos exigiriam recompor um preço a partir de vários
-// outcomes, o que já não é "a odd de fecho" no sentido estrito, e ficam de fora (o utilizador
-// continua a poder preencher esses à mão). Usa a Pinnacle (SHARP_BOOKMAKER_KEY) como referência de
-// fecho, não a casa onde a aposta foi realmente registada — é a convenção padrão da indústria para
-// medir CLV (o "closing line" mais eficiente do mercado), e a mesma fonte já pedida para o modelo,
-// por isso não gasta pedidos extra (reaproveita fetchLeagueOddsCached).
+// Só cobre "1"/"X"/"2" (com qualquer prefixo de proveniência — AUTO:/D:/REJ:/AUTO:D:, despidos por
+// quant.stripSelKeyPrefix, a mesma normalização de resolveBetOutcome) — é a única leitura direta de
+// preço que temos (h2h outcomes); dupla hipótese/handicap/golos exigiriam recompor um preço a partir
+// de vários outcomes, o que já não é "a odd de fecho" no sentido estrito, e ficam de fora (o
+// utilizador continua a poder preencher esses à mão). Usa a Pinnacle (SHARP_BOOKMAKER_KEY) como
+// referência de fecho, não a casa onde a aposta foi realmente registada — é a convenção padrão da
+// indústria para medir CLV (o "closing line" mais eficiente do mercado), e a mesma fonte já pedida
+// para o modelo, por isso não gasta pedidos extra (reaproveita fetchLeagueOddsCached).
 export async function fetchClosingOdd(lg: string, homeName: string, awayName: string, selKey: string): Promise<number | null> {
-  const key = selKey.startsWith("AUTO:") ? selKey.slice(5) : selKey;
+  const key = stripSelKeyPrefix(selKey);
   if (key !== "1" && key !== "X" && key !== "2") return null;
   const apiKey = LS.oddsApiKey;
   if (!apiKey) return null;

@@ -496,8 +496,9 @@ export function buildOpts(g: Game, calib: CalibInfo, sharp?: SharpQuote | null):
 // Despe qualquer prefixo de proveniência (REJ:/AUTO:D:/AUTO:/D:) até à chave de mercado nua — uma
 // função à parte de stripAutoPrefix (que só despe "AUTO:" de propósito: segmentedPerformancePanels
 // em main.ts depende do prefixo "D:" sobreviver a essa chamada para separar mercado principal de
-// segunda oportunidade; generalizar stripAutoPrefix partiria essa distinção).
-function stripSelKeyPrefix(selKey: string): string {
+// segunda oportunidade; generalizar stripAutoPrefix partiria essa distinção). Exportada porque
+// api.fetchClosingOdd reaproveita a mesma normalização para a captura automática da odd de fecho.
+export function stripSelKeyPrefix(selKey: string): string {
   if (selKey.startsWith("REJ:")) return selKey.slice(4);
   if (selKey.startsWith("AUTO:D:")) return selKey.slice(7);
   if (selKey.startsWith("AUTO:")) return selKey.slice(5);

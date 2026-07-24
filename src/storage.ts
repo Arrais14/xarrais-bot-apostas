@@ -79,13 +79,19 @@ export function betAlreadyLogged(gameId: string, selKey: string | null | undefin
   return LS.bets.some(b => b.gameId === gameId && b.selKey === selKey);
 }
 
-export function setOddClose(id: string, val: string): void {
+// auto=true (ver main.autoCaptureCloseOdds) marca oddCloseAuto=true, permitindo à captura automática
+// continuar a atualizar este campo em execuções seguintes dentro da janela. Uma chamada manual
+// (auto=false, o default — ver setOddCloseUI) marca sempre oddCloseAuto=false, mesmo que limpe o
+// campo: a partir daí a captura automática ignora esta aposta para sempre, nunca sobrepõe a escolha
+// do utilizador.
+export function setOddClose(id: string, val: string, auto = false): void {
   const bets = LS.bets;
   const b = bets.find(x => x.id === id);
   if (!b) return;
   const oc = parseFloat(val);
   if (!isNaN(oc) && oc > 0) { b.oddClose = oc; b.clv = num(b.odd) / oc - 1; }
   else { delete b.oddClose; delete b.clv; }
+  b.oddCloseAuto = auto;
   LS.bets = bets;
 }
 

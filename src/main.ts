@@ -791,20 +791,23 @@ function startCardOddsTimer(): void {
 // removido, sem ganho em continuar a tentar. Corre para QUALQUER estado da aposta (pending/win/
 // loss/void) — o fecho aconteceu no kickoff, independentemente de quando a aposta acabou por ser
 // liquidada (com a liquidação automática de apostas reais, isso pode ser quase de imediato após o
-// jogo acabar, bem dentro desta janela). Nunca sobrepõe oddClose já preenchida (à mão ou por aqui).
+// jogo acabar, bem dentro desta janela). oddCloseAuto !== false inclui tanto as que nunca tiveram
+// oddClose (undefined) como as já capturadas automaticamente (true) — estas continuam a atualizar-se
+// a cada tick dentro da janela, convergindo para o valor mais próximo do kickoff real; só uma edição
+// manual (oddCloseAuto === false, ver storage.setOddClose) as tira desta lista para sempre.
 async function autoCaptureCloseOdds(): Promise<void> {
   if (!LS.oddsApiKey) return;
   const now = Date.now();
   const windowMs = CLOSE_ODDS_WINDOW_H * 3600000;
   const candidates = LS.bets.filter(b =>
-    !b.oddClose && b.lg && b.kickoff && b.homeTeam && b.awayTeam
+    b.oddCloseAuto !== false && b.lg && b.kickoff && b.homeTeam && b.awayTeam
     && Math.abs(new Date(b.kickoff).getTime() - now) <= windowMs
   );
   if (!candidates.length) return;
   let captured = 0;
   for (const b of candidates) {
     const odd = await api.fetchClosingOdd(b.lg as string, b.homeTeam as string, b.awayTeam as string, b.selKey);
-    if (odd) { storage.setOddClose(b.id, String(odd)); captured++; }
+    if (odd) { storage.setOddClose(b.id, String(odd), true); captured++; }
   }
   if (captured && curTab === "log") renderLog();
 }

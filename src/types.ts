@@ -270,6 +270,12 @@ export interface Bet {
   autoSettled?: boolean;   // true quando o status (win/loss/void) foi lido sozinho do placar final
                             // (ver quant.resolveBetOutcome/main.autoSettlePending), não escolhido à
                             // mão — permite à UI distinguir e auditar; uma correção manual limpa isto.
+  oddCloseAuto?: boolean;   // true = oddClose foi capturado sozinho (ver api.fetchClosingOdd/
+                            // main.autoCaptureCloseOdds) e continua a poder ser atualizado a cada
+                            // refresh dentro da janela, convergindo para o valor mais próximo do
+                            // kickoff; false = o utilizador editou o campo à mão (ver
+                            // storage.setOddClose) — a captura automática ignora essa aposta para
+                            // sempre a partir daí, nunca sobrepõe uma edição manual.
 }
 
 /** Aposta ainda por gravar (saveBet atribui id/status/loggedAt). */
