@@ -102,11 +102,12 @@ export const TEAM_ALIASES = {
   // "Belgrano de Cordoba" apareceu como candidato mais próximo em 2 jogos não relacionados do
   // diagnóstico, sinal consistente de que é assim que a API chama este clube). Se aparecer errado
   // nalgum diagnóstico futuro, revê.
-  "belgranocordoba": "belgranodecordoba"
-  // NOTA: "Sarmiento (Junín)" (sarmientojunin) apareceu perto de um candidato "Sarmiento de Junin"
-  // no mesmo diagnóstico, mas só como 2º candidato (score 0.44) de um jogo já começado, cujo 1º
-  // candidato (score 1.00) era de um jogo completamente diferente — evidência fraca demais para
-  // adicionar já. Confirma num próximo diagnóstico antes de acrescentar.
+  "belgranocordoba": "belgranodecordoba",
+  // Mesmo padrão "de" — confirmado agora em 2 execuções diferentes (2026-07-24, duas vezes) como
+  // "Sarmiento de Junin" candidato mais próximo de "Sarmiento (Junín)"; nas duas vezes o jogo em si
+  // já tinha começado (não fixable para essas datas em concreto), mas a repetição do mesmo nome em
+  // diagnósticos independentes é sinal suficiente de que é assim que a API chama este clube.
+  "sarmientojunin": "sarmientodejunin"
 };
 
 export function normTeam(s) {
