@@ -53,19 +53,30 @@ async function fetchFixtures(slug) {
 }
 
 // ===== ESPN: registo V-E-D por equipa (standings) — cup competitions (Champions/Europa) podem não
-// ter este formato; devolve mapa vazio em vez de rebentar. =====
+// ter este formato; devolve mapa vazio em vez de rebentar. Algumas ligas (confirmado ao vivo em
+// 2026-07-24: Liga Argentina) dividem a tabela em várias zonas/grupos (children[0]="Group A",
+// children[1]="Group B", ...) em vez de uma tabela única — ler só children[0] deixava de fora
+// TODAS as equipas dos outros grupos (ficavam com "0-0-0" por não terem entry nenhuma no mapa,
+// não porque o registo real fosse esse). Percorre TODOS os children[], nunca só o primeiro. =====
 async function fetchStandingsMap(slug) {
   const map = new Map();
   try {
     const data = await fetchJson("https://site.api.espn.com/apis/v2/sports/soccer/" + encodeURIComponent(slug) + "/standings");
-    const entries = data?.children?.[0]?.standings?.entries || [];
-    for (const entry of entries) {
-      const stats = Object.fromEntries((entry.stats || []).map(s => [s.name, s.value]));
-      map.set(String(entry.team.id), {
-        wins: Math.round(stats.wins || 0),
-        ties: Math.round(stats.ties || 0),
-        losses: Math.round(stats.losses || 0)
-      });
+    const groups = data?.children || [];
+    if (!groups.length) {
+      console.warn("  [aviso] standings sem nenhum grupo/zona (children[]) para " + slug + " — mapa de registos fica vazio (normal em taças/qualificações sem tabela).");
+      return map;
+    }
+    for (const group of groups) {
+      const entries = group?.standings?.entries || [];
+      for (const entry of entries) {
+        const stats = Object.fromEntries((entry.stats || []).map(s => [s.name, s.value]));
+        map.set(String(entry.team.id), {
+          wins: Math.round(stats.wins || 0),
+          ties: Math.round(stats.ties || 0),
+          losses: Math.round(stats.losses || 0)
+        });
+      }
     }
   } catch (e) {
     console.warn("  [aviso] standings falhou para " + slug + ": " + e.message);
@@ -363,6 +374,24 @@ async function main() {
       + " (recuperado-do-anterior=" + d.recuperadoAnterior + ")");
   }
   if (semOddsAutomaticas.length) console.log("\nLigas sem odds automáticas nesta conta agora: " + semOddsAutomaticas.join(", "));
+
+  // Equipas com registo "0-0-0" — sinal de fetchStandingsMap ter falhado ou ficado incompleto para
+  // essa liga (ver comentário lá), MAS também pode ser genuíno (equipa mesmo sem jogos disputados
+  // ainda nesta fase/zona/época) — reporta sempre, para decidir caso a caso, nunca assume às cegas.
+  console.log("\nEquipas com registo 0-0-0 por liga (nem sempre é bug — confirma antes de assumir):");
+  for (const lgName of okLeagues) {
+    const lgGames = allGames.filter(g => g.lg === lgName);
+    const allTeams = new Set(), zeroTeams = new Set();
+    for (const g of lgGames) {
+      allTeams.add(g.h.n); allTeams.add(g.a.n);
+      if (g.h.r === "0-0-0") zeroTeams.add(g.h.n);
+      if (g.a.r === "0-0-0") zeroTeams.add(g.a.n);
+    }
+    if (zeroTeams.size) {
+      const amostra = [...zeroTeams].slice(0, 5).join(", ") + (zeroTeams.size > 5 ? ", ..." : "");
+      console.log("  " + lgName + ": " + zeroTeams.size + "/" + allTeams.size + " equipa(s) — " + amostra);
+    }
+  }
 }
 
 main().catch(e => {
