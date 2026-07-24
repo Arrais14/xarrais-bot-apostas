@@ -1,6 +1,6 @@
 {
-  "fetchedAt": "2026-07-24T02:38:46.217Z",
-  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação).",
+  "fetchedAt": "2026-07-24T03:02:06.932Z",
+  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação). Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
       "id": "401841152",
@@ -141,7 +141,11 @@
         "r": "5-6-8",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 2,
+        "d": 3.25,
+        "a": 3.8
+      }
     },
     {
       "id": "401841161",
@@ -298,7 +302,11 @@
         "r": "7-5-7",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 1.59,
+        "d": 3.9,
+        "a": 5.5
+      }
     },
     {
       "id": "401841164",
@@ -365,8 +373,8 @@
       },
       "o": {
         "h": 5,
-        "d": 3.95,
-        "a": 1.62
+        "d": 4,
+        "a": 1.65
       }
     },
     {
@@ -388,8 +396,8 @@
       },
       "o": {
         "h": 1.95,
-        "d": 3.75,
-        "a": 3.45
+        "d": 3.8,
+        "a": 3.5
       }
     },
     {
@@ -634,7 +642,7 @@
       },
       "a": {
         "n": "Maccabi Tel-Aviv",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
@@ -1125,7 +1133,7 @@
       },
       "a": {
         "n": "Zalgiris Vilnius",
-        "f": "WW",
+        "f": "LWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1176,7 +1184,7 @@
       "v": "Estadi Nacional d'Andorra",
       "h": {
         "n": "Santa Coloma",
-        "f": "WW",
+        "f": "LWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1195,13 +1203,13 @@
       "v": "Arena Sepsi OSK",
       "h": {
         "n": "Universitatea Cluj",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "SK Brann",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
@@ -1220,7 +1228,7 @@
       },
       "a": {
         "n": "FC Noah",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
@@ -1233,13 +1241,13 @@
       "v": "Rheinpark Stadion",
       "h": {
         "n": "FC Vaduz",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Atlètic Club d'Escaldes",
-        "f": "WW",
+        "f": "LWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1252,13 +1260,13 @@
       "v": "Stadionul Steaua",
       "h": {
         "n": "FCSB",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FK Auda",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
@@ -1271,13 +1279,13 @@
       "v": "Ljudski vrt",
       "h": {
         "n": "Aluminij",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Dinamo City",
-        "f": "WL",
+        "f": "DWL",
         "r": "0-0-0",
         "s": null
       },
@@ -1289,13 +1297,13 @@
       "d": "2026-07-23T18:00Z",
       "h": {
         "n": "Paksi SE",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Panathinaikos",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
@@ -1308,13 +1316,13 @@
       "v": "Košická futbalová aréna (KFA)",
       "h": {
         "n": "Polissya Zhitomir",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "F.C. København",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
@@ -1333,7 +1341,7 @@
       },
       "a": {
         "n": "Jablonec",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
@@ -1345,13 +1353,13 @@
       "d": "2026-07-23T18:00Z",
       "h": {
         "n": "Vojvodina",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Ajax Amsterdam",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
@@ -1364,13 +1372,13 @@
       "v": "Gradski Stadion Banja Luka",
       "h": {
         "n": "Borac Banja Luka",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Petrocub",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
@@ -1383,13 +1391,13 @@
       "v": "AIL Arena",
       "h": {
         "n": "FC Lugano",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Dukagjini",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
@@ -1401,13 +1409,13 @@
       "d": "2026-07-23T18:30Z",
       "h": {
         "n": "Hapoel Tel Aviv",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Ludogorets Razgrad",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
@@ -1419,7 +1427,7 @@
       "d": "2026-07-23T18:30Z",
       "h": {
         "n": "LNZ Cherkasy",
-        "f": "",
+        "f": "D",
         "r": "0-0-0",
         "s": null
       },
@@ -1438,13 +1446,13 @@
       "v": "Stadion Pod Dubnom",
       "h": {
         "n": "MSK Zilina",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "GKS Katowice",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
@@ -1457,13 +1465,13 @@
       "v": "Fir Park",
       "h": {
         "n": "Motherwell",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "HB Torshavn",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
@@ -1476,13 +1484,13 @@
       "v": "Stadion Stozice",
       "h": {
         "n": "NK Bravo",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "KF Shkëndija",
-        "f": "WW",
+        "f": "LWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1495,13 +1503,13 @@
       "v": "Djúpumyrar",
       "h": {
         "n": "NSI Runavik",
-        "f": "WD",
+        "f": "LWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Koper",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
@@ -1514,13 +1522,13 @@
       "v": "Stadion HNK Rijeka",
       "h": {
         "n": "Rijeka",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Derry City",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
@@ -1533,13 +1541,13 @@
       "v": "Tolka Park",
       "h": {
         "n": "Shelbourne",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Nomme Kalju",
-        "f": "DW",
+        "f": "LDW",
         "r": "0-0-0",
         "s": null
       },
@@ -1558,7 +1566,7 @@
       },
       "a": {
         "n": "UNA Strassen",
-        "f": "WW",
+        "f": "LWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1570,13 +1578,13 @@
       "d": "2026-07-23T19:00Z",
       "h": {
         "n": "Stjarnan",
-        "f": "DW",
+        "f": "WDW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Ilves",
-        "f": "WD",
+        "f": "LWD",
         "r": "0-0-0",
         "s": null
       },
@@ -1589,13 +1597,13 @@
       "v": "N1-vollurinn Hlidarenda",
       "h": {
         "n": "Valur Reykjavik",
-        "f": "",
+        "f": "W",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Zrinjski Mostar",
-        "f": "",
+        "f": "L",
         "r": "0-0-0",
         "s": null
       },
