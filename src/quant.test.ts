@@ -150,7 +150,7 @@ describe("autoDecide — seleção do melhor candidato, threshold de EV, jogos a
     const g = makeGame({ o: { h: 1.9, d: 3.0, a: 3.0 } });
     const dec = autoDecide(g, ctx, sharp);
     expect(dec.bet).toBe(false);
-    expect(dec.msg).toBe("Não apostar — sem valor às odds de referência");
+    expect(dec.msg).toBe("Sem valor às odds de referência");
   });
 
   it("jogo amigável exige um limiar de EV mais alto (EV_MIN_FRIENDLY=0.12): o mesmo EV=0.10 muda de decisão", () => {

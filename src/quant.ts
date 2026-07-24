@@ -415,7 +415,7 @@ export function autoDecide(g: Game, ctx: DecisionContext, sharp?: SharpQuote | n
       } else if (bestEv > 0) {
         dec = { bet: false, msg: "Valor marginal: " + best.lbl + " @ " + fmt2(best.od) + " (EV +" + (100 * bestEv).toFixed(1) + "%) — só observar", cands, best, heur: mp.heur, bestKey: best.k };
       } else {
-        dec = { bet: false, msg: "Não apostar — sem valor às odds de referência", cands, best, heur: mp.heur, bestKey: best.k };
+        dec = { bet: false, msg: "Sem valor às odds de referência", cands, best, heur: mp.heur, bestKey: best.k };
       }
     }
   }
