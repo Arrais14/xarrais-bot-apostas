@@ -52,34 +52,95 @@ async function fetchFixtures(slug) {
   return events;
 }
 
+// Constrói um mapa id-equipa -> registo a partir de uma resposta de standings já obtida (percorre
+// TODOS os children[] — zonas/grupos, ver comentário de fetchStandingsMap), guardando também
+// gamesPlayed (não vem em recordStr, mas é preciso para decidir o fallback de fase/época).
+function standingsResponseToMap(data) {
+  const map = new Map();
+  for (const group of data?.children || []) {
+    for (const entry of group?.standings?.entries || []) {
+      const stats = Object.fromEntries((entry.stats || []).map(s => [s.name, s.value]));
+      map.set(String(entry.team.id), {
+        wins: Math.round(stats.wins || 0),
+        ties: Math.round(stats.ties || 0),
+        losses: Math.round(stats.losses || 0),
+        gamesPlayed: Math.round(stats.gamesPlayed || 0)
+      });
+    }
+  }
+  return map;
+}
+
+// Encontra o season_type anterior (com standings) ao atualmente devolvido, usando os metadados de
+// data.seasons[] — ex.: a Liga Argentina alterna "Torneo Apertura" (season_type 1, Jan-Mai) e
+// "Torneo Clausura" (season_type 6, Jul-Nov); pedir standings sem parâmetros devolve sempre a fase
+// ATUAL, que logo a seguir a começar tem quase todos os jogos em 0 — mesmo havendo uma época inteira
+// de dados reais na fase anterior, já concluída. Devolve null se não houver fase anterior com
+// standings (ligas de época única, como a maioria — aí não há fallback nenhum para tentar).
+function findPreviousSeasonType(data) {
+  const year = data?.children?.[0]?.standings?.season;
+  const currentTypeId = data?.children?.[0]?.standings?.seasonType;
+  if (!year || currentTypeId == null) return null;
+  const season = (data.seasons || []).find(s => s.year === year);
+  const types = (season?.types || []).filter(t => t.hasStandings && String(t.id) !== String(currentTypeId));
+  const current = (season?.types || []).find(t => String(t.id) === String(currentTypeId));
+  if (!current || !types.length) return null;
+  const before = types.filter(t => new Date(t.startDate).getTime() < new Date(current.startDate).getTime());
+  if (!before.length) return null;
+  before.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+  return { year, typeId: before[0].id, name: before[0].name };
+}
+
 // ===== ESPN: registo V-E-D por equipa (standings) — cup competitions (Champions/Europa) podem não
 // ter este formato; devolve mapa vazio em vez de rebentar. Algumas ligas (confirmado ao vivo em
 // 2026-07-24: Liga Argentina) dividem a tabela em várias zonas/grupos (children[0]="Group A",
 // children[1]="Group B", ...) em vez de uma tabela única — ler só children[0] deixava de fora
 // TODAS as equipas dos outros grupos (ficavam com "0-0-0" por não terem entry nenhuma no mapa,
-// não porque o registo real fosse esse). Percorre TODOS os children[], nunca só o primeiro. =====
+// não porque o registo real fosse esse). Percorre TODOS os children[], nunca só o primeiro.
+//
+// Fallback de fase/época: se a MAIORIA das equipas da fase atual tiver 0 jogos (sinal de fase
+// recém-começada, ex.: Torneo Clausura argentino a poucas semanas do início), vai também buscar a
+// fase anterior já concluída (ver findPreviousSeasonType) e usa esse registo para as equipas que
+// continuam a 0 jogos na fase atual — sem isto, uma equipa como o River Plate aparecia com "0-0-0"
+// mesmo tendo uma época inteira de jogos reais disputados há só 2 meses. =====
 async function fetchStandingsMap(slug) {
-  const map = new Map();
+  let map = new Map();
+  let data;
   try {
-    const data = await fetchJson("https://site.api.espn.com/apis/v2/sports/soccer/" + encodeURIComponent(slug) + "/standings");
-    const groups = data?.children || [];
-    if (!groups.length) {
-      console.warn("  [aviso] standings sem nenhum grupo/zona (children[]) para " + slug + " — mapa de registos fica vazio (normal em taças/qualificações sem tabela).");
-      return map;
-    }
-    for (const group of groups) {
-      const entries = group?.standings?.entries || [];
-      for (const entry of entries) {
-        const stats = Object.fromEntries((entry.stats || []).map(s => [s.name, s.value]));
-        map.set(String(entry.team.id), {
-          wins: Math.round(stats.wins || 0),
-          ties: Math.round(stats.ties || 0),
-          losses: Math.round(stats.losses || 0)
-        });
-      }
-    }
+    data = await fetchJson("https://site.api.espn.com/apis/v2/sports/soccer/" + encodeURIComponent(slug) + "/standings");
   } catch (e) {
     console.warn("  [aviso] standings falhou para " + slug + ": " + e.message);
+    return map;
+  }
+  if (!(data?.children || []).length) {
+    console.warn("  [aviso] standings sem nenhum grupo/zona (children[]) para " + slug + " — mapa de registos fica vazio (normal em taças/qualificações sem tabela).");
+    return map;
+  }
+  map = standingsResponseToMap(data);
+
+  const total = map.size;
+  const semJogos = [...map.values()].filter(r => r.gamesPlayed === 0).length;
+  if (total > 0 && semJogos / total > 0.5) {
+    const prev = findPreviousSeasonType(data);
+    if (prev) {
+      try {
+        const prevData = await fetchJson("https://site.api.espn.com/apis/v2/sports/soccer/" + encodeURIComponent(slug)
+          + "/standings?season=" + encodeURIComponent(prev.year) + "&seasontype=" + encodeURIComponent(prev.typeId));
+        const prevMap = standingsResponseToMap(prevData);
+        let preenchidas = 0;
+        for (const [id, rec] of map) {
+          if (rec.gamesPlayed === 0 && prevMap.has(id) && prevMap.get(id).gamesPlayed > 0) {
+            map.set(id, prevMap.get(id));
+            preenchidas++;
+          }
+        }
+        console.log("  [aviso] " + slug + ": fase atual só tinha " + (total - semJogos) + "/" + total + " equipa(s) com jogos — usada fase anterior (\"" + prev.name + "\") para preencher " + preenchidas + " equipa(s) a mais.");
+      } catch (e) {
+        console.warn("  [aviso] fallback de fase anterior falhou para " + slug + ": " + e.message);
+      }
+    } else {
+      console.warn("  [aviso] " + slug + ": " + semJogos + "/" + total + " equipa(s) com 0 jogos na fase atual, sem fase anterior com standings para usar de fallback (normal em ligas de época única).");
+    }
   }
   return map;
 }
