@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-24T16:08:23.394Z",
+  "fetchedAt": "2026-07-24T16:34:45.894Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
@@ -454,9 +454,9 @@
         "s": null
       },
       "o": {
-        "h": 2.42,
-        "d": 3.15,
-        "a": 2.57,
+        "h": 2.37,
+        "d": 3.13,
+        "a": 2.65,
         "src": "betclic_fr"
       }
     },
@@ -1746,7 +1746,12 @@
         "r": "0-0-0",
         "s": null
       },
-      "o": null
+      "o": {
+        "h": 2.08,
+        "d": 2.85,
+        "a": 3.75,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401841443",
@@ -1766,9 +1771,9 @@
         "s": null
       },
       "o": {
-        "h": 1.9,
-        "d": 2.82,
-        "a": 4.55,
+        "h": 1.94,
+        "d": 2.8,
+        "a": 4.4,
         "src": "betclic_fr"
       }
     },
