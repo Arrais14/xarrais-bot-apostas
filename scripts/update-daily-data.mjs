@@ -96,43 +96,82 @@ async function fetchForm(slug, teamId) {
 
 // ===== The-Odds-API: h2h + totais (DraftKings; Betclic incluída no mesmo pedido como fallback —
 // ver matchOdds — para jogos a alguns dias em que a DraftKings ainda não publicou linha) =====
+// Devolve o status/corpo da resposta em caso de falha (em vez de só []) — sem isto não dava para
+// distinguir "liga sem cobertura nesta conta/plano" (401/403, sport_key inválido, etc.) de "a liga
+// simplesmente não tem jogos publicados agora" — os dois pareciam o mesmo "[] sem explicação".
 async function fetchOddsForLeague(sportKey) {
-  if (!ODDS_API_KEY) return [];
+  if (!ODDS_API_KEY) return { ok: false, status: null, body: "ODDS_API_KEY não definida" };
   const url = "https://api.the-odds-api.com/v4/sports/" + encodeURIComponent(sportKey)
     + "/odds/?apiKey=" + encodeURIComponent(ODDS_API_KEY) + "&regions=us,eu,fr&markets=h2h,totals&oddsFormat=decimal&bookmakers=draftkings,betclic_fr";
+  let bodyText;
   try {
-    return await fetchJson(url);
+    const r = await fetch(url);
+    bodyText = await r.text();
+    if (!r.ok) return { ok: false, status: r.status, body: bodyText.slice(0, 300) };
   } catch (e) {
-    console.warn("  [aviso] The-Odds-API falhou para " + sportKey + ": " + e.message);
-    return [];
+    return { ok: false, status: null, body: "erro de rede: " + e.message };
+  }
+  try {
+    return { ok: true, data: JSON.parse(bodyText) };
+  } catch {
+    return { ok: false, status: 200, body: "resposta 200 mas não é JSON válido: " + bodyText.slice(0, 200) };
   }
 }
 
 // teamMatches (fuzzy + TEAM_ALIASES) vem de ../shared/leagues.mjs — mesma função usada por
 // src/api.ts:findApiGame, para os aliases nunca divergirem entre a app e o script diário.
 
+// ===== Diagnóstico: candidatos mais parecidos quando nenhum jogo casa (para alimentar
+// TEAM_ALIASES sem adivinhar) — similaridade por bigramas de caracteres, simples mas suficiente
+// para apanhar variantes tipo "Atlético de San Luis" vs "Atletico San Luis". =====
+function bigrams(s) {
+  const set = new Set();
+  for (let i = 0; i < s.length - 1; i++) set.add(s.slice(i, i + 2));
+  return set;
+}
+function similarity(a, b) {
+  const A = bigrams(a), B = bigrams(b);
+  if (!A.size || !B.size) return 0;
+  let inter = 0;
+  for (const x of A) if (B.has(x)) inter++;
+  return inter / Math.max(A.size, B.size);
+}
+function closestCandidates(oddsGames, nh, na, n = 3) {
+  return oddsGames
+    .map(g => {
+      const ah = normTeam(g.home_team || ""), aa = normTeam(g.away_team || "");
+      return { label: (g.home_team || "?") + " vs " + (g.away_team || "?"), score: Math.max(similarity(nh, ah), similarity(na, aa)) };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, n)
+    .map(c => c.label + " (score " + c.score.toFixed(2) + ")");
+}
+
 // Prioridade DraftKings -> Betclic: DraftKings mantém-se a casa "por omissão" (é a que a UI já
 // rotula por defeito); Betclic só entra quando a DraftKings ainda não tem linha para este jogo em
 // concreto — nesse caso out.src fica marcado para a UI anotar a fonte (ver marketSourceNote/oddsT
 // em main.ts). Nunca prefere Betclic quando a DraftKings já responde, mesmo que a Betclic também exista.
+// Devolve um resultado com motivo explícito de falha (nunca só null) — ver Fase 1 do diagnóstico:
+// "sem-match-equipa" (nenhum jogo da API bate com este) vs "sem-bookmaker" (jogo encontrado, mas
+// nem draftkings nem betclic_fr têm h2h publicado ainda) são causas bem diferentes.
 function matchOdds(oddsGames, homeName, awayName) {
   const nh = normTeam(homeName), na = normTeam(awayName);
   const match = oddsGames.find(g => teamMatches(nh, normTeam(g.home_team)) && teamMatches(na, normTeam(g.away_team)));
-  if (!match) return null;
+  if (!match) return { ok: false, reason: "sem-match-equipa" };
   const bookmakers = match.bookmakers || [];
   let bk = bookmakers.find(b => b.key === "draftkings");
   let src = null;
   if (!bk) { bk = bookmakers.find(b => b.key === "betclic_fr"); src = "betclic_fr"; }
-  if (!bk) return null;
+  if (!bk) return { ok: false, reason: "sem-bookmaker" };
   const h2h = (bk.markets || []).find(m => m.key === "h2h");
   const totals = (bk.markets || []).find(m => m.key === "totals");
-  if (!h2h) return null;
+  if (!h2h) return { ok: false, reason: "sem-bookmaker" };
   // Os outcomes h2h usam os nomes PRÓPRIOS da The-Odds-API (home_team/away_team verbatim), não os
   // da ESPN — comparar com o match, nunca com nh/na, senão o alias/fuzzy de cima seria desfeito aqui.
   const hOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.home_team));
   const aOc = h2h.outcomes.find(o => normTeam(o.name) === normTeam(match.away_team));
   const dOc = h2h.outcomes.find(o => o.name === "Draw");
-  if (!hOc || !aOc || !dOc) return null;
+  if (!hOc || !aOc || !dOc) return { ok: false, reason: "sem-bookmaker" };
   const out = { h: hOc.price, d: dOc.price, a: aOc.price };
   if (src) out.src = src;
   if (totals && totals.outcomes.length === 2) {
@@ -140,7 +179,7 @@ function matchOdds(oddsGames, homeName, awayName) {
     const under = totals.outcomes.find(o => o.name === "Under");
     if (over && under) { out.l = over.point; out.ov = over.price; out.un = under.price; }
   }
-  return out;
+  return { ok: true, odds: out };
 }
 
 function recordStr(rec) {
@@ -165,17 +204,27 @@ async function loadOldOddsMap() {
   return map;
 }
 
-// ===== Monta uma liga inteira — nunca lança, devolve { games, error } =====
+// ===== Monta uma liga inteira — nunca lança, devolve { games, diag } =====
+// diag distingue as 3 causas de "sem odds" (ver Fase 1 do diagnóstico pedido): sem-cobertura-liga
+// (o sportKey inteiro falhou/não devolveu nada), sem-match-equipa (a liga respondeu mas este jogo
+// não bateu com nenhum), sem-bookmaker (o jogo foi encontrado, mas nem draftkings nem betclic_fr
+// têm h2h publicado ainda — caso legítimo, não uma falha). recuperadoAnterior conta, à parte, quantos
+// desses foram tapados pelo fallback do public/data.json anterior (ver loadOldOddsMap).
 async function runLeague(lgName, oldOdds) {
   const slug = ESPN_LEAGUE_SLUG[lgName];
   const sportKey = ODDS_API_SPORT_MAP[lgName];
   console.log("A processar " + lgName + " (" + slug + ")...");
+  const diag = { comOdds: 0, semCoberturaLiga: 0, semMatchEquipa: 0, semBookmaker: 0, recuperadoAnterior: 0 };
 
   const events = await fetchFixtures(slug);
-  if (!events.length) return { games: [], error: null };
+  if (!events.length) return { games: [], diag };
 
   const standings = await fetchStandingsMap(slug);
-  const oddsGames = sportKey ? await fetchOddsForLeague(sportKey) : [];
+  const oddsResult = sportKey ? await fetchOddsForLeague(sportKey) : { ok: false, status: null, body: "liga sem sport_key mapeado em ODDS_API_SPORT_MAP" };
+  if (!oddsResult.ok) {
+    console.log("  [sem-cobertura-liga] " + lgName + " (" + sportKey + "): status=" + oddsResult.status + " body=" + oddsResult.body);
+  }
+  const oddsGames = oddsResult.ok ? oddsResult.data : [];
   const formCache = new Map();
 
   const games = [];
@@ -191,15 +240,29 @@ async function runLeague(lgName, oldOdds) {
       if (!formCache.has(homeId)) formCache.set(homeId, await fetchForm(slug, homeId));
       if (!formCache.has(awayId)) formCache.set(awayId, await fetchForm(slug, awayId));
 
-      const freshOdds = matchOdds(oddsGames, homeC.team.displayName, awayC.team.displayName);
-      const odds = freshOdds || oldOdds.get(String(ev.id)) || null;
-      // Diagnóstico para alimentar TEAM_ALIASES: só interessa quando a liga TEVE resposta da
-      // The-Odds-API (oddsGames.length) mas este jogo em concreto não casou com nada nela — nesse
-      // caso é quase sempre uma diferença de nome entre ESPN e The-Odds-API, não falta de mercado.
-      if (!freshOdds && oddsGames.length) {
-        console.log("  [sem-match] " + homeC.team.displayName + " (" + normTeam(homeC.team.displayName) + ") vs "
-          + awayC.team.displayName + " (" + normTeam(awayC.team.displayName) + ")");
+      let freshOdds = null;
+      if (!oddsResult.ok) {
+        diag.semCoberturaLiga++;
+      } else {
+        const nh = normTeam(homeC.team.displayName), na = normTeam(awayC.team.displayName);
+        const res = matchOdds(oddsGames, homeC.team.displayName, awayC.team.displayName);
+        if (res.ok) {
+          freshOdds = res.odds;
+          diag.comOdds++;
+        } else if (res.reason === "sem-match-equipa") {
+          diag.semMatchEquipa++;
+          const candidatos = closestCandidates(oddsGames, nh, na);
+          console.log("  [sem-match-equipa] " + homeC.team.displayName + " (" + nh + ") vs " + awayC.team.displayName + " (" + na + ")"
+            + " — candidatos mais próximos: " + (candidatos.length ? candidatos.join(" | ") : "nenhum na resposta"));
+        } else {
+          diag.semBookmaker++;
+          console.log("  [sem-bookmaker] " + homeC.team.displayName + " vs " + awayC.team.displayName + " — jogo encontrado, sem h2h draftkings/betclic_fr ainda (normal a alguns dias do jogo)");
+        }
       }
+
+      const recovered = !freshOdds ? oldOdds.get(String(ev.id)) : null;
+      if (recovered) diag.recuperadoAnterior++;
+      const odds = freshOdds || recovered || null;
 
       games.push({
         id: String(ev.id),
@@ -214,7 +277,7 @@ async function runLeague(lgName, oldOdds) {
       console.warn("  [aviso] jogo ignorado (" + (ev.id || "?") + "): " + e.message);
     }
   }
-  return { games, error: null };
+  return { games, diag };
 }
 
 async function main() {
@@ -224,11 +287,12 @@ async function main() {
   const allGames = [];
   const okLeagues = [];
   const failedLeagues = [];
+  const diagByLeague = new Map();
 
   for (const lgName of Object.keys(ESPN_LEAGUE_SLUG)) {
     try {
-      const { games } = await runLeague(lgName, oldOdds);
-      if (games.length) { allGames.push(...games); okLeagues.push(lgName); }
+      const { games, diag } = await runLeague(lgName, oldOdds);
+      if (games.length) { allGames.push(...games); okLeagues.push(lgName); diagByLeague.set(lgName, diag); }
     } catch (e) {
       console.warn("[aviso] liga " + lgName + " falhou por completo: " + e.message);
       failedLeagues.push(lgName);
@@ -257,6 +321,17 @@ async function main() {
     const lgWithOdds = lgGames.filter(g => g.o).length;
     const pct = lgGames.length ? Math.round(100 * lgWithOdds / lgGames.length) : 0;
     console.log("  " + lgName + ": " + lgWithOdds + "/" + lgGames.length + " (" + pct + "%)");
+  }
+
+  console.log("\nDiagnóstico por liga (sem-cobertura-liga / sem-match-equipa / sem-bookmaker / com-odds — recuperado do anterior à parte):");
+  for (const lgName of okLeagues) {
+    const d = diagByLeague.get(lgName);
+    if (!d) continue;
+    console.log("  " + lgName + ": sem-cobertura-liga=" + d.semCoberturaLiga
+      + " sem-match-equipa=" + d.semMatchEquipa
+      + " sem-bookmaker=" + d.semBookmaker
+      + " com-odds=" + d.comOdds
+      + " (recuperado-do-anterior=" + d.recuperadoAnterior + ")");
   }
 }
 
