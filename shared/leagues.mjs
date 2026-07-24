@@ -91,7 +91,22 @@ export const TEAM_ALIASES = {
   // vs Coritiba").
   "redbullbragantino": "bragantinosp",
   // Liga MX
-  "atleticodesanluis": "atleticosanluis"
+  "atleticodesanluis": "atleticosanluis",
+  // Liga Argentina — confirmado no diagnóstico de 2026-07-24: a The-Odds-API usa "de" entre o nome
+  // do clube e a cidade ("Instituto de Córdoba"), a ESPN usa parênteses ("Instituto (Córdoba)"),
+  // sem "de" nenhum. Confirmado com confiança alta: candidato "Velez Sarsfield BA vs Instituto de
+  // Córdoba" (score 0.86) era claramente o mesmo jogo (Vélez Sarsfield vs Instituto), ainda por
+  // começar no momento do diagnóstico — não um falso candidato de outro jogo qualquer.
+  "institutocordoba": "institutodecordoba",
+  // Mesmo padrão "de" — confiança média (não veio de uma comparação ao mesmo jogo em concreto, mas
+  // "Belgrano de Cordoba" apareceu como candidato mais próximo em 2 jogos não relacionados do
+  // diagnóstico, sinal consistente de que é assim que a API chama este clube). Se aparecer errado
+  // nalgum diagnóstico futuro, revê.
+  "belgranocordoba": "belgranodecordoba"
+  // NOTA: "Sarmiento (Junín)" (sarmientojunin) apareceu perto de um candidato "Sarmiento de Junin"
+  // no mesmo diagnóstico, mas só como 2º candidato (score 0.44) de um jogo já começado, cujo 1º
+  // candidato (score 1.00) era de um jogo completamente diferente — evidência fraca demais para
+  // adicionar já. Confirma num próximo diagnóstico antes de acrescentar.
 };
 
 export function normTeam(s) {
