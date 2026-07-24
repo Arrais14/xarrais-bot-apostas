@@ -182,6 +182,28 @@ function matchOdds(oddsGames, homeName, awayName) {
   return { ok: true, odds: out };
 }
 
+// ===== DIAGNÓSTICO TEMPORÁRIO (Fase 1 do pedido) — remover depois de confirmar as keys reais =====
+// Pedido SEM filtro de bookmakers (nem "bookmakers=" no URL) e com regions=eu,uk,fr — para ver TODAS
+// as casas que a conta/plano atual realmente devolve para Brasileirão/Liga MX, sem assumir nomes de
+// key à partida (Betano pode não se chamar "betano"). Só corre para estas 2 ligas, custa 2 pedidos
+// extra a esta execução.
+async function diagnoseBookmakers(lgName, sportKey) {
+  if (!ODDS_API_KEY) return;
+  const url = "https://api.the-odds-api.com/v4/sports/" + encodeURIComponent(sportKey)
+    + "/odds/?apiKey=" + encodeURIComponent(ODDS_API_KEY) + "&regions=eu,uk,fr&markets=h2h&oddsFormat=decimal";
+  try {
+    const r = await fetch(url);
+    const bodyText = await r.text();
+    if (!r.ok) { console.log("  [diagnostico-bookmakers] " + lgName + ": HTTP " + r.status + " " + bodyText.slice(0, 200)); return; }
+    const data = JSON.parse(bodyText);
+    const keys = new Set();
+    for (const g of data) for (const bk of g.bookmakers || []) keys.add(bk.key);
+    console.log("  [diagnostico-bookmakers] " + lgName + " (regions=eu,uk,fr, sem filtro): " + data.length + " jogo(s), bookmaker.key distintos: " + (keys.size ? [...keys].sort().join(", ") : "nenhum"));
+  } catch (e) {
+    console.log("  [diagnostico-bookmakers] " + lgName + ": erro — " + e.message);
+  }
+}
+
 function recordStr(rec) {
   if (!rec) return "0-0-0";
   return rec.wins + "-" + rec.ties + "-" + rec.losses;
@@ -296,6 +318,12 @@ async function runLeague(lgName, oldOdds) {
 async function main() {
   const oldOdds = await loadOldOddsMap();
   if (!ODDS_API_KEY) console.warn("[aviso] ODDS_API_KEY não definida — só se preenchem odds a partir do public/data.json anterior (" + oldOdds.size + " jogo(s) com odds guardadas), nada novo é pedido à The-Odds-API.");
+
+  // DIAGNÓSTICO TEMPORÁRIO (Fase 1) — remover depois de confirmar as keys reais de Betano/bwin.
+  if (ODDS_API_KEY) {
+    await diagnoseBookmakers("Brasileirão", ODDS_API_SPORT_MAP["Brasileirão"]);
+    await diagnoseBookmakers("Liga MX", ODDS_API_SPORT_MAP["Liga MX"]);
+  }
 
   const allGames = [];
   const okLeagues = [];
