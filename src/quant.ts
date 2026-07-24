@@ -140,7 +140,7 @@ export function suggestModelWeights(bets: Bet[]): WeightSuggestion {
 // ===== Motor de golos esperados (Poisson) para mercados derivados =====
 // Deriva λ (golos esperados de cada equipa) das probabilidades 1X2 do modelo,
 // ancorado no total de golos que o mercado Over/Under implica. Assim os mercados
-// BTTS / Over-Under / par-ímpar ficam consistentes com a decisão 1X2 já mostrada.
+// BTTS / Over-Under ficam consistentes com a decisão 1X2 já mostrada.
 function poissonP(l: number, k: number): number {
   let f = 1;
   for (let i = 2; i <= k; i++) f *= i;
@@ -188,14 +188,6 @@ function matOverUnder(m: PoissonMatrix, line: number): { over: number; under: nu
     if (tot > line) over += m[i][j]; else under += m[i][j];
   }
   return { over, under };
-}
-function matOddEven(m: PoissonMatrix): { odd: number; even: number } {
-  let odd = 0, even = 0;
-  for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) {
-    const tot = i + j;
-    if (tot % 2 === 0) even += m[i][j]; else odd += m[i][j];
-  }
-  return { odd, even };
 }
 function matHandicap(m: PoissonMatrix, side: "h" | "a", line: number): number {
   // side "h" ou "a"; line ex. -0.5 (a equipa tem de ganhar) ou +0.5/+1.5 (não pode perder por essa margem)
@@ -267,7 +259,7 @@ export function computeStake(p: number, od: number, ctx: StakeContext): StakeInf
 }
 
 // Mercados de golos (Over/Under + handicap) avaliados contra as odds reais desses mercados —
-// só entram aqui os que TÊM odd de referência; BTTS/par-ímpar ficam só no comparador manual.
+// só entram aqui os que TÊM odd de referência; BTTS fica só no comparador manual.
 export function derivedCandidates(g: Game, sharp?: SharpQuote | null): { cands: Candidate[]; gm: GoalModel } | null {
   const gm = goalModel(g, sharp);
   if (!gm) return null;
@@ -489,9 +481,6 @@ export function buildOpts(g: Game, calib: CalibInfo, sharp?: SharpQuote | null):
     const btts = matBTTS(m);
     opts.push({ k: "BTS", lbl: "Ambas marcam — Sim", p: adjP(btts.yes), ref: null });
     opts.push({ k: "BTN", lbl: "Ambas marcam — Não", p: adjP(btts.no), ref: null });
-    const oe = matOddEven(m);
-    opts.push({ k: "GOD", lbl: "Total de golos — Ímpar", p: adjP(oe.odd), ref: null });
-    opts.push({ k: "GEV", lbl: "Total de golos — Par", p: adjP(oe.even), ref: null });
   }
   const H = parseLineOdd(o.sh), A = parseLineOdd(o.sa);
   if (H && Math.abs(parseFloat(H.line)) === 0.5) opts.push({ k: "HH", lbl: "Handicap " + g.h.n + " " + H.line, p: adjP(H.line.startsWith("-") ? p0.h : p0.h + p0.d), ref: H.od });

@@ -932,7 +932,7 @@ function derivedDecBox(g: Game, dec: ModelDecision): string {
     return '<div class="decbox no"><b>Segunda oportunidade:</b> sem valor às odds de referência. '
       + 'Melhor candidata: ' + esc(d2.best.lbl) + ' — só com odd ≥ <b>' + fmt2((1 + evMin) / d2.best.p) + '</b> (ref. ' + fmt2(d2.best.od) + ').</div>';
   }
-  return '<div class="decbox no"><b>Segunda oportunidade:</b> mercados de golos (BTTS, mais/menos, par/ímpar) disponíveis no comparador abaixo — insere odds reais para ver se há valor.</div>';
+  return '<div class="decbox no"><b>Segunda oportunidade:</b> mercados de golos (BTTS, mais/menos) disponíveis no comparador abaixo — insere odds reais para ver se há valor.</div>';
 }
 
 function detailHtml(g: Game): string {
@@ -1111,6 +1111,9 @@ function compareOdds(id: string): void {
   houses.sort((x, y) => y.od - x.od);
   const best = houses[0];
   let html = "";
+  if (opt.k === "BTS" || opt.k === "BTN") {
+    html += '<div class="kv" style="margin-bottom:8px">' + icon("alert") + ' BTTS estimado com correção de correlação (Dixon-Coles) sobre o modelo de golos — usa como referência, não como edge garantido.</div>';
+  }
   if (opt.ref && houses.length === 3 && houses.every(h => Math.abs(h.od - (opt.ref as number)) < 0.005)) {
     html += '<div class="banner" style="margin-bottom:8px">' + icon("alert") + ' Estás a ver a <b>odd de referência</b> nas 3 casas — ainda não inseriste as odds reais. O veredito abaixo baseia-se na referência; substitui pelos valores reais de cada casa para saberes onde está a melhor odd.</div>';
   }
