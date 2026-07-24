@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ===== Backtest histórico do modelo Xarrais — independente da app web (Vite/TS) =====
+# ===== Backtest histórico do modelo Praxis — independente da app web (Vite/TS) =====
 # As fórmulas aqui (no-vig MPTO, Kelly fracionário) são uma tradução 1:1 das de src/quant.ts —
 # qualquer alteração num dos dois lados tem de ser replicada no outro, senão o backtest deixa de
 # validar o que a app realmente decide ao vivo. A app confia 100% no no-vig da Pinnacle (sem
@@ -183,7 +183,7 @@ def plot_bankroll(res: BacktestResult, bankroll0: float, output_path: str) -> No
     plt.figure(figsize=(10, 5))
     plt.plot([bankroll0] + res.bankroll_curve, linewidth=1.5, color="#d4af37")
     plt.axhline(bankroll0, color="#888", linestyle="--", linewidth=0.8, label="Banca inicial")
-    plt.title("Evolução da banca — backtest Xarrais")
+    plt.title("Evolução da banca — backtest Praxis")
     plt.xlabel("Aposta nº")
     plt.ylabel("Banca")
     plt.legend()
@@ -193,7 +193,7 @@ def plot_bankroll(res: BacktestResult, bankroll0: float, output_path: str) -> No
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Backtest histórico do modelo Xarrais (Kelly fracionário, no-vig Pinnacle).")
+    ap = argparse.ArgumentParser(description="Backtest histórico do modelo Praxis (Kelly fracionário, no-vig Pinnacle).")
     ap.add_argument("--csv", required=True, help="CSV histórico (ver esquema de colunas no topo deste ficheiro).")
     ap.add_argument("--model", choices=["pinnacle", "poisson"], default="pinnacle",
                     help="'pinnacle' (default) = no-vig da Pinnacle, igual à app ao vivo. "
