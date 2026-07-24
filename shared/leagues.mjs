@@ -24,7 +24,10 @@ export const ESPN_LEAGUE_SLUG = {
   // devolveram jogos reais das rondas de qualificação em curso nesta altura do ano (julho-agosto).
   "Champions League (Qualificação)": "uefa.champions_qual",
   "Liga Europa (Qualificação)": "uefa.europa_qual",
-  "Conference League (Qualificação)": "uefa.europa.conf_qual"
+  "Conference League (Qualificação)": "uefa.europa.conf_qual",
+  // Confirmado ao vivo em 2026-07-24 — devolve jogos reais da "Argentine Liga Profesional de
+  // Fútbol" (nome exato reportado pela própria ESPN na resposta), não outra competição argentina.
+  "Liga Argentina": "arg.1"
 };
 
 // ===== The-Odds-API: sport_key por liga (verifica/atualiza em /v4/sports?apiKey=..., mudam por
@@ -49,7 +52,11 @@ export const ODDS_API_SPORT_MAP = {
   // jogo continua a aparecer, só sem odds pré-carregadas.
   "Champions League (Qualificação)": "soccer_uefa_champs_league_qualification",
   "Liga Europa (Qualificação)": "soccer_uefa_europa_league",
-  "Conference League (Qualificação)": "soccer_uefa_europa_conference_league"
+  "Conference League (Qualificação)": "soccer_uefa_europa_conference_league",
+  // Confirmada por duas fontes independentes (widget builder da própria The-Odds-API + pesquisa
+  // cruzada) em 2026-07-24 — "Soccer: Primera División - Argentina". Não testada contra uma chave
+  // real; falha em segurança se estiver errada (liga continua a aparecer, só sem odds).
+  "Liga Argentina": "soccer_argentina_primera_division"
 };
 
 // ===== Casas de apostas confirmadas nesta API =====
