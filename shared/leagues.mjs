@@ -63,8 +63,14 @@ export const AUTO_BOOKMAKER_KEYS = { bc: "betclic_fr" };
 export const TEAM_ALIASES = {
   // Brasileirão
   "atleticomg": "atleticomineiro",
-  "athleticopr": "athleticoparanaense",
+  // Confirmado no diagnóstico de 2026-07-24 (candidato com score 1.00, "Atletico Paranaense" — SEM
+  // "h", ao contrário do que se assumira antes ("athleticoparanaense" nunca batia com nada real).
+  "athleticopr": "atleticoparanaense",
   "americamg": "americamineiro",
+  // Confirmado no mesmo diagnóstico: a The-Odds-API chama-lhe "Bragantino-SP", não "Red Bull
+  // Bragantino" (candidato "Bragantino-SP vs Coritiba", score 1.00, para "Red Bull Bragantino
+  // vs Coritiba").
+  "redbullbragantino": "bragantinosp",
   // Liga MX
   "atleticodesanluis": "atleticosanluis"
 };

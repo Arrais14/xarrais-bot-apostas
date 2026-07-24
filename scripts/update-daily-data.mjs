@@ -205,16 +205,24 @@ async function loadOldOddsMap() {
 }
 
 // ===== Monta uma liga inteira — nunca lança, devolve { games, diag } =====
-// diag distingue as 3 causas de "sem odds" (ver Fase 1 do diagnóstico pedido): sem-cobertura-liga
-// (o sportKey inteiro falhou/não devolveu nada), sem-match-equipa (a liga respondeu mas este jogo
-// não bateu com nenhum), sem-bookmaker (o jogo foi encontrado, mas nem draftkings nem betclic_fr
-// têm h2h publicado ainda — caso legítimo, não uma falha). recuperadoAnterior conta, à parte, quantos
-// desses foram tapados pelo fallback do public/data.json anterior (ver loadOldOddsMap).
+// diag distingue as causas de "sem odds" (ver Fase 1 do diagnóstico pedido):
+//  - semCoberturaLiga: o pedido à The-Odds-API falhou (HTTP/rede/JSON inválido) para o sportKey.
+//  - semJogosNaApi: o pedido teve sucesso mas devolveu ZERO jogos — não é falta de match, é a
+//    própria liga/sport_key não ter nenhum evento listado agora (ex.: torneio ainda não começou a
+//    fase em que os bookmakers publicam odds). Distinto de semCoberturaLiga (chamada falhou) e de
+//    semMatchEquipa (a resposta TEM jogos, só não tem ESTE) — confundir os dois dava falsos "sem
+//    match" com "candidatos: nenhum na resposta" sempre, sem dizer que a causa é estrutural.
+//  - semMatchEquipa: a liga respondeu com jogos mas nenhum bate com este (nome diferente OU o jogo
+//    já começou e saiu do feed pré-jogo da API, ver candidatos logados para distinguir os dois).
+//  - semBookmaker: jogo encontrado, mas nem draftkings nem betclic_fr têm h2h publicado ainda
+//    (caso legítimo, não uma falha).
+// recuperadoAnterior conta, à parte, quantos desses foram tapados pelo fallback do
+// public/data.json anterior (ver loadOldOddsMap).
 async function runLeague(lgName, oldOdds) {
   const slug = ESPN_LEAGUE_SLUG[lgName];
   const sportKey = ODDS_API_SPORT_MAP[lgName];
   console.log("A processar " + lgName + " (" + slug + ")...");
-  const diag = { comOdds: 0, semCoberturaLiga: 0, semMatchEquipa: 0, semBookmaker: 0, recuperadoAnterior: 0 };
+  const diag = { comOdds: 0, semCoberturaLiga: 0, semJogosNaApi: 0, semMatchEquipa: 0, semBookmaker: 0, recuperadoAnterior: 0 };
 
   const events = await fetchFixtures(slug);
   if (!events.length) return { games: [], diag };
@@ -225,6 +233,9 @@ async function runLeague(lgName, oldOdds) {
     console.log("  [sem-cobertura-liga] " + lgName + " (" + sportKey + "): status=" + oddsResult.status + " body=" + oddsResult.body);
   }
   const oddsGames = oddsResult.ok ? oddsResult.data : [];
+  if (oddsResult.ok && !oddsGames.length) {
+    console.log("  [sem-jogos-na-api] " + lgName + " (" + sportKey + "): pedido teve sucesso mas devolveu 0 jogos — sem cobertura automática nesta conta/época, não é falta de match.");
+  }
   const formCache = new Map();
 
   const games = [];
@@ -243,6 +254,8 @@ async function runLeague(lgName, oldOdds) {
       let freshOdds = null;
       if (!oddsResult.ok) {
         diag.semCoberturaLiga++;
+      } else if (!oddsGames.length) {
+        diag.semJogosNaApi++;
       } else {
         const nh = normTeam(homeC.team.displayName), na = normTeam(awayC.team.displayName);
         const res = matchOdds(oddsGames, homeC.team.displayName, awayC.team.displayName);
@@ -305,9 +318,20 @@ async function main() {
     return;
   }
 
+  // Ligas em que NENHUM jogo teve sequer hipótese de odds — nem é falta de match, é o pedido à
+  // The-Odds-API a falhar (semCoberturaLiga) ou a devolver 0 jogos (semJogosNaApi) para TODOS os
+  // jogos dessa liga nesta execução. Distinto de uma liga só ter alguns jogos sem odds (normal —
+  // já começaram ou ainda não têm linha); aqui é a liga inteira sem hipótese nenhuma agora.
+  const semOddsAutomaticas = okLeagues.filter(lgName => {
+    const d = diagByLeague.get(lgName);
+    const lgTotal = allGames.filter(g => g.lg === lgName).length;
+    return d && lgTotal > 0 && (d.semCoberturaLiga + d.semJogosNaApi) === lgTotal;
+  });
+
   const note = okLeagues.length
     ? "Ligas atualizadas automaticamente: " + okLeagues.join(", ") + "."
       + (failedLeagues.length ? " Falharam (mantidas de fora hoje): " + failedLeagues.join(", ") + "." : "")
+      + (semOddsAutomaticas.length ? " Sem odds automáticas nesta conta agora: " + semOddsAutomaticas.join(", ") + "." : "")
     : undefined;
 
   const payload = { fetchedAt: new Date().toISOString(), note, games: allGames };
@@ -323,16 +347,18 @@ async function main() {
     console.log("  " + lgName + ": " + lgWithOdds + "/" + lgGames.length + " (" + pct + "%)");
   }
 
-  console.log("\nDiagnóstico por liga (sem-cobertura-liga / sem-match-equipa / sem-bookmaker / com-odds — recuperado do anterior à parte):");
+  console.log("\nDiagnóstico por liga (sem-cobertura-liga / sem-jogos-na-api / sem-match-equipa / sem-bookmaker / com-odds — recuperado do anterior à parte):");
   for (const lgName of okLeagues) {
     const d = diagByLeague.get(lgName);
     if (!d) continue;
     console.log("  " + lgName + ": sem-cobertura-liga=" + d.semCoberturaLiga
+      + " sem-jogos-na-api=" + d.semJogosNaApi
       + " sem-match-equipa=" + d.semMatchEquipa
       + " sem-bookmaker=" + d.semBookmaker
       + " com-odds=" + d.comOdds
       + " (recuperado-do-anterior=" + d.recuperadoAnterior + ")");
   }
+  if (semOddsAutomaticas.length) console.log("\nLigas sem odds automáticas nesta conta agora: " + semOddsAutomaticas.join(", "));
 }
 
 main().catch(e => {
