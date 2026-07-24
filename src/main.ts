@@ -109,42 +109,17 @@ function pendingBetsFor(gameId: string): Bet[] {
   return LS.bets.filter(b => b.gameId === gameId && b.status === "pending");
 }
 
-// Sugestão de Ganhou/Perdeu a partir do resultado final — só para os mercados que dão para
-// inferir com confiança direta do placar (1/X/2, dupla hipótese); esses liquidam-se sozinhos (ver
-// autoSettlePending). Handicaps e golos (HH/HA/D:GOV/D:GUN/D:GHH/D:GHA) têm a linha só como texto
-// na label da aposta, não em campo estruturado — para esses devolve-se null e o utilizador continua
-// a confirmar manualmente (botões Ganhou/Perdeu/Anulada), para não arriscar uma leitura errada da
-// linha corromper o P&L.
-function suggestOutcome(selKey: string, score: FinalScore): "win" | "loss" | null {
-  const homeWin = score.home > score.away, draw = score.home === score.away, awayWin = score.away > score.home;
-  // Despe qualquer prefixo de proveniência (REJ:/AUTO:D:/AUTO:/D:, ver autoRegisterIfEnabled/
-  // trackRejectedIfEnabled/logFromDerived) para chegar à chave de mercado nua (1/X/2/1X/12/X2).
-  let key = selKey;
-  if (key.startsWith("REJ:")) key = key.slice(4);
-  else if (key.startsWith("AUTO:D:")) key = key.slice(7);
-  else if (key.startsWith("AUTO:")) key = key.slice(5);
-  else if (key.startsWith("D:")) key = key.slice(2);
-  switch (key) {
-    case "1": return homeWin ? "win" : "loss";
-    case "X": return draw ? "win" : "loss";
-    case "2": return awayWin ? "win" : "loss";
-    case "1X": return (homeWin || draw) ? "win" : "loss";
-    case "12": return (homeWin || awayWin) ? "win" : "loss";
-    case "X2": return (draw || awayWin) ? "win" : "loss";
-    default: return null;
-  }
-}
-
-// Só chega a mostrar-se para apostas que autoSettlePending não conseguiu liquidar sozinho (linhas
-// de handicap/golos, onde suggestOutcome não infere o resultado com confiança a partir do placar) —
-// 1X2/dupla-hipótese já vêm liquidados antes de qualquer card/detalhe ser construído (ver renderInner/renderLog).
+// Só chega a mostrar-se para apostas que autoSettlePending não conseguiu liquidar sozinho — mercado
+// não reconhecido ou linha que não deu para extrair do texto da label (ver quant.resolveBetOutcome).
+// A esmagadora maioria (1X2, dupla hipótese, BTTS, mais/menos golos, handicap 1X2 e de golos) já vem
+// liquidada antes de qualquer card/detalhe ser construído (ver renderInner/renderLog).
 function finalScoreBox(g: Game): string {
   const pending = pendingBetsFor(g.id);
   if (!pending.length) return "";
   const score = api.getFinalScore(g);
   if (!score) return "";
   const lines = pending.map(b =>
-    '<div class="kv" style="margin-top:6px">' + esc(b.sel) + ' — linha específica (handicap/golos): confirma manualmente na aba "Os meus resultados".</div>'
+    '<div class="kv" style="margin-top:6px">' + esc(b.sel) + ' — não consegui ler o resultado desta seleção automaticamente: confirma manualmente na aba "Os meus resultados".</div>'
   ).join("");
   return '<div class="banner">' + icon("check") + ' Resultado final: <b>' + esc(g.h.n) + " " + score.home + "-" + score.away + " " + esc(g.a.n) + '</b> (ESPN)' + lines + '</div>';
 }
@@ -162,19 +137,24 @@ function resolveScoreForBet(b: Bet): FinalScore | null {
 }
 
 // ===== Liquidação automática de TODAS as apostas pendentes (reais, automáticas e "não-apostas") —
-// sem clique. O resultado (Ganhou/Perdeu) é lido diretamente do placar final (ESPN) sempre que o
-// mercado permite uma leitura sem ambiguidade (1X2/dupla hipótese, ver suggestOutcome); handicaps e
-// golos continuam a exigir confirmação manual (Ganhou/Perdeu/Anulada na tabela), porque a linha exata
-// só existe como texto na label da aposta, não em campo estruturado. Chamada a cada render (ver
-// renderInner/renderLog) — idempotente, só toca em bets ainda "pending".
+// sem clique. O resultado (Ganhou/Perdeu/Anulada) é lido diretamente do placar final (ESPN) via
+// quant.resolveBetOutcome, que cobre 1X2, dupla hipótese, BTTS, mais/menos de N golos e handicap
+// (1X2 e de golos) — só fica pendente para confirmação manual quando o mercado não é reconhecido ou
+// a linha não dá para extrair do texto da label (nunca arrisca uma leitura errada a corromper o
+// P&L). Chamada a cada render (ver renderInner/renderLog) — idempotente, só toca em bets "pending".
+// Os botões manuais (settleBetUI) continuam sempre visíveis como override; uma correção manual limpa
+// Bet.autoSettled (ver storage.settleBet) mesmo que reverta um status posto automaticamente.
+// Continua a incluir bets rejected:true de propósito (não são apostas reais, mas já se liquidavam
+// sozinhas antes desta função existir — storage.computeRejectedStats depende disso para chegar a
+// win/loss; excluí-las aqui seria uma regressão silenciosa, não uma melhoria).
 function autoSettlePending(bets: Bet[]): void {
   let settled = false;
   for (const b of bets) {
     if (b.status !== "pending") continue;
     const score = resolveScoreForBet(b);
     if (!score) continue;
-    const suggestion = suggestOutcome(b.selKey, score);
-    if (suggestion) { storage.settleBet(b.id, suggestion); settled = true; }
+    const outcome = quant.resolveBetOutcome(b, score);
+    if (outcome) { storage.settleBet(b.id, outcome, true); settled = true; }
   }
   if (settled) void autoSyncExternalIfEnabled();
 }
@@ -218,8 +198,8 @@ function trackRejectedIfEnabled(g: Game, dec: ModelDecision): void {
   if (!LS.trackRejected) return;
   if (g.dt.getTime() <= Date.now()) return;   // mesmo guard de autoRegisterIfEnabled — nunca em jogos já começados
   if (dec.bet || !dec.best) return;
-  // Só rastreia candidatos 1X2 simples — são os únicos que suggestOutcome resolve com confiança
-  // direta do placar, garantindo que toda entrada rejeitada acaba por se liquidar sozinha.
+  // Só rastreia candidatos 1X2 simples — quant.resolveBetOutcome resolve-os com confiança direta
+  // do placar, garantindo que toda entrada rejeitada acaba por se liquidar sozinha.
   if (dec.best.k !== "1" && dec.best.k !== "X" && dec.best.k !== "2") return;
   const key = "REJ:" + (dec.best.k as string);
   if (storage.betAlreadyLogged(g.id, key)) return;
@@ -589,6 +569,10 @@ function renderLog(): void {
       + '<button type="button" class="pill win ' + (stat === "win" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'win\')" aria-label="Marcar aposta como ganha">Ganhou</button>'
       + '<button type="button" class="pill loss ' + (stat === "loss" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'loss\')" aria-label="Marcar aposta como perdida">Perdeu</button>'
       + '<button type="button" class="pill void ' + (stat === "void" ? "on" : "") + '" onclick="settleBet(\'' + b.id + '\',\'void\')" aria-label="Marcar aposta como anulada">Anulada</button>'
+      // Só aparece em apostas já resolvidas cujo status veio de quant.resolveBetOutcome (ver
+      // autoSettlePending), nunca escolhido à mão — os botões acima continuam sempre disponíveis
+      // para corrigir, o que limpa esta marca (ver storage.settleBet).
+      + (b.autoSettled && stat !== "pending" ? ' <span class="pill pend" title="Liquidado automaticamente a partir do placar final (ESPN) — corrige acima se estiver errado">🔄 auto</span>' : "")
       + '</div></td>'
       + '<td class="num"><input type="number" step="0.01" min="1" value="' + (b.oddClose ? b.oddClose : "") + '" style="width:64px;padding:4px;border:1px solid var(--line);border-radius:6px;background:#1d2129;color:var(--ink);font-size:11px;text-align:right" onchange="setOddClose(\'' + b.id + '\', this.value)" aria-label="Odd de fecho"></td>'
       + '<td class="num" style="' + (bClv != null ? ('color:' + (bClv >= 0 ? "#6dd18e" : "var(--bad)") + ';font-weight:700') : 'color:var(--muted)') + '">' + (bClv != null ? ((bClv >= 0 ? "+" : "") + (100 * bClv).toFixed(1) + "%") : "—") + '</td>'

@@ -267,6 +267,9 @@ export interface Bet {
                                                               // permite resolver o resultado (api.getFinalScoreFor)
                                                               // mesmo depois de o jogo sair de `games` (ver Game/data.ts)
   modelInputs?: ModelInputsSnapshot;   // inputs brutos do blend forma+mercado nesse momento — ver quant.suggestModelWeights
+  autoSettled?: boolean;   // true quando o status (win/loss/void) foi lido sozinho do placar final
+                            // (ver quant.resolveBetOutcome/main.autoSettlePending), não escolhido à
+                            // mão — permite à UI distinguir e auditar; uma correção manual limpa isto.
 }
 
 /** Aposta ainda por gravar (saveBet atribui id/status/loggedAt). */

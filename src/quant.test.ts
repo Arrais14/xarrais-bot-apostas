@@ -5,10 +5,10 @@
 import { describe, expect, it } from "vitest";
 import {
   applyCalib, autoDecide, blendFormMarket, calibInfo, calibration, computeStake, lineMovement,
-  modelProbs, noVig, scoreMatrix, stopLossStatus, suggestModelWeights
+  modelProbs, noVig, resolveBetOutcome, scoreMatrix, stopLossStatus, suggestModelWeights
 } from "./quant";
 import { DIXON_COLES_RHO, EV_MIN, EV_MIN_FRIENDLY, RECALIB_MIN_N } from "./config";
-import type { Bet, CalibInfo, DecisionContext, Game, ModelInputsSnapshot, StakeContext } from "./types";
+import type { Bet, CalibInfo, DecisionContext, FinalScore, Game, ModelInputsSnapshot, StakeContext } from "./types";
 
 function makeGame(overrides: Partial<Game> = {}): Game {
   return {
@@ -401,5 +401,85 @@ describe("scoreMatrix — ajuste Dixon-Coles ao Poisson independente (exceção 
       expect(bttsDC).toBeGreaterThan(bttsPure);
       expect(bttsDC - bttsPure).toBeLessThan(0.03);   // efeito "ligeiro", não uma distorção grande
     }
+  });
+});
+
+describe("resolveBetOutcome — liquidação automática a partir do placar final", () => {
+  const score = (home: number, away: number): FinalScore => ({ home, away });
+
+  it("1X2 simples: casa ganha 2-1", () => {
+    expect(resolveBetOutcome(makeBet({ selKey: "1" }), score(2, 1))).toBe("win");
+    expect(resolveBetOutcome(makeBet({ selKey: "X" }), score(2, 1))).toBe("loss");
+    expect(resolveBetOutcome(makeBet({ selKey: "2" }), score(2, 1))).toBe("loss");
+  });
+
+  it("1X2 com prefixos AUTO:/REJ:/AUTO:D: despidos antes de resolver", () => {
+    expect(resolveBetOutcome(makeBet({ selKey: "AUTO:2" }), score(1, 3))).toBe("win");
+    expect(resolveBetOutcome(makeBet({ selKey: "REJ:1" }), score(0, 0))).toBe("loss");
+    // AUTO:D: só existe prefixado a golos/handicap na prática, mas a normalização tem de despir
+    // os dois níveis mesmo assim (sem depender do mercado concreto por trás).
+    expect(resolveBetOutcome(makeBet({ selKey: "AUTO:D:1" }), score(2, 0))).toBe("win");
+  });
+
+  it("dupla hipótese: 1X2 (2-2 é empate)", () => {
+    expect(resolveBetOutcome(makeBet({ selKey: "1X" }), score(2, 2))).toBe("win");
+    expect(resolveBetOutcome(makeBet({ selKey: "12" }), score(2, 2))).toBe("loss");
+    expect(resolveBetOutcome(makeBet({ selKey: "X2" }), score(1, 1))).toBe("win");
+  });
+
+  it("BTTS: ambas marcam (1-1) vs só uma marca (1-0)", () => {
+    expect(resolveBetOutcome(makeBet({ selKey: "BTS" }), score(1, 1))).toBe("win");
+    expect(resolveBetOutcome(makeBet({ selKey: "BTN" }), score(1, 1))).toBe("loss");
+    expect(resolveBetOutcome(makeBet({ selKey: "BTS" }), score(1, 0))).toBe("loss");
+    expect(resolveBetOutcome(makeBet({ selKey: "BTN" }), score(1, 0))).toBe("win");
+  });
+
+  it("mais/menos de N golos: extrai a linha do texto da label (sel)", () => {
+    const bet = makeBet({ selKey: "GOV", sel: "Mais de 2.5 golos" });
+    expect(resolveBetOutcome(bet, score(2, 1))).toBe("win");   // total 3 > 2.5
+    expect(resolveBetOutcome(bet, score(1, 0))).toBe("loss");  // total 1 < 2.5
+    const under = makeBet({ selKey: "GUN", sel: "Menos de 2.5 golos" });
+    expect(resolveBetOutcome(under, score(1, 0))).toBe("win");
+    expect(resolveBetOutcome(under, score(2, 1))).toBe("loss");
+  });
+
+  it("linha de golos inteira com push exato -> void (caso raro mas possível)", () => {
+    const bet = makeBet({ selKey: "GOV", sel: "Mais de 3 golos" });
+    expect(resolveBetOutcome(bet, score(2, 1))).toBe("void");   // total 3 == linha 3
+  });
+
+  it("handicap 1X2 (HH/HA): aplica a linha à margem real do placar", () => {
+    // Casa -0.5: só cobre se ganhar (margem 1 + (-0.5) = 0.5 > 0)
+    const hh = makeBet({ selKey: "HH", sel: "Handicap Casa -0.5" });
+    expect(resolveBetOutcome(hh, score(1, 0))).toBe("win");
+    expect(resolveBetOutcome(hh, score(0, 0))).toBe("loss");
+    // Fora +0.5: cobre com empate ou vitória (margem -0 + 0.5 = 0.5 > 0 num empate)
+    const ha = makeBet({ selKey: "HA", sel: "Handicap Fora +0.5" });
+    expect(resolveBetOutcome(ha, score(0, 0))).toBe("win");
+    expect(resolveBetOutcome(ha, score(1, 0))).toBe("loss");
+  });
+
+  it("handicap de golos (GHH/GHA) usa a mesma extração de linha, com push exato -> void", () => {
+    const ghh = makeBet({ selKey: "GHH", sel: "Handicap golos Casa -1" });
+    expect(resolveBetOutcome(ghh, score(2, 1))).toBe("void");   // margem 1 + (-1) = 0 -> push
+    expect(resolveBetOutcome(ghh, score(3, 1))).toBe("win");    // margem 2 + (-1) = 1 > 0
+    expect(resolveBetOutcome(ghh, score(2, 2))).toBe("loss");   // margem 0 + (-1) = -1 < 0
+  });
+
+  it("par/ímpar (GOD/GEV) pela paridade do total de golos", () => {
+    expect(resolveBetOutcome(makeBet({ selKey: "GOD" }), score(2, 1))).toBe("win");  // total 3, ímpar
+    expect(resolveBetOutcome(makeBet({ selKey: "GEV" }), score(2, 1))).toBe("loss");
+    expect(resolveBetOutcome(makeBet({ selKey: "GEV" }), score(1, 1))).toBe("win");  // total 2, par
+  });
+
+  it("selKey desconhecido devolve null (fica pendente para confirmação manual)", () => {
+    expect(resolveBetOutcome(makeBet({ selKey: "NAO_EXISTE" }), score(1, 0))).toBeNull();
+  });
+
+  it("linha não extraível do texto devolve null em vez de arriscar um resultado errado", () => {
+    const bet = makeBet({ selKey: "GOV", sel: "Mais de golos (sem número)" });
+    expect(resolveBetOutcome(bet, score(2, 1))).toBeNull();
+    const hcp = makeBet({ selKey: "HH", sel: "Handicap Casa (sem linha)" });
+    expect(resolveBetOutcome(hcp, score(1, 0))).toBeNull();
   });
 });

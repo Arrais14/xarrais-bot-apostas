@@ -61,10 +61,13 @@ export function saveBet(bet: NewBet): Bet {
   return saved;
 }
 
-export function settleBet(id: string, status: BetStatus): void {
+// auto=true marca a liquidação como automática (ver quant.resolveBetOutcome/main.autoSettlePending)
+// — uma chamada manual (auto=false, o default) limpa sempre essa marca, mesmo que reverta um status
+// que tinha sido posto automaticamente: uma correção à mão deixa de ser "automática" por definição.
+export function settleBet(id: string, status: BetStatus, auto = false): void {
   const bets = LS.bets;
   const b = bets.find(x => x.id === id);
-  if (b) { b.status = status; LS.bets = bets; }
+  if (b) { b.status = status; b.autoSettled = auto; LS.bets = bets; }
 }
 
 export function deleteBet(id: string): void {

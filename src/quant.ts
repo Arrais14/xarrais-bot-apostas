@@ -7,8 +7,8 @@
 // ajuste Dixon-Coles (ver DIXON_COLES_RHO em config.ts) — o único desvio à regra acima.
 
 import type {
-  Bet, Candidate, CalibAdjustment, CalibInfo, CalibrationBin, CalibrationResult,
-  ClvGate, CompareOption, DecisionContext, Game, GoalModel, LineMovement, ModelDecision,
+  Bet, BetStatus, Candidate, CalibAdjustment, CalibInfo, CalibrationBin, CalibrationResult,
+  ClvGate, CompareOption, DecisionContext, FinalScore, Game, GoalModel, LineMovement, ModelDecision,
   ModelInputsSnapshot, ModelProbs, NoVigProbs, Odds, PoissonMatrix, SharpQuote, StakeContext,
   StakeInfo, StopLossStatus, WeightSuggestion
 } from "./types";
@@ -490,4 +490,81 @@ export function buildOpts(g: Game, calib: CalibInfo, sharp?: SharpQuote | null):
     if (A) opts.push({ k: "GHA", lbl: "Handicap golos " + g.a.n + " " + A.line, p: adjP(matHandicap(gm.matrix, "a", parseFloat(A.line))), ref: A.od });
   }
   return opts;
+}
+
+// ===== Liquidação automática: lê o resultado de uma aposta a partir do placar final =====
+// Despe qualquer prefixo de proveniência (REJ:/AUTO:D:/AUTO:/D:) até à chave de mercado nua — uma
+// função à parte de stripAutoPrefix (que só despe "AUTO:" de propósito: segmentedPerformancePanels
+// em main.ts depende do prefixo "D:" sobreviver a essa chamada para separar mercado principal de
+// segunda oportunidade; generalizar stripAutoPrefix partiria essa distinção).
+function stripSelKeyPrefix(selKey: string): string {
+  if (selKey.startsWith("REJ:")) return selKey.slice(4);
+  if (selKey.startsWith("AUTO:D:")) return selKey.slice(7);
+  if (selKey.startsWith("AUTO:")) return selKey.slice(5);
+  if (selKey.startsWith("D:")) return selKey.slice(2);
+  return selKey;
+}
+
+// Linha de golos a partir do texto da label (ex. "Mais de 2.5 golos" -> 2.5) — GOV/GUN não têm a
+// linha em campo estruturado na Bet, só na label (ver Candidate.lbl em derivedCandidates).
+function extractGoalLine(text: string): number | null {
+  const m = text.match(/(\d+(?:[.,]\d+)?)\s*golos/i);
+  if (!m) return null;
+  const n = parseFloat(m[1].replace(",", "."));
+  return isNaN(n) ? null : n;
+}
+
+// Linha de handicap (+/-N.N) a partir do fim do texto da label (ex. "Handicap Flamengo -0.5" ->
+// -0.5) — HH/HA/GHH/GHA idem, só a label tem a linha. Ancorado ao fim da string para nunca
+// confundir com dígitos que por acaso apareçam no nome da equipa.
+function extractHandicapLine(text: string): number | null {
+  const m = text.match(/([+-]\d+(?:[.,]\d+)?)\s*$/);
+  if (!m) return null;
+  const n = parseFloat(m[1].replace(",", "."));
+  return isNaN(n) ? null : n;
+}
+
+// Devolve null sempre que o mercado não é reconhecido OU a linha não se consegue extrair do texto
+// — nesses casos a aposta fica "pending" e o utilizador confirma à mão (nunca adivinha um resultado
+// à força). "void" cobre um push exato (linha de golos igual ao total, ou margem de handicap que
+// fecha exatamente em zero após aplicar a linha) — mesma leitura de margem usada por matHandicap,
+// mas sobre o placar real, não sobre a matriz de probabilidades.
+export function resolveBetOutcome(bet: Bet, score: FinalScore): BetStatus | null {
+  const key = stripSelKeyPrefix(bet.selKey);
+  const home = score.home, away = score.away;
+  const homeWin = home > away, draw = home === away, awayWin = away > home;
+  switch (key) {
+    case "1": return homeWin ? "win" : "loss";
+    case "X": return draw ? "win" : "loss";
+    case "2": return awayWin ? "win" : "loss";
+    case "1X": return (homeWin || draw) ? "win" : "loss";
+    case "12": return (homeWin || awayWin) ? "win" : "loss";
+    case "X2": return (draw || awayWin) ? "win" : "loss";
+    case "BTS": return (home > 0 && away > 0) ? "win" : "loss";
+    case "BTN": return (home > 0 && away > 0) ? "loss" : "win";
+    case "GOD": return ((home + away) % 2 !== 0) ? "win" : "loss";
+    case "GEV": return ((home + away) % 2 === 0) ? "win" : "loss";
+    case "GOV":
+    case "GUN": {
+      const line = extractGoalLine(bet.sel);
+      if (line == null) return null;
+      const total = home + away;
+      if (total === line) return "void";
+      const over = total > line;
+      return key === "GOV" ? (over ? "win" : "loss") : (over ? "loss" : "win");
+    }
+    case "HH":
+    case "HA":
+    case "GHH":
+    case "GHA": {
+      const line = extractHandicapLine(bet.sel);
+      if (line == null) return null;
+      const isHome = key === "HH" || key === "GHH";
+      const margin = isHome ? (home - away) : (away - home);
+      const adjusted = margin + line;
+      if (adjusted === 0) return "void";
+      return adjusted > 0 ? "win" : "loss";
+    }
+    default: return null;
+  }
 }
