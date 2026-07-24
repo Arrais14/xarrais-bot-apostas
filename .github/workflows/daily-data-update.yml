@@ -33,5 +33,11 @@ jobs:
           else
             git add public/data.json
             git commit -m "Atualização automática de jogos/odds ($(date -u +%Y-%m-%d))"
+            # O checkout no início do job pode já estar desatualizado se algum commit tiver chegado
+            # ao main entretanto (ex.: um push manual enquanto o job corria) — sem isto, git push
+            # falhava sempre com "rejected (fetch first)" e o dia inteiro de dados ficava por publicar,
+            # mesmo o job tendo corrido com sucesso. Rebase é seguro aqui: este passo só mexe em
+            # public/data.json, praticamente nunca colide com outro commit no mesmo ficheiro.
+            git pull --rebase origin main
             git push
           fi
