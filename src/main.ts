@@ -457,13 +457,15 @@ function renderLog(): void {
 
   autoSettlePending(allBets);
 
-  // Backup automático: se já lá vão BACKUP_STALE_DAYS dias sem exportar, faz-se sozinho e avisa.
+  // Lembrete de backup: se já lá vão BACKUP_STALE_DAYS dias sem exportar, oferece um botão de 1
+  // clique bem visível (não escondido num menu) — nunca dispara o download sozinho fora de um
+  // clique real do utilizador (browsers bloqueiam/inconsistem downloads sem gesto direto).
   let autoBackupMsg = "";
   const lastExp = LS.lastExport ? new Date(LS.lastExport).getTime() : 0;
   const daysSinceExport = lastExp ? (Date.now() - lastExp) / 86400000 : Infinity;
   if (daysSinceExport >= BACKUP_STALE_DAYS) {
-    storage.exportJSON(ymd(new Date()));
-    autoBackupMsg = '<div class="kv" style="margin-bottom:10px">📦 Backup automático feito agora (JSON transferido) — já lá iam mais de ' + BACKUP_STALE_DAYS + ' dias sem exportar.</div>';
+    autoBackupMsg = '<div class="warnbox" style="margin-bottom:10px">📦 <b>Já lá vão mais de ' + BACKUP_STALE_DAYS + ' dias sem exportar</b> — todo o histórico vive só neste browser; um "limpar dados" apagava-o. '
+      + '<button class="btn copy" style="margin-left:8px" onclick="exportJSON()">' + icon("download") + ' Exportar agora (JSON)</button></div>';
   }
   const pc = s.profit > 0 ? "pos" : s.profit < 0 ? "neg" : "neu";
   const rc = s.roi > 0 ? "pos" : s.roi < 0 ? "neg" : "neu";
