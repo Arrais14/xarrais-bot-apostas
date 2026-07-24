@@ -62,3 +62,17 @@ export const CLOSE_ODDS_CAPTURE_MS = 5 * 60_000;
 // acesso, a resposta simplesmente não traz este bookmaker e o modelo cai de volta para a odd
 // de referência (DraftKings/ESPN) pré-carregada — nunca bloqueia o resto da app.
 export const SHARP_BOOKMAKER_KEY = "pinnacle";
+
+// ===== Ajuste Dixon-Coles ao modelo de golos (ver quant.ts:scoreMatrix) =====
+// Exceção deliberada à REGRA DE OURO de quant.ts (pedida explicitamente, não uma alteração de
+// rotina): o Poisson independente (golos casa/fora tratados como não-correlacionados) não reflete
+// bem os placares baixos reais do futebol — Dixon & Coles (1997) corrigem isto com um fator
+// multiplicativo nas 4 células de placar baixo (0-0/0-1/1-0/1-1) antes de renormalizar a matriz.
+// rho é tipicamente ~-0.1 a -0.2 na literatura (usa-se -0.1 aqui, o valor mais citado).
+// NOTA IMPORTANTE (verificado numericamente, não assumido): com este sinal — o mesmo da fórmula
+// original do paper — o efeito real é AUMENTAR ligeiramente 0-0 e 1-1 (portanto o BTTS sobe um
+// pouco, não desce) e reduzir 1-0/0-1, refletindo que jogos reais têm mais empates "cautelosos"
+// de baixo marcador do que a independência pura preveria. Se algum dia se quiser o efeito
+// contrário (BTTS a descer), inverte-se o sinal para +0.1 — mas isso deixaria de ser o Dixon-Coles
+// "de fábrica" citado na literatura.
+export const DIXON_COLES_RHO = -0.1;

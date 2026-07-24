@@ -3,6 +3,8 @@
 // monólito original — só se tornaram funções puras com parâmetros explícitos (banca, perfil,
 // risco pendente, calibração) em vez de lerem localStorage/globais diretamente. Isto é o que
 // torna este ficheiro testável isoladamente (e pronto para, no futuro, correr num backend).
+// EXCEÇÃO DELIBERADA (pedida explicitamente, não uma alteração de rotina): scoreMatrix ganhou o
+// ajuste Dixon-Coles (ver DIXON_COLES_RHO em config.ts) — o único desvio à regra acima.
 
 import type {
   Bet, Candidate, CalibAdjustment, CalibInfo, CalibrationBin, CalibrationResult,
@@ -11,9 +13,9 @@ import type {
   StakeInfo, StopLossStatus, WeightSuggestion
 } from "./types";
 import {
-  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, EV_MIN, EV_MIN_FRIENDLY, MIN_ODD, MODEL_BLEND_W,
-  MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, STAKE_CAP_FRAC, STOP_LOSS_DRAWDOWN_FRAC,
-  STOP_LOSS_WINDOW_DAYS
+  CALIB_MIN_N, CLV_MIN_N, CLV_RISK_MULT, DIXON_COLES_RHO, EV_MIN, EV_MIN_FRIENDLY, MIN_ODD,
+  MODEL_BLEND_W, MODEL_HOME_ADV, PENDING_RISK_FRAC, RECALIB_MIN_N, STAKE_CAP_FRAC,
+  STOP_LOSS_DRAWDOWN_FRAC, STOP_LOSS_WINDOW_DAYS
 } from "./config";
 import { avgCLV } from "./storage";
 import { fmt2, num } from "./utils";
@@ -144,13 +146,25 @@ function poissonP(l: number, k: number): number {
   for (let i = 2; i <= k; i++) f *= i;
   return Math.pow(l, k) * Math.exp(-l) / f;
 }
-function scoreMatrix(lh: number, la: number): PoissonMatrix {
+// Fator de correção Dixon-Coles (Dixon & Coles, 1997) para as 4 células de placar baixo — ver
+// DIXON_COLES_RHO em config.ts para a fórmula completa, o valor usado e o efeito real (verificado
+// numericamente, não assumido) desse sinal. rho=0 reproduz o Poisson independente sem correção
+// nenhuma (usado pelos testes para comparar "com" vs "sem" Dixon-Coles).
+function dixonColesTau(i: number, j: number, lh: number, la: number, rho: number): number {
+  if (i === 0 && j === 0) return 1 - lh * la * rho;
+  if (i === 0 && j === 1) return 1 + lh * rho;
+  if (i === 1 && j === 0) return 1 + la * rho;
+  if (i === 1 && j === 1) return 1 - rho;
+  return 1;
+}
+export function scoreMatrix(lh: number, la: number, rho: number = DIXON_COLES_RHO): PoissonMatrix {
   const MG = 10, m: number[][] = [];
   let tot = 0;
   for (let i = 0; i <= MG; i++) {
     const row: number[] = [];
     for (let j = 0; j <= MG; j++) {
-      const pr = poissonP(lh, i) * poissonP(la, j);
+      let pr = poissonP(lh, i) * poissonP(la, j);
+      if (i <= 1 && j <= 1) pr *= dixonColesTau(i, j, lh, la, rho);
       row.push(pr); tot += pr;
     }
     m.push(row);

@@ -5,9 +5,9 @@
 import { describe, expect, it } from "vitest";
 import {
   applyCalib, autoDecide, blendFormMarket, calibInfo, calibration, computeStake, lineMovement,
-  modelProbs, noVig, stopLossStatus, suggestModelWeights
+  modelProbs, noVig, scoreMatrix, stopLossStatus, suggestModelWeights
 } from "./quant";
-import { EV_MIN, EV_MIN_FRIENDLY, RECALIB_MIN_N } from "./config";
+import { DIXON_COLES_RHO, EV_MIN, EV_MIN_FRIENDLY, RECALIB_MIN_N } from "./config";
 import type { Bet, CalibInfo, DecisionContext, Game, ModelInputsSnapshot, StakeContext } from "./types";
 
 function makeGame(overrides: Partial<Game> = {}): Game {
@@ -368,5 +368,38 @@ describe("applyCalib — ajusta a probabilidade do modelo pelo viés medido", ()
     const r = applyCalib(0.6, { active: true, bias: 0.0001, n: 40 });
     expect(r.p).toBeCloseTo(0.5999, 10);
     expect(r.applied).toBe(false);
+  });
+});
+
+// BTTS (ambas marcam) = soma de todas as células (i,j) com i>0 e j>0 — mesma definição de matBTTS
+// em quant.ts, recalculada aqui para não depender de exportar mais internos do que o necessário.
+function bttsYes(m: number[][]): number {
+  let yes = 0;
+  for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) if (i > 0 && j > 0) yes += m[i][j];
+  return yes;
+}
+
+describe("scoreMatrix — ajuste Dixon-Coles ao Poisson independente (exceção deliberada à REGRA DE OURO)", () => {
+  it("a matriz de placares soma sempre 1 (com e sem o ajuste Dixon-Coles)", () => {
+    const withDC = scoreMatrix(1.4, 1.1);          // rho = DIXON_COLES_RHO por omissão
+    const pure = scoreMatrix(1.4, 1.1, 0);          // rho=0 -> Poisson independente puro, sem correção
+    const sum = (m: number[][]) => m.flat().reduce((a, b) => a + b, 0);
+    expect(sum(withDC)).toBeCloseTo(1, 9);
+    expect(sum(pure)).toBeCloseTo(1, 9);
+  });
+
+  it("com rho negativo (valor usado em produção), o BTTS sobe ligeiramente vs Poisson puro — não desce", () => {
+    // Verificado numericamente (não assumido): com a fórmula original de Dixon & Coles (1997) e
+    // rho negativo, tau(1,1)=1-rho>1 e tau(0,0)=1-lh*la*rho>1 aumentam 0-0 e 1-1 relativamente ao
+    // Poisson independente — como 1-1 conta para BTTS "sim", o efeito líquido é um BTTS ligeiramente
+    // MAIOR, não menor, para lh/la realistas (~0.7-1.8). Documentado também em DIXON_COLES_RHO.
+    expect(DIXON_COLES_RHO).toBeLessThan(0);
+    const casos: [number, number][] = [[1.3, 1.3], [1.5, 1.1], [0.9, 0.9], [1.8, 1.5]];
+    for (const [lh, la] of casos) {
+      const bttsPure = bttsYes(scoreMatrix(lh, la, 0));
+      const bttsDC = bttsYes(scoreMatrix(lh, la));
+      expect(bttsDC).toBeGreaterThan(bttsPure);
+      expect(bttsDC - bttsPure).toBeLessThan(0.03);   // efeito "ligeiro", não uma distorção grande
+    }
   });
 });
