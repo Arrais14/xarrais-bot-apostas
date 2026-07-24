@@ -925,6 +925,13 @@ function derivedDecBox(g: Game, dec: ModelDecision): string {
 }
 
 function detailHtml(g: Game): string {
+  // Mesma verificação que já existe em card() — o card fechado já mostrava "A decorrer"/"Terminado"
+  // corretamente, mas o painel de detalhe continuava a montar uma caixa de decisão acionável
+  // ("APOSTAR X" ou "NÃO APOSTAR") mesmo depois de o jogo começar, o que não faz sentido: as odds
+  // pré-jogo já não são acionáveis, e sugerir registo/comparação de casas para um jogo a decorrer
+  // ou terminado é enganador. Quando started, a tabela de odds fica só como referência histórica
+  // (marcada como tal) e o comparador/registo desaparecem — ver mais abaixo.
+  const started = g.dt.getTime() <= Date.now();
   const o = g.o, nv = quant.noVig(o);
   const friendlyWarn = g.friendly
     ? '<div class="warnbox">🤝 <b>Jogo amigável</b> — forma pouco fiável; limiar sobe para EV ≥ +' + (100 * EV_MIN_FRIENDLY).toFixed(0) + '%. Aposta com stakes reduzidas, se apostares.</div>'
@@ -952,6 +959,7 @@ function detailHtml(g: Game): string {
     if (movParts.length) {
       oddsT += '<div class="warnbox">' + icon("alert") + ' Mercado moveu-se desde a abertura: ' + movParts.join(" · ") + " — pode indicar informação nova (lesão, onze) que o modelo não vê.</div>";
     }
+    if (started) oddsT += '<p class="kv">📜 Odds pré-jogo, guardadas antes do início — referência histórica, já não são acionáveis.</p>';
   }
   const info: string[] = [];
   if (g.v) info.push("🏟 " + esc(g.v));
@@ -959,7 +967,9 @@ function detailHtml(g: Game): string {
   info.push(esc(g.h.n) + " — forma " + esc(g.h.f || "?") + ", V-E-D " + esc(g.h.r || "?") + (g.h.s ? ", ⚽ " + esc(g.h.s) : ""));
   info.push(esc(g.a.n) + " — forma " + esc(g.a.f || "?") + ", V-E-D " + esc(g.a.r || "?") + (g.a.s ? ", ⚽ " + esc(g.a.s) : ""));
   let cmp = "";
-  const opts = quant.buildOpts(g, buildDecisionContext().calib, getSharp(g));
+  // Sem comparador de casas para um jogo já começado — não faz sentido continuar a sugerir onde
+  // procurar a melhor odd de um mercado que já fechou.
+  const opts = started ? [] : quant.buildOpts(g, buildDecisionContext().calib, getSharp(g));
   if (opts.length) {
     currentOpts[g.id] = opts;
     cmp = "<h4>Melhor odd e stake — Blockbet · Betano · Betclic</h4>"
@@ -975,9 +985,15 @@ function detailHtml(g: Game): string {
       + '<div class="cmpout" id="cmp' + g.id + '"></div>';
   }
   const dec = getDecision(g);
-  autoRegisterIfEnabled(g, dec);
+  autoRegisterIfEnabled(g, dec);   // já tem guarda própria contra jogos começados, nada a duplicar aqui
   let decBox = "";
-  if (dec.bet) {
+  let decBox2 = "";
+  if (started) {
+    // O jogo já começou — a decisão acima seria calculada sobre odds pré-jogo já fechadas, e
+    // sugerir registo/comparação nesse ponto é enganador. finalScoreBox (resultado final) e a
+    // tabela de odds (marcada como histórica, ver oddsT) continuam visíveis normalmente.
+    decBox = '<div class="kv">' + icon("target") + ' Este jogo já começou — a decisão abaixo já não é acionável; consulta o resultado no topo.</div>';
+  } else if (dec.bet) {
     const evMinG = g.friendly ? EV_MIN_FRIENDLY : EV_MIN;
     const minOdd = (1 + evMinG) / (dec.p as number);
     const logged = storage.betAlreadyLogged(g.id, dec.bestKey);
@@ -998,7 +1014,7 @@ function detailHtml(g: Game): string {
     decBox = '<div class="decbox no"><span style="font-size:15px"><b>' + icon("x") + ' NÃO APOSTAR — ' + esc(dec.msg) + "</b></span>"
       + (dec.best ? "<br>Melhor candidata: " + esc(dec.best.lbl) + " — só com odd ≥ <b>" + fmt2((1 + evMinG) / dec.best.p) + "</b> (ref. " + fmt2(dec.best.od) + ")." : "") + "</div>";
   }
-  const decBox2 = derivedDecBox(g, dec);
+  if (!started) decBox2 = derivedDecBox(g, dec);
   return finalScoreBox(g) + friendlyWarn + '<div class="kv">' + info.join("<br>") + "</div>"
     + decBox
     + decBox2
