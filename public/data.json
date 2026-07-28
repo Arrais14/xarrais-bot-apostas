@@ -1,79 +1,7 @@
 {
-  "fetchedAt": "2026-07-27T10:30:57.812Z",
+  "fetchedAt": "2026-07-28T03:10:44.065Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
-    {
-      "id": "401841158",
-      "lg": "Brasileirão",
-      "d": "2026-07-25T21:30Z",
-      "v": "Arena da Baixada",
-      "h": {
-        "n": "Athletico-PR",
-        "f": "LDLWW",
-        "r": "11-3-6",
-        "s": null
-      },
-      "a": {
-        "n": "Internacional",
-        "f": "LDLDL",
-        "r": "5-6-9",
-        "s": null
-      },
-      "o": {
-        "h": 1.9,
-        "d": 3.12,
-        "a": 3.8,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841161",
-      "lg": "Brasileirão",
-      "d": "2026-07-25T21:30Z",
-      "v": "Estádio Vila Belmiro (Urbano Caldeira)",
-      "h": {
-        "n": "Santos",
-        "f": "DWLDL",
-        "r": "5-7-8",
-        "s": null
-      },
-      "a": {
-        "n": "Chapecoense",
-        "f": "DLDDW",
-        "r": "1-7-12",
-        "s": null
-      },
-      "o": {
-        "h": 1.34,
-        "d": 4.5,
-        "a": 7,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841160",
-      "lg": "Brasileirão",
-      "d": "2026-07-25T23:30Z",
-      "v": "Estádio São Januário",
-      "h": {
-        "n": "Vasco da Gama",
-        "f": "WLLDL",
-        "r": "5-6-9",
-        "s": null
-      },
-      "a": {
-        "n": "Mirassol",
-        "f": "LDDDW",
-        "r": "5-5-9",
-        "s": null
-      },
-      "o": {
-        "h": 1.97,
-        "d": 3.18,
-        "a": 3.48,
-        "src": "betclic_fr"
-      }
-    },
     {
       "id": "401841159",
       "lg": "Brasileirão",
@@ -335,10 +263,10 @@
         "s": null
       },
       "o": {
-        "h": 3.53,
-        "d": 3.18,
-        "a": 1.85,
-        "src": "betclic_fr"
+        "h": 3.8,
+        "d": 3.5,
+        "a": 1.9,
+        "src": "betano_uk"
       }
     },
     {
@@ -359,10 +287,10 @@
         "s": null
       },
       "o": {
-        "h": 1.6,
-        "d": 3.35,
-        "a": 4.6,
-        "src": "betclic_fr"
+        "h": 1.7,
+        "d": 3.6,
+        "a": 4.8,
+        "src": "betano_uk"
       }
     },
     {
@@ -383,10 +311,10 @@
         "s": null
       },
       "o": {
-        "h": 1.67,
-        "d": 3.38,
-        "a": 4.1,
-        "src": "betclic_fr"
+        "h": 1.75,
+        "d": 3.7,
+        "a": 4.33,
+        "src": "betano_uk"
       }
     },
     {
@@ -407,10 +335,10 @@
         "s": null
       },
       "o": {
-        "h": 3.6,
-        "d": 3.07,
-        "a": 1.87,
-        "src": "betclic_fr"
+        "h": 3.8,
+        "d": 3.3,
+        "a": 1.95,
+        "src": "betano_uk"
       }
     },
     {
@@ -431,10 +359,10 @@
         "s": null
       },
       "o": {
-        "h": 1.8,
-        "d": 3.03,
-        "a": 3.93,
-        "src": "betclic_fr"
+        "h": 1.93,
+        "d": 3.12,
+        "a": 4.2,
+        "src": "betano_uk"
       }
     },
     {
@@ -455,82 +383,10 @@
         "s": null
       },
       "o": {
-        "h": 3.03,
-        "d": 3.03,
-        "a": 2.08,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401877031",
-      "lg": "Liga MX",
-      "d": "2026-07-25T23:07Z",
-      "v": "Estadio Akron",
-      "h": {
-        "n": "Guadalajara",
-        "f": "WL",
-        "r": "1-0-1",
-        "s": null
-      },
-      "a": {
-        "n": "FC Juarez",
-        "f": "LL",
-        "r": "0-0-2",
-        "s": null
-      },
-      "o": {
-        "h": 1.4,
-        "d": 4.35,
-        "a": 5.75,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401877030",
-      "lg": "Liga MX",
-      "d": "2026-07-26T03:00Z",
-      "v": "Estadio Corona",
-      "h": {
-        "n": "Santos",
-        "f": "LL",
-        "r": "0-0-2",
-        "s": null
-      },
-      "a": {
-        "n": "Atlas",
-        "f": "WW",
-        "r": "2-0-0",
-        "s": null
-      },
-      "o": {
-        "h": 2.37,
-        "d": 3.13,
-        "a": 2.65,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401877034",
-      "lg": "Liga MX",
-      "d": "2026-07-26T03:00Z",
-      "v": "Estadio Universitario",
-      "h": {
-        "n": "Tigres UANL",
-        "f": "DL",
-        "r": "0-1-1",
-        "s": null
-      },
-      "a": {
-        "n": "Atlético de San Luis",
-        "f": "DL",
-        "r": "0-1-1",
-        "s": null
-      },
-      "o": {
-        "h": 1.36,
-        "d": 4.45,
-        "a": 6.25,
-        "src": "betclic_fr"
+        "h": 3.2,
+        "d": 3.25,
+        "a": 2.2,
+        "src": "betano_uk"
       }
     },
     {
@@ -582,6 +438,78 @@
       }
     },
     {
+      "id": "401877027",
+      "lg": "Liga MX",
+      "d": "2026-08-01T01:00Z",
+      "v": "Estadio Cuauhtémoc",
+      "h": {
+        "n": "Puebla",
+        "f": "LW",
+        "r": "1-0-1",
+        "s": null
+      },
+      "a": {
+        "n": "Guadalajara",
+        "f": "WL",
+        "r": "1-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 4.35,
+        "d": 3.7,
+        "a": 1.61,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877026",
+      "lg": "Liga MX",
+      "d": "2026-08-01T03:00Z",
+      "v": "Estadio Libertad Financiera",
+      "h": {
+        "n": "Atlético de San Luis",
+        "f": "DL",
+        "r": "0-1-1",
+        "s": null
+      },
+      "a": {
+        "n": "Tijuana",
+        "f": "WW",
+        "r": "2-0-0",
+        "s": null
+      },
+      "o": {
+        "h": 2.25,
+        "d": 3.25,
+        "a": 2.7,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877025",
+      "lg": "Liga MX",
+      "d": "2026-08-01T03:00Z",
+      "v": "Estadio Olímpico Benito Juárez",
+      "h": {
+        "n": "FC Juarez",
+        "f": "LL",
+        "r": "0-0-2",
+        "s": null
+      },
+      "a": {
+        "n": "Pumas UNAM",
+        "f": "WL",
+        "r": "1-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 2.25,
+        "d": 3.25,
+        "a": 2.58,
+        "src": "betclic_fr"
+      }
+    },
+    {
       "id": "401891534",
       "lg": "Champions League (Qualificação)",
       "d": "2026-07-28T15:00Z",
@@ -599,9 +527,9 @@
         "s": null
       },
       "o": {
-        "h": 3.15,
-        "d": 3.4,
-        "a": 2.15
+        "h": 3,
+        "d": 3.55,
+        "a": 2.25
       }
     },
     {
@@ -622,9 +550,9 @@
         "s": null
       },
       "o": {
-        "h": 5.25,
-        "d": 4.6,
-        "a": 1.5
+        "h": 5,
+        "d": 4.7,
+        "a": 1.54
       }
     },
     {
@@ -645,8 +573,8 @@
         "s": null
       },
       "o": {
-        "h": 1.36,
-        "d": 4.9,
+        "h": 1.38,
+        "d": 5,
         "a": 7.5
       }
     },
@@ -668,8 +596,8 @@
         "s": null
       },
       "o": {
-        "h": 1.39,
-        "d": 4.8,
+        "h": 1.4,
+        "d": 5,
         "a": 7
       }
     },
@@ -710,9 +638,9 @@
         "s": null
       },
       "o": {
-        "h": 1.83,
-        "d": 3.65,
-        "a": 3.95
+        "h": 1.77,
+        "d": 3.95,
+        "a": 4.1
       }
     },
     {
@@ -1979,102 +1907,6 @@
       "o": null
     },
     {
-      "id": "401841446",
-      "lg": "Liga Argentina",
-      "d": "2026-07-25T17:45Z",
-      "v": "Ciudad de Río Cuarto Antonio Candini",
-      "h": {
-        "n": "Estudiantes de Río Cuarto",
-        "f": "LLLDL",
-        "r": "1-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Tigre",
-        "f": "WWWDW",
-        "r": "0-0-1",
-        "s": null
-      },
-      "o": {
-        "h": 3.47,
-        "d": 2.8,
-        "a": 2.2,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841441",
-      "lg": "Liga Argentina",
-      "d": "2026-07-25T20:00Z",
-      "v": "Marcelo Bielsa",
-      "h": {
-        "n": "Newell's Old Boys",
-        "f": "DLLDL",
-        "r": "1-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Talleres (Córdoba)",
-        "f": "WDLLW",
-        "r": "0-0-1",
-        "s": null
-      },
-      "o": {
-        "h": 2.73,
-        "d": 2.77,
-        "a": 2.68,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841438",
-      "lg": "Liga Argentina",
-      "d": "2026-07-25T22:15Z",
-      "v": "Estadio Más Monumental",
-      "h": {
-        "n": "River Plate",
-        "f": "LLDWW",
-        "r": "0-0-1",
-        "s": null
-      },
-      "a": {
-        "n": "Barracas Central",
-        "f": "LWDDL",
-        "r": "1-0-0",
-        "s": null
-      },
-      "o": {
-        "h": 1.33,
-        "d": 4.1,
-        "a": 8,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841442",
-      "lg": "Liga Argentina",
-      "d": "2026-07-26T00:30Z",
-      "v": "Ciudad de Lanús",
-      "h": {
-        "n": "Lanús",
-        "f": "LDDWW",
-        "r": "1-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "San Lorenzo",
-        "f": "DLWWL",
-        "r": "0-0-1",
-        "s": null
-      },
-      "o": {
-        "h": 1.91,
-        "d": 2.75,
-        "a": 4.25,
-        "src": "betclic_fr"
-      }
-    },
-    {
       "id": "401841434",
       "lg": "Liga Argentina",
       "d": "2026-07-26T18:00Z",
@@ -2164,9 +1996,9 @@
         "s": null
       },
       "o": {
-        "h": 1.95,
-        "d": 2.85,
-        "a": 3.93,
+        "h": 1.9,
+        "d": 2.88,
+        "a": 4.05,
         "src": "betclic_fr"
       }
     },
@@ -2188,9 +2020,9 @@
         "s": null
       },
       "o": {
-        "h": 1.9,
-        "d": 2.82,
-        "a": 4.2,
+        "h": 1.86,
+        "d": 2.88,
+        "a": 4.25,
         "src": "betclic_fr"
       }
     },
@@ -2212,9 +2044,9 @@
         "s": null
       },
       "o": {
-        "h": 1.36,
-        "d": 3.83,
-        "a": 8,
+        "h": 1.33,
+        "d": 3.93,
+        "a": 8.75,
         "src": "betclic_fr"
       }
     },
@@ -2236,9 +2068,9 @@
         "s": null
       },
       "o": {
-        "h": 2.12,
+        "h": 2.08,
         "d": 2.87,
-        "a": 3.35,
+        "a": 3.45,
         "src": "betclic_fr"
       }
     },
@@ -2260,9 +2092,9 @@
         "s": null
       },
       "o": {
-        "h": 2.13,
-        "d": 2.67,
-        "a": 3.38,
+        "h": 2.15,
+        "d": 2.73,
+        "a": 3.48,
         "src": "betclic_fr"
       }
     },
@@ -2284,9 +2116,9 @@
         "s": null
       },
       "o": {
-        "h": 1.98,
-        "d": 2.72,
-        "a": 3.73,
+        "h": 2,
+        "d": 2.78,
+        "a": 3.83,
         "src": "betclic_fr"
       }
     },
@@ -2308,9 +2140,9 @@
         "s": null
       },
       "o": {
-        "h": 3.75,
-        "d": 2.87,
-        "a": 1.9,
+        "h": 3.85,
+        "d": 2.95,
+        "a": 1.92,
         "src": "betclic_fr"
       }
     },
@@ -2332,9 +2164,9 @@
         "s": null
       },
       "o": {
-        "h": 1.93,
-        "d": 2.73,
-        "a": 3.93,
+        "h": 1.94,
+        "d": 2.8,
+        "a": 4.05,
         "src": "betclic_fr"
       }
     },
@@ -2357,8 +2189,8 @@
       },
       "o": {
         "h": 2.03,
-        "d": 2.72,
-        "a": 3.55,
+        "d": 2.7,
+        "a": 3.58,
         "src": "betclic_fr"
       }
     },
@@ -2380,9 +2212,9 @@
         "s": null
       },
       "o": {
-        "h": 2.18,
-        "d": 2.63,
-        "a": 3.3,
+        "h": 2.15,
+        "d": 2.7,
+        "a": 3.27,
         "src": "betclic_fr"
       }
     },
@@ -2404,7 +2236,7 @@
         "s": null
       },
       "o": {
-        "h": 3.15,
+        "h": 3.2,
         "d": 2.9,
         "a": 2.4
       }
