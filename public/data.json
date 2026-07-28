@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-28T03:10:44.065Z",
+  "fetchedAt": "2026-07-28T09:29:39.108Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
@@ -263,9 +263,9 @@
         "s": null
       },
       "o": {
-        "h": 3.8,
+        "h": 3.75,
         "d": 3.5,
-        "a": 1.9,
+        "a": 1.91,
         "src": "betano_uk"
       }
     },
@@ -527,9 +527,9 @@
         "s": null
       },
       "o": {
-        "h": 3,
-        "d": 3.55,
-        "a": 2.25
+        "h": 2.9,
+        "d": 3.45,
+        "a": 2.35
       }
     },
     {
@@ -550,8 +550,8 @@
         "s": null
       },
       "o": {
-        "h": 5,
-        "d": 4.7,
+        "h": 5.25,
+        "d": 4.6,
         "a": 1.54
       }
     },
@@ -573,8 +573,8 @@
         "s": null
       },
       "o": {
-        "h": 1.38,
-        "d": 5,
+        "h": 1.36,
+        "d": 5.25,
         "a": 7.5
       }
     },
@@ -596,9 +596,9 @@
         "s": null
       },
       "o": {
-        "h": 1.4,
-        "d": 5,
-        "a": 7
+        "h": 1.43,
+        "d": 4.9,
+        "a": 6.5
       }
     },
     {
@@ -638,9 +638,9 @@
         "s": null
       },
       "o": {
-        "h": 1.77,
-        "d": 3.95,
-        "a": 4.1
+        "h": 1.71,
+        "d": 4,
+        "a": 4.4
       }
     },
     {
@@ -782,8 +782,8 @@
         "s": null
       },
       "o": {
-        "h": 1.05,
-        "d": 13,
+        "h": 1.04,
+        "d": 14,
         "a": 23
       }
     },
@@ -1996,9 +1996,9 @@
         "s": null
       },
       "o": {
-        "h": 1.9,
-        "d": 2.88,
-        "a": 4.05,
+        "h": 1.92,
+        "d": 2.95,
+        "a": 3.83,
         "src": "betclic_fr"
       }
     },
@@ -2020,9 +2020,9 @@
         "s": null
       },
       "o": {
-        "h": 1.86,
+        "h": 1.94,
         "d": 2.88,
-        "a": 4.25,
+        "a": 3.88,
         "src": "betclic_fr"
       }
     },
@@ -2044,9 +2044,9 @@
         "s": null
       },
       "o": {
-        "h": 1.33,
-        "d": 3.93,
-        "a": 8.75,
+        "h": 1.35,
+        "d": 3.88,
+        "a": 8.25,
         "src": "betclic_fr"
       }
     },
@@ -2068,9 +2068,9 @@
         "s": null
       },
       "o": {
-        "h": 2.08,
-        "d": 2.87,
-        "a": 3.45,
+        "h": 2.22,
+        "d": 2.82,
+        "a": 3.17,
         "src": "betclic_fr"
       }
     },
@@ -2116,9 +2116,9 @@
         "s": null
       },
       "o": {
-        "h": 2,
+        "h": 2.03,
         "d": 2.78,
-        "a": 3.83,
+        "a": 3.7,
         "src": "betclic_fr"
       }
     },
