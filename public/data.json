@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-29T09:31:10.282Z",
+  "fetchedAt": "2026-07-30T09:24:15.079Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
@@ -85,13 +85,13 @@
       "h": {
         "n": "Internacional",
         "f": "LDLDL",
-        "r": "5-6-9",
+        "r": "5-7-9",
         "s": null
       },
       "a": {
         "n": "Flamengo",
         "f": "WWWDL",
-        "r": "11-5-3",
+        "r": "11-6-3",
         "s": null
       },
       "o": {
@@ -109,13 +109,13 @@
       "h": {
         "n": "Mirassol",
         "f": "LDDDW",
-        "r": "5-5-9",
+        "r": "6-5-9",
         "s": null
       },
       "a": {
         "n": "Remo",
         "f": "LDDDL",
-        "r": "5-6-9",
+        "r": "5-6-10",
         "s": null
       },
       "o": {
@@ -133,13 +133,13 @@
       "h": {
         "n": "Fluminense",
         "f": "WLWDW",
-        "r": "9-6-5",
+        "r": "9-7-5",
         "s": null
       },
       "a": {
         "n": "Bahia",
         "f": "WDWDW",
-        "r": "8-7-5",
+        "r": "8-8-5",
         "s": null
       },
       "o": {
@@ -157,13 +157,13 @@
       "h": {
         "n": "Vitória",
         "f": "WDLLW",
-        "r": "7-5-8",
+        "r": "7-5-9",
         "s": null
       },
       "a": {
         "n": "Palmeiras",
         "f": "LWWWD",
-        "r": "13-5-2",
+        "r": "14-5-2",
         "s": null
       },
       "o": {
@@ -215,9 +215,9 @@
         "s": null
       },
       "o": {
-        "h": 3.1,
+        "h": 3.2,
         "d": 3.12,
-        "a": 2.15,
+        "a": 2.1,
         "src": "betclic_fr"
       }
     },
@@ -239,9 +239,9 @@
         "s": null
       },
       "o": {
-        "h": 4.35,
-        "d": 3.7,
-        "a": 1.61,
+        "h": 4.5,
+        "d": 3.75,
+        "a": 1.58,
         "src": "betclic_fr"
       }
     },
@@ -311,16 +311,16 @@
         "s": null
       },
       "o": {
-        "h": 3.75,
-        "d": 3.4,
-        "a": 1.79,
+        "h": 3.63,
+        "d": 3.42,
+        "a": 1.81,
         "src": "betclic_fr"
       }
     },
     {
       "id": "401877022",
       "lg": "Liga MX",
-      "d": "2026-08-02T01:00Z",
+      "d": "2026-08-02T01:05Z",
       "v": "Estadio Jalisco",
       "h": {
         "n": "Atlas",
@@ -344,7 +344,7 @@
     {
       "id": "401877023",
       "lg": "Liga MX",
-      "d": "2026-08-02T01:00Z",
+      "d": "2026-08-02T01:06Z",
       "v": "Estadio León",
       "h": {
         "n": "León",
@@ -386,6 +386,54 @@
         "h": 1.28,
         "d": 4.95,
         "a": 7.25,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877020",
+      "lg": "Liga MX",
+      "d": "2026-08-02T23:00Z",
+      "v": "Estadio Banorte",
+      "h": {
+        "n": "América",
+        "f": "DW",
+        "r": "1-1-0",
+        "s": null
+      },
+      "a": {
+        "n": "Santos",
+        "f": "LL",
+        "r": "0-0-2",
+        "s": null
+      },
+      "o": {
+        "h": 1.37,
+        "d": 4.45,
+        "a": 6,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877019",
+      "lg": "Liga MX",
+      "d": "2026-08-03T01:05Z",
+      "v": "Estadio Nemesio Díez Riega",
+      "h": {
+        "n": "Toluca",
+        "f": "LW",
+        "r": "1-0-1",
+        "s": null
+      },
+      "a": {
+        "n": "Necaxa",
+        "f": "WW",
+        "r": "2-0-0",
+        "s": null
+      },
+      "o": {
+        "h": 1.47,
+        "d": 4.25,
+        "a": 4.9,
         "src": "betclic_fr"
       }
     },
@@ -530,13 +578,13 @@
       "v": "Almaty Ortalyk Stadium",
       "h": {
         "n": "Kairat Almaty",
-        "f": "LWW",
+        "f": "WLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Omonia Nicosia",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -549,13 +597,13 @@
       "v": "Jonavos centrinis stadionas",
       "h": {
         "n": "Kauno Zalgiris",
-        "f": "DWD",
+        "f": "WDWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "KI Klaksvik",
-        "f": "DWW",
+        "f": "LDWW",
         "r": "0-0-0",
         "s": null
       },
@@ -568,13 +616,13 @@
       "v": "Municipal Stadium-Poznan",
       "h": {
         "n": "Lech Poznan",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "AGF",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
@@ -591,13 +639,13 @@
       "v": "Stadionul Ion Oblemenco",
       "h": {
         "n": "CSU Craiova",
-        "f": "LWW",
+        "f": "DLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Levski Sofia",
-        "f": "WWD",
+        "f": "DWWD",
         "r": "0-0-0",
         "s": null
       },
@@ -610,13 +658,13 @@
       "v": "Szombathelyi Haladás Stadion",
       "h": {
         "n": "Hapoel Be'er",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Vikingur Reykjavik",
-        "f": "WDW",
+        "f": "LWDW",
         "r": "0-0-0",
         "s": null
       },
@@ -632,13 +680,13 @@
       "d": "2026-07-29T18:00Z",
       "h": {
         "n": "Gornik Zabrze",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Fenerbahce",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
@@ -651,13 +699,13 @@
       "v": "Rajko Mitic Stadium",
       "h": {
         "n": "Red Star Belgrade",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Larne",
-        "f": "LWW",
+        "f": "LLWW",
         "r": "0-0-0",
         "s": null
       },
@@ -674,13 +722,13 @@
       "v": "Národny Futbalovy Stadión",
       "h": {
         "n": "Slovan Bratislava",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Iberia 1999",
-        "f": "LDW",
+        "f": "DLDW",
         "r": "0-0-0",
         "s": null
       },
@@ -942,13 +990,13 @@
       "d": "2026-07-29T14:30Z",
       "h": {
         "n": "Dukagjini",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Lugano",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -961,13 +1009,13 @@
       "v": "Parken Stadium",
       "h": {
         "n": "F.C. København",
-        "f": "D",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Polissya Zhitomir",
-        "f": "D",
+        "f": "LD",
         "r": "0-0-0",
         "s": null
       },
@@ -980,13 +1028,13 @@
       "v": "Allianz Stadion",
       "h": {
         "n": "Rapid Vienna",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Santa Coloma",
-        "f": "LWW",
+        "f": "LLWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1890,13 +1938,13 @@
       "h": {
         "n": "Barracas Central",
         "f": "LWDDL",
-        "r": "1-0-0",
+        "r": "2-0-0",
         "s": null
       },
       "a": {
         "n": "Aldosivi",
         "f": "LDLDD",
-        "r": "0-1-0",
+        "r": "0-1-1",
         "s": null
       },
       "o": {
@@ -1914,13 +1962,13 @@
       "h": {
         "n": "Defensa y Justicia",
         "f": "DWDWD",
-        "r": "0-1-0",
+        "r": "1-1-0",
         "s": null
       },
       "a": {
         "n": "Deportivo Riestra",
         "f": "DLDLL",
-        "r": "1-0-0",
+        "r": "1-0-1",
         "s": null
       },
       "o": {
@@ -1938,13 +1986,13 @@
       "h": {
         "n": "Gimnasia La Plata",
         "f": "DLWLW",
-        "r": "0-0-1",
+        "r": "1-0-1",
         "s": null
       },
       "a": {
         "n": "River Plate",
         "f": "LLDWW",
-        "r": "0-0-1",
+        "r": "0-0-2",
         "s": null
       },
       "o": {
@@ -1962,13 +2010,13 @@
       "h": {
         "n": "Instituto (Córdoba)",
         "f": "WLDLL",
-        "r": "0-0-1",
+        "r": "1-0-1",
         "s": null
       },
       "a": {
         "n": "Platense",
         "f": "DLWWD",
-        "r": "0-1-0",
+        "r": "0-1-1",
         "s": null
       },
       "o": {
@@ -2020,9 +2068,9 @@
         "s": null
       },
       "o": {
-        "h": 2.17,
-        "d": 2.77,
-        "a": 3.35,
+        "h": 2.3,
+        "d": 2.75,
+        "a": 3.13,
         "src": "betclic_fr"
       }
     },
@@ -2044,9 +2092,10 @@
         "s": null
       },
       "o": {
-        "h": 3.2,
-        "d": 2.9,
-        "a": 2.4
+        "h": 3.05,
+        "d": 2.87,
+        "a": 2.25,
+        "src": "betclic_fr"
       }
     },
     {
@@ -2091,9 +2140,9 @@
         "s": null
       },
       "o": {
-        "h": 2.5,
+        "h": 2.42,
         "d": 2.67,
-        "a": 2.75,
+        "a": 2.85,
         "src": "betclic_fr"
       }
     },
@@ -2115,9 +2164,9 @@
         "s": null
       },
       "o": {
-        "h": 2.75,
-        "d": 2.77,
-        "a": 2.42,
+        "h": 2.83,
+        "d": 2.82,
+        "a": 2.32,
         "src": "betclic_fr"
       }
     },
@@ -2139,9 +2188,9 @@
         "s": null
       },
       "o": {
-        "h": 2.35,
-        "d": 2.65,
-        "a": 2.95,
+        "h": 2.3,
+        "d": 2.67,
+        "a": 3.03,
         "src": "betclic_fr"
       }
     },
@@ -2159,13 +2208,13 @@
       "a": {
         "n": "Defensa y Justicia",
         "f": "DWDWD",
-        "r": "0-1-0",
+        "r": "1-1-0",
         "s": null
       },
       "o": {
-        "h": 1.58,
-        "d": 3.17,
-        "a": 5.25,
+        "h": 1.64,
+        "d": 3.1,
+        "a": 4.85,
         "src": "betclic_fr"
       }
     },
@@ -2187,9 +2236,129 @@
         "s": null
       },
       "o": {
-        "h": 1.95,
-        "d": 2.77,
-        "a": 3.78,
+        "h": 1.87,
+        "d": 2.83,
+        "a": 3.95,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841470",
+      "lg": "Liga Argentina",
+      "d": "2026-08-02T17:30Z",
+      "v": "José María Minella",
+      "h": {
+        "n": "Aldosivi",
+        "f": "LDLDD",
+        "r": "0-1-1",
+        "s": null
+      },
+      "a": {
+        "n": "Gimnasia La Plata",
+        "f": "DLWLW",
+        "r": "1-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 2.63,
+        "d": 2.63,
+        "a": 2.63,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841467",
+      "lg": "Liga Argentina",
+      "d": "2026-08-02T17:30Z",
+      "v": "Guillermo Laza",
+      "h": {
+        "n": "Deportivo Riestra",
+        "f": "DLDLL",
+        "r": "1-0-1",
+        "s": null
+      },
+      "a": {
+        "n": "Barracas Central",
+        "f": "LWDDL",
+        "r": "2-0-0",
+        "s": null
+      },
+      "o": {
+        "h": 2.02,
+        "d": 2.65,
+        "a": 3.73,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841473",
+      "lg": "Liga Argentina",
+      "d": "2026-08-02T20:00Z",
+      "v": "Marcelo Bielsa",
+      "h": {
+        "n": "Newell's Old Boys",
+        "f": "DLLDL",
+        "r": "1-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "Boca Juniors",
+        "f": "DLWLW",
+        "r": "0-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 3.37,
+        "d": 2.87,
+        "a": 2.02,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841476",
+      "lg": "Liga Argentina",
+      "d": "2026-08-02T22:15Z",
+      "v": "Estadio Más Monumental",
+      "h": {
+        "n": "River Plate",
+        "f": "LLDWW",
+        "r": "0-0-2",
+        "s": null
+      },
+      "a": {
+        "n": "Rosario Central",
+        "f": "WDDWL",
+        "r": "0-1-1",
+        "s": null
+      },
+      "o": {
+        "h": 1.97,
+        "d": 2.83,
+        "a": 3.58,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841472",
+      "lg": "Liga Argentina",
+      "d": "2026-08-03T00:30Z",
+      "v": "Ciudad de Lanús",
+      "h": {
+        "n": "Lanús",
+        "f": "LDDWW",
+        "r": "1-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "Instituto (Córdoba)",
+        "f": "WLDLL",
+        "r": "1-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 2.02,
+        "d": 2.7,
+        "a": 3.65,
         "src": "betclic_fr"
       }
     }
