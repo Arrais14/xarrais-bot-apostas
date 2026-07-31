@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-30T09:24:15.079Z",
+  "fetchedAt": "2026-07-31T09:35:51.459Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
@@ -181,13 +181,13 @@
       "h": {
         "n": "Corinthians",
         "f": "LDWWL",
-        "r": "7-7-6",
+        "r": "7-8-6",
         "s": null
       },
       "a": {
         "n": "Athletico-PR",
         "f": "LDLWW",
-        "r": "11-3-6",
+        "r": "11-4-6",
         "s": null
       },
       "o": {
@@ -205,13 +205,13 @@
       "h": {
         "n": "Coritiba",
         "f": "WLDWL",
-        "r": "7-6-7",
+        "r": "7-6-8",
         "s": null
       },
       "a": {
         "n": "Cruzeiro",
         "f": "LDDLL",
-        "r": "7-6-7",
+        "r": "8-6-7",
         "s": null
       },
       "o": {
@@ -263,9 +263,9 @@
         "s": null
       },
       "o": {
-        "h": 2.25,
-        "d": 3.25,
-        "a": 2.7,
+        "h": 2.28,
+        "d": 3.15,
+        "a": 2.73,
         "src": "betclic_fr"
       }
     },
@@ -287,9 +287,9 @@
         "s": null
       },
       "o": {
-        "h": 2.25,
-        "d": 3.25,
-        "a": 2.58,
+        "h": 2.4,
+        "d": 3.18,
+        "a": 2.57,
         "src": "betclic_fr"
       }
     },
@@ -311,9 +311,9 @@
         "s": null
       },
       "o": {
-        "h": 3.63,
-        "d": 3.42,
-        "a": 1.81,
+        "h": 3.42,
+        "d": 3.4,
+        "a": 1.87,
         "src": "betclic_fr"
       }
     },
@@ -337,7 +337,7 @@
       "o": {
         "h": 2.65,
         "d": 3.2,
-        "a": 2.13,
+        "a": 2.33,
         "src": "betclic_fr"
       }
     },
@@ -383,9 +383,9 @@
         "s": null
       },
       "o": {
-        "h": 1.28,
-        "d": 4.95,
-        "a": 7.25,
+        "h": 1.3,
+        "d": 4.6,
+        "a": 7.5,
         "src": "betclic_fr"
       }
     },
@@ -431,144 +431,10 @@
         "s": null
       },
       "o": {
-        "h": 1.47,
-        "d": 4.25,
-        "a": 4.9,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401891534",
-      "lg": "Champions League (Qualificação)",
-      "d": "2026-07-28T15:00Z",
-      "v": "Vare Areena TN",
-      "h": {
-        "n": "KuPS Kuopio",
-        "f": "LLLW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Sabah FK",
-        "f": "WWWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": {
-        "h": 2.9,
-        "d": 3.45,
-        "a": 2.35
-      }
-    },
-    {
-      "id": "401891562",
-      "lg": "Champions League (Qualificação)",
-      "d": "2026-07-28T16:00Z",
-      "v": "Europa Point Stadium",
-      "h": {
-        "n": "Lincoln Red Imps",
-        "f": "DLDW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Mjällby AIF",
-        "f": "DW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": {
-        "h": 5.25,
-        "d": 4.6,
-        "a": 1.54
-      }
-    },
-    {
-      "id": "401877835",
-      "lg": "Champions League (Qualificação)",
-      "d": "2026-07-28T18:00Z",
-      "v": "Maksimir Stadium",
-      "h": {
-        "n": "Dinamo Zagreb",
-        "f": "WD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FC Thun",
-        "f": "LD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": {
-        "h": 1.36,
-        "d": 5.25,
-        "a": 7.5
-      }
-    },
-    {
-      "id": "401891861",
-      "lg": "Champions League (Qualificação)",
-      "d": "2026-07-28T18:15Z",
-      "v": "Stadion Z'dezele",
-      "h": {
-        "n": "NK Celje",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Egnatia",
-        "f": "DDWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": {
-        "h": 1.43,
-        "d": 4.9,
-        "a": 6.5
-      }
-    },
-    {
-      "id": "401877765",
-      "lg": "Champions League (Qualificação)",
-      "d": "2026-07-28T18:45Z",
-      "v": "Tynecastle Park",
-      "h": {
-        "n": "Heart of Midlothian",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "SK Sturm Graz",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891668",
-      "lg": "Champions League (Qualificação)",
-      "d": "2026-07-28T19:00Z",
-      "v": "Tallaght Stadium",
-      "h": {
-        "n": "Shamrock Rovers",
-        "f": "WLWL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Ararat-Armenia",
-        "f": "LWLW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": {
-        "h": 1.71,
+        "h": 1.44,
         "d": 4,
-        "a": 4.4
+        "a": 5.5,
+        "src": "betclic_fr"
       }
     },
     {
@@ -744,13 +610,13 @@
       "d": "2026-07-30T16:00Z",
       "h": {
         "n": "Maccabi Tel-Aviv",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Sheriff Tiraspol",
-        "f": "LWD",
+        "f": "LLWD",
         "r": "0-0-0",
         "s": null
       },
@@ -763,13 +629,13 @@
       "v": "Malsovická Aréna",
       "h": {
         "n": "FC Hradec Králové",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Tromso",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
@@ -782,13 +648,13 @@
       "v": "MCH Arena",
       "h": {
         "n": "FC Midtjylland",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Besiktas",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -801,13 +667,13 @@
       "v": "Alphamega Stadium",
       "h": {
         "n": "Pafos",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Hajduk Split",
-        "f": "WLW",
+        "f": "LWLW",
         "r": "0-0-0",
         "s": null
       },
@@ -820,13 +686,13 @@
       "v": "Toumba Stadium",
       "h": {
         "n": "PAOK",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Dynamo Kyiv",
-        "f": "LDD",
+        "f": "LLDD",
         "r": "0-0-0",
         "s": null
       },
@@ -839,13 +705,13 @@
       "v": "Vasil Levski National Stadium",
       "h": {
         "n": "CSKA Sofia",
-        "f": "DWW",
+        "f": "DDWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FK Qarabag",
-        "f": "DWW",
+        "f": "DDWW",
         "r": "0-0-0",
         "s": null
       },
@@ -858,13 +724,13 @@
       "v": "Lotto Park",
       "h": {
         "n": "Anderlecht",
-        "f": "D",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Hammarby IF",
-        "f": "D",
+        "f": "LD",
         "r": "0-0-0",
         "s": null
       },
@@ -877,13 +743,13 @@
       "v": "Groupama Arena",
       "h": {
         "n": "Ferencvaros",
-        "f": "WWW",
+        "f": "DWWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Twente",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
@@ -896,89 +762,13 @@
       "v": "Estádio da Luz",
       "h": {
         "n": "Benfica",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "St. Gallen",
-        "f": "W",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896216",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-28T17:00Z",
-      "v": "Alphamega Stadium",
-      "h": {
-        "n": "Apollon Limassol",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Dila Gori",
-        "f": "LLLW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891722",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-28T17:00Z",
-      "v": "Skonto Stadions",
-      "h": {
-        "n": "Riga FC",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Vardar",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878129",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-28T17:30Z",
-      "v": "Vasil Levski National Stadium",
-      "h": {
-        "n": "CSKA 1948 Sofia",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FC Spartak Trnava",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891783",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-28T18:00Z",
-      "v": "Stadiumi Fadil Vokrri",
-      "h": {
-        "n": "Drita Gjilan",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Floriana FC",
-        "f": "DD",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -1047,13 +837,13 @@
       "v": "Estadi Nacional d'Andorra",
       "h": {
         "n": "Atlètic Club d'Escaldes",
-        "f": "LWW",
+        "f": "LLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Vaduz",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1065,13 +855,13 @@
       "d": "2026-07-30T14:00Z",
       "h": {
         "n": "Tobol Kostanay",
-        "f": "D",
+        "f": "DD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Panevezys",
-        "f": "D",
+        "f": "DD",
         "r": "0-0-0",
         "s": null
       },
@@ -1084,13 +874,13 @@
       "v": "Tammelan Stadion",
       "h": {
         "n": "FC Ilves",
-        "f": "LWD",
+        "f": "WLWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Stjarnan",
-        "f": "WDW",
+        "f": "LWDW",
         "r": "0-0-0",
         "s": null
       },
@@ -1103,13 +893,13 @@
       "v": "Veritas Stadion",
       "h": {
         "n": "FC Inter Turku",
-        "f": "DWD",
+        "f": "WDWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Istanbul Basaksehir",
-        "f": "D",
+        "f": "LD",
         "r": "0-0-0",
         "s": null
       },
@@ -1122,13 +912,13 @@
       "v": "Abovyan City Stadium",
       "h": {
         "n": "FC Noah",
-        "f": "D",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Zimbru Chisinau",
-        "f": "D",
+        "f": "LD",
         "r": "0-0-0",
         "s": null
       },
@@ -1141,13 +931,13 @@
       "v": "Skonto Stadions",
       "h": {
         "n": "FK Auda",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FCSB",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
@@ -1159,13 +949,13 @@
       "d": "2026-07-30T16:00Z",
       "h": {
         "n": "Jablonec",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Varteks",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -1178,13 +968,13 @@
       "v": "Pärnu Rannastaadion",
       "h": {
         "n": "Nomme Kalju",
-        "f": "LDW",
+        "f": "WLDW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Shelbourne",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -1197,13 +987,13 @@
       "v": "Vazgen Sargsyan Republican Stadium",
       "h": {
         "n": "Pyunik",
-        "f": "LWW",
+        "f": "DLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Debrecen",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
@@ -1216,13 +1006,13 @@
       "v": "Mehdi Huseynzade Stadium",
       "h": {
         "n": "Zira FK",
-        "f": "LWW",
+        "f": "DLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Paide Linnameeskond",
-        "f": "WWD",
+        "f": "DWWD",
         "r": "0-0-0",
         "s": null
       },
@@ -1235,13 +1025,13 @@
       "v": "A. Le Coq Arena",
       "h": {
         "n": "FC Levadia Tallinn",
-        "f": "WWW",
+        "f": "LWWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "IFK Göteborg",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
@@ -1253,13 +1043,13 @@
       "d": "2026-07-30T17:00Z",
       "h": {
         "n": "Dinamo Minsk",
-        "f": "WWL",
+        "f": "LWWL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Neftchi",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
@@ -1272,13 +1062,13 @@
       "v": "Right to Dream Park",
       "h": {
         "n": "FC Nordsjælland",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "GAIS",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -1290,13 +1080,13 @@
       "d": "2026-07-30T17:00Z",
       "h": {
         "n": "Györi ETO FC",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FC Atert Bissen",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
@@ -1309,13 +1099,13 @@
       "v": "Tórsvollur",
       "h": {
         "n": "HB Torshavn",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Motherwell",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1328,13 +1118,13 @@
       "v": "Stadionul Zimbru",
       "h": {
         "n": "Petrocub",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Borac Banja Luka",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
@@ -1347,13 +1137,13 @@
       "v": "Brann Stadium",
       "h": {
         "n": "SK Brann",
-        "f": "D",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Universitatea Cluj",
-        "f": "D",
+        "f": "LD",
         "r": "0-0-0",
         "s": null
       },
@@ -1366,13 +1156,13 @@
       "v": "Bilino Polje Stadium",
       "h": {
         "n": "Velez Mostar",
-        "f": "LWD",
+        "f": "LLWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Dunajska Streda",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1385,13 +1175,13 @@
       "v": "LFF Stadionas",
       "h": {
         "n": "Zalgiris Vilnius",
-        "f": "LWW",
+        "f": "WLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Dinamo Tbilisi",
-        "f": "WDW",
+        "f": "LWDW",
         "r": "0-0-0",
         "s": null
       },
@@ -1404,13 +1194,13 @@
       "v": "Stadionul Illie Oana",
       "h": {
         "n": "Beitar Jerusalem",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "AEK Larnaca",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
@@ -1423,13 +1213,13 @@
       "v": "Brandywell Stadium",
       "h": {
         "n": "Derry City",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Rijeka",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1442,13 +1232,13 @@
       "v": "Park Hall",
       "h": {
         "n": "The New Saints",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Flora",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -1461,13 +1251,13 @@
       "v": "MFA Centenary Stadium",
       "h": {
         "n": "Valletta",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Raków Czestochowa",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1480,13 +1270,13 @@
       "v": "Johan Cruijff Arena",
       "h": {
         "n": "Ajax Amsterdam",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Vojvodina",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
@@ -1499,13 +1289,13 @@
       "v": "Stadiumi Fadil Vokrri",
       "h": {
         "n": "Ballkani",
-        "f": "LWD",
+        "f": "WLWD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Bohemians",
-        "f": "WDW",
+        "f": "LWDW",
         "r": "0-0-0",
         "s": null
       },
@@ -1518,13 +1308,13 @@
       "v": "Toše Proeski Arena",
       "h": {
         "n": "KF Shkëndija",
-        "f": "LWW",
+        "f": "WLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "NK Bravo",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -1537,13 +1327,13 @@
       "v": "Huvepharma Arena",
       "h": {
         "n": "Ludogorets Razgrad",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Hapoel Tel Aviv",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
@@ -1556,13 +1346,13 @@
       "v": "AVIS völlurinn",
       "h": {
         "n": "Vestri",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Rigas Futbola Skola",
-        "f": "WWW",
+        "f": "DWWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1575,13 +1365,13 @@
       "v": "Stade de Tourbillon",
       "h": {
         "n": "FC Sion",
-        "f": "D",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "BATE Borisov",
-        "f": "DDD",
+        "f": "LDDD",
         "r": "0-0-0",
         "s": null
       },
@@ -1594,13 +1384,13 @@
       "v": "Stade de Luxembourg",
       "h": {
         "n": "UNA Strassen",
-        "f": "LWW",
+        "f": "LLWW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Partizan Belgrade",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1613,13 +1403,13 @@
       "v": "Generali-Arena",
       "h": {
         "n": "Austria Vienna",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "FK Liepaja",
-        "f": "LWW",
+        "f": "LLWW",
         "r": "0-0-0",
         "s": null
       },
@@ -1632,13 +1422,13 @@
       "v": "Stadionul Dr. Constantin Radulescu",
       "h": {
         "n": "CFR Cluj-Napoca",
-        "f": "D",
+        "f": "WD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Alashkert FC",
-        "f": "DDD",
+        "f": "LDDD",
         "r": "0-0-0",
         "s": null
       },
@@ -1651,13 +1441,13 @@
       "v": "Arena Katowice",
       "h": {
         "n": "GKS Katowice",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "MSK Zilina",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -1670,13 +1460,13 @@
       "v": "Ghelamco Arena",
       "h": {
         "n": "KAA Gent",
-        "f": "D",
+        "f": "DD",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "LNZ Cherkasy",
-        "f": "D",
+        "f": "DD",
         "r": "0-0-0",
         "s": null
       },
@@ -1689,13 +1479,13 @@
       "v": "Athens Olympic Stadium",
       "h": {
         "n": "Panathinaikos",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Paksi SE",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
@@ -1708,13 +1498,13 @@
       "v": "Bijeli Brijeg Stadium",
       "h": {
         "n": "Zrinjski Mostar",
-        "f": "L",
+        "f": "DL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Valur Reykjavik",
-        "f": "W",
+        "f": "DW",
         "r": "0-0-0",
         "s": null
       },
@@ -1727,13 +1517,13 @@
       "v": "Inver Park",
       "h": {
         "n": "Coleraine",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "HJK Helsinki",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1746,13 +1536,13 @@
       "v": "SRC Bonifika",
       "h": {
         "n": "FC Koper",
-        "f": "W",
+        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "NSI Runavik",
-        "f": "LWD",
+        "f": "WLWD",
         "r": "0-0-0",
         "s": null
       },
@@ -1765,13 +1555,13 @@
       "v": "Estádio Municipal de Braga",
       "h": {
         "n": "Braga",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Zeleznicar Pancevo",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
@@ -1784,13 +1574,13 @@
       "v": "Elbasan Arena",
       "h": {
         "n": "Dinamo City",
-        "f": "DWL",
+        "f": "WDWL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Aluminij",
-        "f": "D",
+        "f": "LD",
         "r": "0-0-0",
         "s": null
       },
@@ -1803,13 +1593,13 @@
       "v": "Gradski Niksica",
       "h": {
         "n": "FK Sutjeska",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "ML Vitebsk",
-        "f": "W",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1822,113 +1612,17 @@
       "v": "Easter Road",
       "h": {
         "n": "Hibernian",
-        "f": "L",
+        "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "KF Malisheva",
-        "f": "WWL",
+        "f": "LWWL",
         "r": "0-0-0",
         "s": null
       },
       "o": null
-    },
-    {
-      "id": "401841462",
-      "lg": "Liga Argentina",
-      "d": "2026-07-28T22:00Z",
-      "v": "Florencio Solá",
-      "h": {
-        "n": "Banfield",
-        "f": "LLWLD",
-        "r": "1-0-1",
-        "s": null
-      },
-      "a": {
-        "n": "Sarmiento (Junín)",
-        "f": "LWLWL",
-        "r": "0-0-2",
-        "s": null
-      },
-      "o": {
-        "h": 1.92,
-        "d": 2.95,
-        "a": 3.83,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841452",
-      "lg": "Liga Argentina",
-      "d": "2026-07-28T22:00Z",
-      "v": "Estadio Pedro Bidegain",
-      "h": {
-        "n": "San Lorenzo",
-        "f": "DLWWL",
-        "r": "1-0-1",
-        "s": null
-      },
-      "a": {
-        "n": "Gimnasia (Mendoza)",
-        "f": "LWLLW",
-        "r": "1-0-1",
-        "s": null
-      },
-      "o": {
-        "h": 1.94,
-        "d": 2.88,
-        "a": 3.88,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841449",
-      "lg": "Liga Argentina",
-      "d": "2026-07-29T00:15Z",
-      "v": "Diego Armando Maradona",
-      "h": {
-        "n": "Argentinos Juniors",
-        "f": "WLDDW",
-        "r": "2-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Estudiantes de Río Cuarto",
-        "f": "LLLDL",
-        "r": "1-0-1",
-        "s": null
-      },
-      "o": {
-        "h": 1.35,
-        "d": 3.88,
-        "a": 8.25,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841453",
-      "lg": "Liga Argentina",
-      "d": "2026-07-29T00:15Z",
-      "v": "Gigante de Arroyito",
-      "h": {
-        "n": "Rosario Central",
-        "f": "WDDWL",
-        "r": "0-1-1",
-        "s": null
-      },
-      "a": {
-        "n": "Racing Club",
-        "f": "WWLLL",
-        "r": "1-1-0",
-        "s": null
-      },
-      "o": {
-        "h": 2.22,
-        "d": 2.82,
-        "a": 3.17,
-        "src": "betclic_fr"
-      }
     },
     {
       "id": "401841461",
@@ -2034,13 +1728,13 @@
       "h": {
         "n": "Independiente Rivadavia",
         "f": "LWWWW",
-        "r": "0-1-0",
+        "r": "1-1-0",
         "s": null
       },
       "a": {
         "n": "Huracán",
         "f": "WWDLD",
-        "r": "1-0-0",
+        "r": "1-0-1",
         "s": null
       },
       "o": {
@@ -2058,13 +1752,13 @@
       "h": {
         "n": "Talleres (Córdoba)",
         "f": "WDLLW",
-        "r": "0-0-1",
+        "r": "0-0-2",
         "s": null
       },
       "a": {
         "n": "Vélez Sarsfield",
         "f": "DWDWW",
-        "r": "1-0-0",
+        "r": "2-0-0",
         "s": null
       },
       "o": {
@@ -2078,17 +1772,17 @@
       "id": "401841459",
       "lg": "Liga Argentina",
       "d": "2026-07-31T00:15Z",
-      "v": "Alfredo Terrera",
+      "v": "'Estadio Único Madre de Ciudades",
       "h": {
         "n": "Central Córdoba (Santiago del Estero)",
         "f": "LWLDL",
-        "r": "0-0-1",
+        "r": "0-0-2",
         "s": null
       },
       "a": {
         "n": "Atlético Tucumán",
         "f": "WLDDL",
-        "r": "0-1-0",
+        "r": "1-1-0",
         "s": null
       },
       "o": {
@@ -2106,13 +1800,13 @@
       "h": {
         "n": "Independiente",
         "f": "WWDDD",
-        "r": "1-0-0",
+        "r": "2-0-0",
         "s": null
       },
       "a": {
         "n": "Newell's Old Boys",
         "f": "DLLDL",
-        "r": "1-0-0",
+        "r": "1-0-1",
         "s": null
       },
       "o": {
@@ -2140,9 +1834,9 @@
         "s": null
       },
       "o": {
-        "h": 2.42,
-        "d": 2.67,
-        "a": 2.85,
+        "h": 2.67,
+        "d": 2.65,
+        "a": 2.72,
         "src": "betclic_fr"
       }
     },
@@ -2164,9 +1858,9 @@
         "s": null
       },
       "o": {
-        "h": 2.83,
-        "d": 2.82,
-        "a": 2.32,
+        "h": 2.98,
+        "d": 2.9,
+        "a": 2.28,
         "src": "betclic_fr"
       }
     },
@@ -2188,9 +1882,9 @@
         "s": null
       },
       "o": {
-        "h": 2.3,
-        "d": 2.67,
-        "a": 3.03,
+        "h": 2.32,
+        "d": 2.73,
+        "a": 3.12,
         "src": "betclic_fr"
       }
     },
@@ -2212,9 +1906,9 @@
         "s": null
       },
       "o": {
-        "h": 1.64,
-        "d": 3.1,
-        "a": 4.85,
+        "h": 1.61,
+        "d": 3.23,
+        "a": 5.25,
         "src": "betclic_fr"
       }
     },
@@ -2236,9 +1930,9 @@
         "s": null
       },
       "o": {
-        "h": 1.87,
-        "d": 2.83,
-        "a": 3.95,
+        "h": 1.96,
+        "d": 2.88,
+        "a": 3.8,
         "src": "betclic_fr"
       }
     },
@@ -2260,9 +1954,9 @@
         "s": null
       },
       "o": {
-        "h": 2.63,
-        "d": 2.63,
-        "a": 2.63,
+        "h": 2.88,
+        "d": 2.58,
+        "a": 2.45,
         "src": "betclic_fr"
       }
     },
@@ -2284,9 +1978,9 @@
         "s": null
       },
       "o": {
-        "h": 2.02,
-        "d": 2.65,
-        "a": 3.73,
+        "h": 1.98,
+        "d": 2.7,
+        "a": 3.8,
         "src": "betclic_fr"
       }
     },
@@ -2298,7 +1992,7 @@
       "h": {
         "n": "Newell's Old Boys",
         "f": "DLLDL",
-        "r": "1-0-0",
+        "r": "1-0-1",
         "s": null
       },
       "a": {
@@ -2308,9 +2002,9 @@
         "s": null
       },
       "o": {
-        "h": 3.37,
-        "d": 2.87,
-        "a": 2.02,
+        "h": 3.68,
+        "d": 2.92,
+        "a": 1.9,
         "src": "betclic_fr"
       }
     },
@@ -2332,9 +2026,9 @@
         "s": null
       },
       "o": {
-        "h": 1.97,
-        "d": 2.83,
-        "a": 3.58,
+        "h": 1.93,
+        "d": 2.88,
+        "a": 3.65,
         "src": "betclic_fr"
       }
     },
@@ -2356,9 +2050,128 @@
         "s": null
       },
       "o": {
-        "h": 2.02,
-        "d": 2.7,
-        "a": 3.65,
+        "h": 1.93,
+        "d": 2.8,
+        "a": 3.78,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841477",
+      "lg": "Liga Argentina",
+      "d": "2026-08-03T19:45Z",
+      "v": "Eva Perón",
+      "h": {
+        "n": "Sarmiento (Junín)",
+        "f": "LWLWL",
+        "r": "0-0-2",
+        "s": null
+      },
+      "a": {
+        "n": "Independiente Rivadavia",
+        "f": "LWWWW",
+        "r": "1-1-0",
+        "s": null
+      },
+      "o": {
+        "h": 3.05,
+        "d": 2.77,
+        "a": 2.22,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841474",
+      "lg": "Liga Argentina",
+      "d": "2026-08-03T22:00Z",
+      "v": "Ciudad de Vicente López",
+      "h": {
+        "n": "Platense",
+        "f": "DLWWD",
+        "r": "0-1-1",
+        "s": null
+      },
+      "a": {
+        "n": "Talleres (Córdoba)",
+        "f": "WDLLW",
+        "r": "0-0-2",
+        "s": null
+      },
+      "o": {
+        "h": 2.4,
+        "d": 2.6,
+        "a": 2.92,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841465",
+      "lg": "Liga Argentina",
+      "d": "2026-08-03T22:00Z",
+      "v": "José Amalfitani",
+      "h": {
+        "n": "Vélez Sarsfield",
+        "f": "DWDWW",
+        "r": "2-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "Independiente",
+        "f": "WWDDD",
+        "r": "2-0-0",
+        "s": null
+      },
+      "o": {
+        "h": 2.22,
+        "d": 2.58,
+        "a": 3.3,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841468",
+      "lg": "Liga Argentina",
+      "d": "2026-08-04T00:15Z",
+      "v": "Alfredo Terrera",
+      "h": {
+        "n": "Central Córdoba (Santiago del Estero)",
+        "f": "LWLDL",
+        "r": "0-0-2",
+        "s": null
+      },
+      "a": {
+        "n": "San Lorenzo",
+        "f": "DLWWL",
+        "r": "1-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 3.05,
+        "d": 2.75,
+        "a": 2.6
+      }
+    },
+    {
+      "id": "401841471",
+      "lg": "Liga Argentina",
+      "d": "2026-08-04T00:15Z",
+      "v": "Estadio Tomás Adolfo Ducó",
+      "h": {
+        "n": "Huracán",
+        "f": "WWDLD",
+        "r": "1-0-1",
+        "s": null
+      },
+      "a": {
+        "n": "Atlético Tucumán",
+        "f": "WLDDL",
+        "r": "1-1-0",
+        "s": null
+      },
+      "o": {
+        "h": 1.93,
+        "d": 2.75,
+        "a": 3.85,
         "src": "betclic_fr"
       }
     }
