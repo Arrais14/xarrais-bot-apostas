@@ -1,55 +1,7 @@
 {
-  "fetchedAt": "2026-08-01T08:58:39.007Z",
-  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
+  "fetchedAt": "2026-08-02T09:03:30.969Z",
+  "note": "Ligas atualizadas automaticamente: Liga MX, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
-    {
-      "id": "401841174",
-      "lg": "Brasileirão",
-      "d": "2026-07-30T22:30Z",
-      "v": "Neo Química Arena",
-      "h": {
-        "n": "Corinthians",
-        "f": "LDWWL",
-        "r": "7-8-6",
-        "s": null
-      },
-      "a": {
-        "n": "Athletico-PR",
-        "f": "LDLWW",
-        "r": "11-4-6",
-        "s": null
-      },
-      "o": {
-        "h": 1.84,
-        "d": 3.12,
-        "a": 4.05,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841173",
-      "lg": "Brasileirão",
-      "d": "2026-07-31T00:30Z",
-      "v": "Couto Pereira",
-      "h": {
-        "n": "Coritiba",
-        "f": "WLDWL",
-        "r": "7-6-8",
-        "s": null
-      },
-      "a": {
-        "n": "Cruzeiro",
-        "f": "LDDLL",
-        "r": "8-6-7",
-        "s": null
-      },
-      "o": {
-        "h": 3.2,
-        "d": 3.12,
-        "a": 2.1,
-        "src": "betclic_fr"
-      }
-    },
     {
       "id": "401877027",
       "lg": "Liga MX",
@@ -129,14 +81,14 @@
       "v": "Estadio Corregidora",
       "h": {
         "n": "Querétaro",
-        "f": "WL",
-        "r": "1-0-1",
+        "f": "WWL",
+        "r": "2-0-1",
         "s": null
       },
       "a": {
         "n": "Tigres UANL",
-        "f": "DL",
-        "r": "0-1-1",
+        "f": "LDL",
+        "r": "0-1-2",
         "s": null
       },
       "o": {
@@ -153,14 +105,14 @@
       "v": "Estadio Jalisco",
       "h": {
         "n": "Atlas",
-        "f": "WW",
-        "r": "2-0-0",
+        "f": "LWW",
+        "r": "2-0-1",
         "s": null
       },
       "a": {
         "n": "Monterrey",
-        "f": "LW",
-        "r": "1-0-1",
+        "f": "WLW",
+        "r": "2-0-1",
         "s": null
       },
       "o": {
@@ -177,14 +129,14 @@
       "v": "Estadio León",
       "h": {
         "n": "León",
-        "f": "LL",
-        "r": "0-0-2",
+        "f": "WLL",
+        "r": "1-0-2",
         "s": null
       },
       "a": {
         "n": "Pachuca",
-        "f": "LW",
-        "r": "1-0-1",
+        "f": "LLW",
+        "r": "1-0-2",
         "s": null
       },
       "o": {
@@ -201,14 +153,14 @@
       "v": "Estadio Banorte",
       "h": {
         "n": "Cruz Azul",
-        "f": "WW",
-        "r": "2-0-0",
+        "f": "LWW",
+        "r": "2-0-1",
         "s": null
       },
       "a": {
         "n": "Atlante",
-        "f": "DL",
-        "r": "0-1-1",
+        "f": "WDL",
+        "r": "1-1-1",
         "s": null
       },
       "o": {
@@ -236,8 +188,8 @@
         "s": null
       },
       "o": {
-        "h": 1.36,
-        "d": 4.5,
+        "h": 1.37,
+        "d": 4.4,
         "a": 6.25,
         "src": "betclic_fr"
       }
@@ -260,9 +212,9 @@
         "s": null
       },
       "o": {
-        "h": 1.5,
-        "d": 3.88,
-        "a": 5.1,
+        "h": 1.57,
+        "d": 3.75,
+        "a": 4.6,
         "src": "betclic_fr"
       }
     },
@@ -418,170 +370,38 @@
       "o": null
     },
     {
-      "id": "401896229",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T16:00Z",
+      "id": "401902678",
+      "lg": "Champions League (Qualificação)",
+      "d": "2026-08-05T16:30Z",
+      "v": "Cepheus Park Randers",
       "h": {
-        "n": "Maccabi Tel-Aviv",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Sheriff Tiraspol",
-        "f": "LLWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878081",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "Malsovická Aréna",
-      "h": {
-        "n": "FC Hradec Králové",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Tromso",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878084",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "MCH Arena",
-      "h": {
-        "n": "FC Midtjylland",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Besiktas",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896230",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "Alphamega Stadium",
-      "h": {
-        "n": "Pafos",
+        "n": "AGF",
         "f": "WL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
-        "n": "Hajduk Split",
-        "f": "LWLW",
+        "n": "Sabah FK",
+        "f": "WWWW",
         "r": "0-0-0",
         "s": null
       },
       "o": null
     },
     {
-      "id": "401896228",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T17:45Z",
-      "v": "Toumba Stadium",
+      "id": "401902674",
+      "lg": "Champions League (Qualificação)",
+      "d": "2026-08-05T18:00Z",
+      "v": "Ulker Stadyumu",
       "h": {
-        "n": "PAOK",
+        "n": "Fenerbahce",
+        "f": "DW",
+        "r": "0-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "SK Sturm Graz",
         "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Dynamo Kyiv",
-        "f": "LLDD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896227",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T18:00Z",
-      "v": "Vasil Levski National Stadium",
-      "h": {
-        "n": "CSKA Sofia",
-        "f": "DDWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FK Qarabag",
-        "f": "DDWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878082",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Lotto Park",
-      "h": {
-        "n": "Anderlecht",
-        "f": "WD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Hammarby IF",
-        "f": "LD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401892169",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Groupama Arena",
-      "h": {
-        "n": "Ferencvaros",
-        "f": "DWWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FC Twente",
-        "f": "DL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878083",
-      "lg": "Liga Europa (Qualificação)",
-      "d": "2026-07-30T19:00Z",
-      "v": "Estádio da Luz",
-      "h": {
-        "n": "Benfica",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "St. Gallen",
-        "f": "LW",
         "r": "0-0-0",
         "s": null
       },
@@ -626,794 +446,19 @@
       "o": null
     },
     {
-      "id": "401896211",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T14:00Z",
-      "v": "Estadi Nacional d'Andorra",
+      "id": "401902943",
+      "lg": "Liga Europa (Qualificação)",
+      "d": "2026-08-05T18:15Z",
+      "v": "Groupama Arena",
       "h": {
-        "n": "Atlètic Club d'Escaldes",
-        "f": "LLWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FC Vaduz",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878126",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T14:00Z",
-      "h": {
-        "n": "Tobol Kostanay",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Panevezys",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896198",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "v": "Tammelan Stadion",
-      "h": {
-        "n": "FC Ilves",
-        "f": "WLWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Stjarnan",
-        "f": "LWDW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401893758",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "v": "Veritas Stadion",
-      "h": {
-        "n": "FC Inter Turku",
-        "f": "WDWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Istanbul Basaksehir",
-        "f": "LD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401877932",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "v": "Abovyan City Stadium",
-      "h": {
-        "n": "FC Noah",
-        "f": "WD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Zimbru Chisinau",
-        "f": "LD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878122",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "v": "Skonto Stadions",
-      "h": {
-        "n": "FK Auda",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FCSB",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401883598",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "h": {
-        "n": "Jablonec",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Varteks",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896210",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "v": "Pärnu Rannastaadion",
-      "h": {
-        "n": "Nomme Kalju",
-        "f": "WLDW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Shelbourne",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401893759",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "v": "Vazgen Sargsyan Republican Stadium",
-      "h": {
-        "n": "Pyunik",
-        "f": "DLWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Debrecen",
-        "f": "DW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401893757",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:00Z",
-      "v": "Mehdi Huseynzade Stadium",
-      "h": {
-        "n": "Zira FK",
-        "f": "DLWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Paide Linnameeskond",
-        "f": "DWWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896197",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T16:30Z",
-      "v": "A. Le Coq Arena",
-      "h": {
-        "n": "FC Levadia Tallinn",
-        "f": "LWWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "IFK Göteborg",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896220",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "h": {
-        "n": "Dinamo Minsk",
-        "f": "LWWL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Neftchi",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878127",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "Right to Dream Park",
-      "h": {
-        "n": "FC Nordsjælland",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "GAIS",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891986",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "h": {
-        "n": "Györi ETO FC",
-        "f": "DW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FC Atert Bissen",
-        "f": "DL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401877934",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "Tórsvollur",
-      "h": {
-        "n": "HB Torshavn",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Motherwell",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891985",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "Stadionul Zimbru",
-      "h": {
-        "n": "Petrocub",
-        "f": "DL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Borac Banja Luka",
-        "f": "DW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896221",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "Brann Stadium",
-      "h": {
-        "n": "SK Brann",
-        "f": "WD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Universitatea Cluj",
-        "f": "LD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896200",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "Bilino Polje Stadium",
-      "h": {
-        "n": "Velez Mostar",
-        "f": "LLWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Dunajska Streda",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896196",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:00Z",
-      "v": "LFF Stadionas",
-      "h": {
-        "n": "Zalgiris Vilnius",
-        "f": "WLWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Dinamo Tbilisi",
-        "f": "LWDW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401877933",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:30Z",
-      "v": "Stadionul Illie Oana",
-      "h": {
-        "n": "Beitar Jerusalem",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "AEK Larnaca",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896218",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:30Z",
-      "v": "Brandywell Stadium",
-      "h": {
-        "n": "Derry City",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Rijeka",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891784",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:30Z",
-      "v": "Park Hall",
-      "h": {
-        "n": "The New Saints",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Flora",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878121",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T17:30Z",
-      "v": "MFA Centenary Stadium",
-      "h": {
-        "n": "Valletta",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Raków Czestochowa",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896219",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:00Z",
-      "v": "Johan Cruijff Arena",
-      "h": {
-        "n": "Ajax Amsterdam",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Vojvodina",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896212",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:00Z",
-      "v": "Stadiumi Fadil Vokrri",
-      "h": {
-        "n": "Ballkani",
-        "f": "WLWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Bohemians",
-        "f": "LWDW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401892165",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:00Z",
-      "v": "Toše Proeski Arena",
-      "h": {
-        "n": "KF Shkëndija",
-        "f": "WLWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "NK Bravo",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878130",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:00Z",
-      "v": "Huvepharma Arena",
-      "h": {
-        "n": "Ludogorets Razgrad",
-        "f": "DL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Hapoel Tel Aviv",
-        "f": "DW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401892168",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:00Z",
-      "v": "AVIS völlurinn",
-      "h": {
-        "n": "Vestri",
-        "f": "DL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Rigas Futbola Skola",
+        "n": "Ferencvaros",
         "f": "DWWW",
         "r": "0-0-0",
         "s": null
       },
-      "o": null
-    },
-    {
-      "id": "401896199",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:15Z",
-      "v": "Stade de Tourbillon",
-      "h": {
-        "n": "FC Sion",
-        "f": "WD",
-        "r": "0-0-0",
-        "s": null
-      },
       "a": {
-        "n": "BATE Borisov",
-        "f": "LDDD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891666",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:15Z",
-      "v": "Stade de Luxembourg",
-      "h": {
-        "n": "UNA Strassen",
-        "f": "LLWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Partizan Belgrade",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891918",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Generali-Arena",
-      "h": {
-        "n": "Austria Vienna",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "FK Liepaja",
-        "f": "LLWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401893760",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Stadionul Dr. Constantin Radulescu",
-      "h": {
-        "n": "CFR Cluj-Napoca",
-        "f": "WD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Alashkert FC",
-        "f": "LDDD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896566",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Arena Katowice",
-      "h": {
-        "n": "GKS Katowice",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "MSK Zilina",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401879335",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Ghelamco Arena",
-      "h": {
-        "n": "KAA Gent",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "LNZ Cherkasy",
-        "f": "DD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878125",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Athens Olympic Stadium",
-      "h": {
-        "n": "Panathinaikos",
-        "f": "DW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Paksi SE",
-        "f": "DL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878128",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:30Z",
-      "v": "Bijeli Brijeg Stadium",
-      "h": {
-        "n": "Zrinjski Mostar",
-        "f": "DL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Valur Reykjavik",
-        "f": "DW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878123",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:45Z",
-      "v": "Inver Park",
-      "h": {
-        "n": "Coleraine",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "HJK Helsinki",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896202",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T18:45Z",
-      "v": "SRC Bonifika",
-      "h": {
-        "n": "FC Koper",
-        "f": "LW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "NSI Runavik",
-        "f": "WLWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401878120",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T19:00Z",
-      "v": "Estádio Municipal de Braga",
-      "h": {
-        "n": "Braga",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Zeleznicar Pancevo",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401896217",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T19:00Z",
-      "v": "Elbasan Arena",
-      "h": {
-        "n": "Dinamo City",
-        "f": "WDWL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Aluminij",
-        "f": "LD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401892009",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T19:00Z",
-      "v": "Gradski Niksica",
-      "h": {
-        "n": "FK Sutjeska",
-        "f": "LL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "ML Vitebsk",
-        "f": "WW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401891834",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-07-30T19:00Z",
-      "v": "Easter Road",
-      "h": {
-        "n": "Hibernian",
-        "f": "WL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "KF Malisheva",
-        "f": "LWWL",
+        "n": "Gornik Zabrze",
+        "f": "",
         "r": "0-0-0",
         "s": null
       },
@@ -1439,100 +484,42 @@
       "o": null
     },
     {
-      "id": "401841455",
-      "lg": "Liga Argentina",
-      "d": "2026-07-30T22:00Z",
-      "v": "Bautista Gargantini",
+      "id": "401903010",
+      "lg": "Conference League (Qualificação)",
+      "d": "2026-08-05T17:00Z",
+      "v": "Brann Stadium",
       "h": {
-        "n": "Independiente Rivadavia",
-        "f": "LWWWW",
-        "r": "1-1-0",
+        "n": "SK Brann",
+        "f": "WD",
+        "r": "0-0-0",
         "s": null
       },
       "a": {
-        "n": "Huracán",
-        "f": "WWDLD",
-        "r": "1-0-1",
+        "n": "Apollon Limassol",
+        "f": "WW",
+        "r": "0-0-0",
         "s": null
       },
-      "o": {
-        "h": 2.05,
-        "d": 2.77,
-        "a": 3.65,
-        "src": "betclic_fr"
-      }
+      "o": null
     },
     {
-      "id": "401841451",
-      "lg": "Liga Argentina",
-      "d": "2026-07-30T22:00Z",
-      "v": "Mario Alberto Kempes",
+      "id": "401903141",
+      "lg": "Conference League (Qualificação)",
+      "d": "2026-08-05T18:30Z",
+      "v": "Athens Olympic Stadium",
       "h": {
-        "n": "Talleres (Córdoba)",
-        "f": "WDLLW",
-        "r": "0-0-2",
+        "n": "Panathinaikos",
+        "f": "DW",
+        "r": "0-0-0",
         "s": null
       },
       "a": {
-        "n": "Vélez Sarsfield",
-        "f": "DWDWW",
-        "r": "2-0-0",
+        "n": "CSKA 1948 Sofia",
+        "f": "DD",
+        "r": "0-0-0",
         "s": null
       },
-      "o": {
-        "h": 2.3,
-        "d": 2.75,
-        "a": 3.13,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841459",
-      "lg": "Liga Argentina",
-      "d": "2026-07-31T00:15Z",
-      "v": "'Estadio Único Madre de Ciudades",
-      "h": {
-        "n": "Central Córdoba (Santiago del Estero)",
-        "f": "LWLDL",
-        "r": "0-0-2",
-        "s": null
-      },
-      "a": {
-        "n": "Atlético Tucumán",
-        "f": "WLDDL",
-        "r": "1-1-0",
-        "s": null
-      },
-      "o": {
-        "h": 3.05,
-        "d": 2.87,
-        "a": 2.25,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401841456",
-      "lg": "Liga Argentina",
-      "d": "2026-07-31T00:15Z",
-      "v": "Estadio Libertadores de América",
-      "h": {
-        "n": "Independiente",
-        "f": "WWDDD",
-        "r": "2-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Newell's Old Boys",
-        "f": "DLLDL",
-        "r": "1-0-1",
-        "s": null
-      },
-      "o": {
-        "h": 1.58,
-        "d": 3.37,
-        "a": 5.25,
-        "src": "betclic_fr"
-      }
+      "o": null
     },
     {
       "id": "401841466",
@@ -1542,13 +529,13 @@
       "h": {
         "n": "Estudiantes de Río Cuarto",
         "f": "LLLDL",
-        "r": "1-0-1",
+        "r": "1-1-1",
         "s": null
       },
       "a": {
         "n": "Banfield",
         "f": "LLWLD",
-        "r": "1-0-1",
+        "r": "1-1-1",
         "s": null
       },
       "o": {
@@ -1566,13 +553,13 @@
       "h": {
         "n": "Gimnasia (Mendoza)",
         "f": "LWLLW",
-        "r": "1-0-1",
+        "r": "2-0-1",
         "s": null
       },
       "a": {
         "n": "Unión (Santa Fe)",
         "f": "DLWLD",
-        "r": "0-1-0",
+        "r": "0-1-1",
         "s": null
       },
       "o": {
@@ -1590,13 +577,13 @@
       "h": {
         "n": "Belgrano (Córdoba)",
         "f": "WWDDW",
-        "r": "1-0-0",
+        "r": "1-0-1",
         "s": null
       },
       "a": {
         "n": "Argentinos Juniors",
         "f": "WLDDW",
-        "r": "2-0-0",
+        "r": "3-0-0",
         "s": null
       },
       "o": {
@@ -1614,13 +601,13 @@
       "h": {
         "n": "Estudiantes de La Plata",
         "f": "DWDWD",
-        "r": "0-0-1",
+        "r": "1-0-1",
         "s": null
       },
       "a": {
         "n": "Defensa y Justicia",
         "f": "DWDWD",
-        "r": "1-1-0",
+        "r": "1-1-1",
         "s": null
       },
       "o": {
@@ -1638,13 +625,13 @@
       "h": {
         "n": "Racing Club",
         "f": "WWLLL",
-        "r": "1-1-0",
+        "r": "1-1-1",
         "s": null
       },
       "a": {
         "n": "Tigre",
         "f": "WWWDW",
-        "r": "0-0-1",
+        "r": "1-0-1",
         "s": null
       },
       "o": {
@@ -1672,9 +659,9 @@
         "s": null
       },
       "o": {
-        "h": 3.07,
-        "d": 2.63,
-        "a": 2.42,
+        "h": 3.03,
+        "d": 2.73,
+        "a": 2.48,
         "src": "betclic_fr"
       }
     },
@@ -1696,9 +683,9 @@
         "s": null
       },
       "o": {
-        "h": 2.05,
-        "d": 2.65,
-        "a": 3.93,
+        "h": 2.13,
+        "d": 2.58,
+        "a": 4.1,
         "src": "betclic_fr"
       }
     },
@@ -1720,9 +707,9 @@
         "s": null
       },
       "o": {
-        "h": 3.68,
+        "h": 3.63,
         "d": 2.97,
-        "a": 1.96,
+        "a": 2.05,
         "src": "betclic_fr"
       }
     },
@@ -1744,9 +731,9 @@
         "s": null
       },
       "o": {
-        "h": 1.95,
+        "h": 1.92,
         "d": 2.95,
-        "a": 3.75,
+        "a": 3.83,
         "src": "betclic_fr"
       }
     },
@@ -1768,9 +755,9 @@
         "s": null
       },
       "o": {
-        "h": 1.95,
-        "d": 2.87,
-        "a": 3.88,
+        "h": 2.02,
+        "d": 2.8,
+        "a": 3.73,
         "src": "betclic_fr"
       }
     },
@@ -1792,9 +779,9 @@
         "s": null
       },
       "o": {
-        "h": 3.05,
-        "d": 2.77,
-        "a": 2.22,
+        "h": 3.42,
+        "d": 2.82,
+        "a": 2.12,
         "src": "betclic_fr"
       }
     },
@@ -1817,8 +804,8 @@
       },
       "o": {
         "h": 2.4,
-        "d": 2.6,
-        "a": 2.92,
+        "d": 2.7,
+        "a": 2.98,
         "src": "betclic_fr"
       }
     },
@@ -1840,9 +827,9 @@
         "s": null
       },
       "o": {
-        "h": 2.5,
-        "d": 2.62,
-        "a": 2.78,
+        "h": 2.48,
+        "d": 2.65,
+        "a": 2.95,
         "src": "betclic_fr"
       }
     },
@@ -1864,9 +851,9 @@
         "s": null
       },
       "o": {
-        "h": 3,
-        "d": 2.9,
-        "a": 2.55
+        "h": 3.1,
+        "d": 2.85,
+        "a": 2.5
       }
     },
     {
@@ -1887,9 +874,57 @@
         "s": null
       },
       "o": {
-        "h": 1.93,
+        "h": 1.95,
+        "d": 2.8,
+        "a": 4,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841460",
+      "lg": "Liga Argentina",
+      "d": "2026-08-05T22:00Z",
+      "v": "Alberto José Armando (La Bombonera)",
+      "h": {
+        "n": "Boca Juniors",
+        "f": "DLWLW",
+        "r": "0-0-1",
+        "s": null
+      },
+      "a": {
+        "n": "Estudiantes de La Plata",
+        "f": "DWDWD",
+        "r": "1-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 2,
         "d": 2.75,
-        "a": 3.85,
+        "a": 3.65,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841463",
+      "lg": "Liga Argentina",
+      "d": "2026-08-06T00:15Z",
+      "v": "Monumental de Victoria (José Dellagiovanna)",
+      "h": {
+        "n": "Tigre",
+        "f": "WWWDW",
+        "r": "1-0-1",
+        "s": null
+      },
+      "a": {
+        "n": "Belgrano (Córdoba)",
+        "f": "WWDDW",
+        "r": "1-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 2.48,
+        "d": 2.55,
+        "a": 2.88,
         "src": "betclic_fr"
       }
     }
