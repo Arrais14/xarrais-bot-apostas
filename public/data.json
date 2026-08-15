@@ -1,6 +1,6 @@
 {
-  "fetchedAt": "2026-08-14T08:05:42.636Z",
-  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Liga Portugal, La Liga, Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
+  "fetchedAt": "2026-08-15T07:19:30.318Z",
+  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Liga Portugal, La Liga, Champions League (Qualificação), Liga Europa (Qualificação), Conference League (Qualificação), Liga Argentina. Sem odds automáticas nesta conta agora: Liga Europa (Qualificação), Conference League (Qualificação).",
   "games": [
     {
       "id": "401841192",
@@ -20,9 +20,9 @@
         "s": null
       },
       "o": {
-        "h": 2.65,
-        "d": 3,
-        "a": 2.5,
+        "h": 2.78,
+        "d": 3.02,
+        "a": 2.38,
         "src": "betclic_fr"
       }
     },
@@ -44,9 +44,9 @@
         "s": null
       },
       "o": {
-        "h": 1.91,
-        "d": 2.98,
-        "a": 3.98,
+        "h": 1.87,
+        "d": 3.02,
+        "a": 4.1,
         "src": "betclic_fr"
       }
     },
@@ -68,9 +68,9 @@
         "s": null
       },
       "o": {
-        "h": 1.65,
-        "d": 3.48,
-        "a": 4.65,
+        "h": 1.63,
+        "d": 3.47,
+        "a": 4.8,
         "src": "betclic_fr"
       }
     },
@@ -92,9 +92,9 @@
         "s": null
       },
       "o": {
-        "h": 3.23,
-        "d": 3.13,
-        "a": 1.95,
+        "h": 3.5,
+        "d": 3.15,
+        "a": 1.96,
         "src": "betclic_fr"
       }
     },
@@ -116,9 +116,9 @@
         "s": null
       },
       "o": {
-        "h": 1.7,
-        "d": 3.25,
-        "a": 4.05,
+        "h": 1.75,
+        "d": 3.35,
+        "a": 4.2,
         "src": "betclic_fr"
       }
     },
@@ -140,9 +140,9 @@
         "s": null
       },
       "o": {
-        "h": 1.86,
-        "d": 3.13,
-        "a": 3.53,
+        "h": 1.89,
+        "d": 3.25,
+        "a": 3.68,
         "src": "betclic_fr"
       }
     },
@@ -164,9 +164,9 @@
         "s": null
       },
       "o": {
-        "h": 3.8,
-        "d": 3.23,
-        "a": 1.76,
+        "h": 3.93,
+        "d": 3.32,
+        "a": 1.8,
         "src": "betclic_fr"
       }
     },
@@ -188,9 +188,9 @@
         "s": null
       },
       "o": {
-        "h": 2.1,
+        "h": 2.25,
         "d": 2.93,
-        "a": 3.1,
+        "a": 3.07,
         "src": "betclic_fr"
       }
     },
@@ -212,9 +212,9 @@
         "s": null
       },
       "o": {
-        "h": 2.1,
+        "h": 2.17,
         "d": 2.9,
-        "a": 3.13,
+        "a": 3.25,
         "src": "betclic_fr"
       }
     },
@@ -260,9 +260,9 @@
         "s": null
       },
       "o": {
-        "h": 5.9,
-        "d": 4.25,
-        "a": 1.4,
+        "h": 5.25,
+        "d": 4.1,
+        "a": 1.46,
         "src": "betclic_fr"
       }
     },
@@ -356,9 +356,9 @@
         "s": null
       },
       "o": {
-        "h": 1.44,
-        "d": 4.1,
-        "a": 5.5,
+        "h": 1.47,
+        "d": 4,
+        "a": 5.25,
         "src": "betclic_fr"
       }
     },
@@ -404,9 +404,9 @@
         "s": null
       },
       "o": {
-        "h": 2.98,
+        "h": 3.08,
         "d": 3.13,
-        "a": 2.13,
+        "a": 2.1,
         "src": "betclic_fr"
       }
     },
@@ -437,7 +437,7 @@
     {
       "id": "401877010",
       "lg": "Liga MX",
-      "d": "2026-08-18T03:06Z",
+      "d": "2026-08-18T03:00Z",
       "v": "Estadio Hidalgo",
       "h": {
         "n": "Pachuca",
@@ -465,14 +465,14 @@
       "v": "Estádio José Alvalade",
       "h": {
         "n": "Sporting CP",
-        "f": "D",
-        "r": "0-1-0",
+        "f": "WD",
+        "r": "1-1-0",
         "s": null
       },
       "a": {
         "n": "Vitória de Guimaraes",
-        "f": "L",
-        "r": "0-0-1",
+        "f": "LL",
+        "r": "0-0-2",
         "s": null
       },
       "o": null
@@ -496,8 +496,8 @@
       },
       "o": {
         "h": 2.12,
-        "d": 3.18,
-        "a": 3.32,
+        "d": 3.22,
+        "a": 3.35,
         "src": "betclic_fr"
       }
     },
@@ -519,9 +519,9 @@
         "s": null
       },
       "o": {
-        "h": 2.88,
-        "d": 3.12,
-        "a": 2.37,
+        "h": 2.95,
+        "d": 3,
+        "a": 2.45,
         "src": "betclic_fr"
       }
     },
@@ -545,7 +545,7 @@
       "o": {
         "h": 7.25,
         "d": 4.55,
-        "a": 1.37,
+        "a": 1.38,
         "src": "betclic_fr"
       }
     },
@@ -569,7 +569,7 @@
       "o": {
         "h": 2.6,
         "d": 3.3,
-        "a": 2.43,
+        "a": 2.48,
         "src": "betclic_fr"
       }
     },
@@ -591,9 +591,9 @@
         "s": null
       },
       "o": {
-        "h": 1.97,
-        "d": 3.23,
-        "a": 3.53,
+        "h": 2,
+        "d": 3.25,
+        "a": 3.55,
         "src": "betclic_fr"
       }
     },
@@ -615,8 +615,8 @@
         "s": null
       },
       "o": {
-        "h": 1.58,
-        "d": 3.68,
+        "h": 1.6,
+        "d": 3.7,
         "a": 5.1,
         "src": "betclic_fr"
       }
@@ -639,9 +639,9 @@
         "s": null
       },
       "o": {
-        "h": 1.7,
+        "h": 1.72,
         "d": 3.48,
-        "a": 4.45,
+        "a": 4.5,
         "src": "betclic_fr"
       }
     },
@@ -663,7 +663,7 @@
         "s": null
       },
       "o": {
-        "h": 11.75,
+        "h": 11.5,
         "d": 6,
         "a": 1.18,
         "src": "betclic_fr"
@@ -687,9 +687,9 @@
         "s": null
       },
       "o": {
-        "h": 2.33,
-        "d": 2.82,
-        "a": 3.63,
+        "h": 2.38,
+        "d": 2.8,
+        "a": 3.8,
         "src": "betclic_fr"
       }
     },
@@ -711,9 +711,9 @@
         "s": null
       },
       "o": {
-        "h": 2.28,
-        "d": 3.15,
-        "a": 3.28,
+        "h": 2.35,
+        "d": 3.12,
+        "a": 3.25,
         "src": "betclic_fr"
       }
     },
@@ -754,9 +754,9 @@
         "s": null
       },
       "o": {
-        "h": 2.05,
-        "d": 3.23,
-        "a": 3.68,
+        "h": 2.07,
+        "d": 3.27,
+        "a": 3.7,
         "src": "betclic_fr"
       }
     },
@@ -778,10 +778,75 @@
         "s": null
       },
       "o": {
-        "h": 2.33,
+        "h": 2.3,
         "d": 3,
-        "a": 3.25,
+        "a": 3.3,
         "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401909158",
+      "lg": "Champions League (Qualificação)",
+      "d": "2026-08-18T19:00Z",
+      "v": "Maksimir Stadium",
+      "h": {
+        "n": "Dinamo Zagreb",
+        "f": "WWWD",
+        "r": "0-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "Viking FK",
+        "f": "",
+        "r": "0-0-0",
+        "s": null
+      },
+      "o": {
+        "h": 1.71,
+        "d": 3.85,
+        "a": 4.2
+      }
+    },
+    {
+      "id": "401909204",
+      "lg": "Champions League (Qualificação)",
+      "d": "2026-08-18T19:00Z",
+      "v": "Ulker Stadyumu",
+      "h": {
+        "n": "Fenerbahce",
+        "f": "WWDW",
+        "r": "0-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "Lyon",
+        "f": "WL",
+        "r": "0-0-0",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401909156",
+      "lg": "Champions League (Qualificação)",
+      "d": "2026-08-18T19:00Z",
+      "v": "Vasil Levski National Stadium",
+      "h": {
+        "n": "Levski Sofia",
+        "f": "WDWWD",
+        "r": "0-0-0",
+        "s": null
+      },
+      "a": {
+        "n": "AEK Athens",
+        "f": "",
+        "r": "0-0-0",
+        "s": null
+      },
+      "o": {
+        "h": 2.9,
+        "d": 3.05,
+        "a": 2.45
       }
     },
     {
@@ -1000,70 +1065,13 @@
       "v": "Tórsvollur",
       "h": {
         "n": "KI Klaksvik",
-        "f": "L",
+        "f": "LL",
         "r": "0-0-0",
         "s": null
       },
       "a": {
         "n": "Lech Poznan",
-        "f": "W",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401903009",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-08-12T16:00Z",
-      "v": "Parken Stadium",
-      "h": {
-        "n": "F.C. København",
-        "f": "WWWD",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Debrecen",
-        "f": "LLDW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401903099",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-08-12T16:00Z",
-      "v": "Arena Katowice",
-      "h": {
-        "n": "GKS Katowice",
-        "f": "WLWL",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Hapoel Tel Aviv",
-        "f": "LWDW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "o": null
-    },
-    {
-      "id": "401902952",
-      "lg": "Conference League (Qualificação)",
-      "d": "2026-08-12T16:00Z",
-      "v": "Allianz Stadion",
-      "h": {
-        "n": "Rapid Vienna",
-        "f": "WWWW",
-        "r": "0-0-0",
-        "s": null
-      },
-      "a": {
-        "n": "Paide Linnameeskond",
-        "f": "LDWWD",
+        "f": "WW",
         "r": "0-0-0",
         "s": null
       },
@@ -1552,13 +1560,13 @@
       "h": {
         "n": "Racing Club",
         "f": "WWLLL",
-        "r": "1-1-2",
+        "r": "1-1-3",
         "s": null
       },
       "a": {
         "n": "Banfield",
         "f": "LLWLD",
-        "r": "1-1-2",
+        "r": "2-1-2",
         "s": null
       },
       "o": {
@@ -1586,9 +1594,9 @@
         "s": null
       },
       "o": {
-        "h": 2.95,
+        "h": 3.07,
         "d": 2.7,
-        "a": 2.43,
+        "a": 2.48,
         "src": "betclic_fr"
       }
     },
@@ -1610,9 +1618,9 @@
         "s": null
       },
       "o": {
-        "h": 2.3,
-        "d": 2.83,
-        "a": 3.03,
+        "h": 2.35,
+        "d": 2.85,
+        "a": 3.07,
         "src": "betclic_fr"
       }
     },
@@ -1634,9 +1642,9 @@
         "s": null
       },
       "o": {
-        "h": 1.95,
-        "d": 2.77,
-        "a": 4.05,
+        "h": 2.03,
+        "d": 2.7,
+        "a": 3.83,
         "src": "betclic_fr"
       }
     },
@@ -1658,9 +1666,9 @@
         "s": null
       },
       "o": {
-        "h": 1.89,
-        "d": 2.9,
-        "a": 4.05,
+        "h": 1.9,
+        "d": 2.93,
+        "a": 3.98,
         "src": "betclic_fr"
       }
     },
@@ -1682,9 +1690,9 @@
         "s": null
       },
       "o": {
-        "h": 2.3,
-        "d": 2.7,
-        "a": 3.17,
+        "h": 2.35,
+        "d": 2.68,
+        "a": 3.12,
         "src": "betclic_fr"
       }
     },
@@ -1706,9 +1714,9 @@
         "s": null
       },
       "o": {
-        "h": 3.7,
-        "d": 2.75,
-        "a": 2.05,
+        "h": 3.8,
+        "d": 2.78,
+        "a": 2.02,
         "src": "betclic_fr"
       }
     },
@@ -1730,9 +1738,9 @@
         "s": null
       },
       "o": {
-        "h": 2.97,
-        "d": 2.6,
-        "a": 2.38,
+        "h": 3.05,
+        "d": 2.65,
+        "a": 2.4,
         "src": "betclic_fr"
       }
     },
@@ -1754,9 +1762,9 @@
         "s": null
       },
       "o": {
-        "h": 1.76,
-        "d": 3.05,
-        "a": 4.15,
+        "h": 1.96,
+        "d": 3,
+        "a": 3.63,
         "src": "betclic_fr"
       }
     },
@@ -1778,9 +1786,9 @@
         "s": null
       },
       "o": {
-        "h": 3.12,
-        "d": 2.7,
-        "a": 2.23,
+        "h": 2.92,
+        "d": 2.73,
+        "a": 2.43,
         "src": "betclic_fr"
       }
     },
@@ -1802,9 +1810,9 @@
         "s": null
       },
       "o": {
-        "h": 3.48,
-        "d": 2.78,
-        "a": 2.02,
+        "h": 3.5,
+        "d": 2.87,
+        "a": 2.05,
         "src": "betclic_fr"
       }
     },
