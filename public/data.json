@@ -1,55 +1,7 @@
 {
-  "fetchedAt": "2026-09-27T12:31:54.402Z",
+  "fetchedAt": "2026-09-28T14:35:28.993Z",
   "note": "Ligas atualizadas automaticamente: Liga MX.",
   "games": [
-    {
-      "id": "401876964",
-      "lg": "Liga MX",
-      "d": "2026-09-26T01:00Z",
-      "v": "Estadio Banorte",
-      "h": {
-        "n": "Atlante",
-        "f": "LDWDL",
-        "r": "2-5-3",
-        "s": null
-      },
-      "a": {
-        "n": "Monterrey",
-        "f": "LWWLW",
-        "r": "4-1-4",
-        "s": null
-      },
-      "o": {
-        "h": 3.12,
-        "d": 3.43,
-        "a": 2,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401876963",
-      "lg": "Liga MX",
-      "d": "2026-09-26T03:00Z",
-      "v": "Estadio Caliente",
-      "h": {
-        "n": "Tijuana",
-        "f": "LWDWW",
-        "r": "4-2-3",
-        "s": null
-      },
-      "a": {
-        "n": "Atlas",
-        "f": "WWLWW",
-        "r": "5-2-3",
-        "s": null
-      },
-      "o": {
-        "h": 1.97,
-        "d": 3.3,
-        "a": 3.33,
-        "src": "betclic_fr"
-      }
-    },
     {
       "id": "401876959",
       "lg": "Liga MX",
@@ -154,13 +106,13 @@
       "h": {
         "n": "Pumas UNAM",
         "f": "DDWWL",
-        "r": "3-3-3",
+        "r": "3-3-4",
         "s": null
       },
       "a": {
         "n": "Atlético de San Luis",
         "f": "DLDDL",
-        "r": "2-3-4",
+        "r": "3-3-4",
         "s": null
       },
       "o": {
@@ -178,13 +130,13 @@
       "h": {
         "n": "León",
         "f": "WWWLL",
-        "r": "4-2-3",
+        "r": "5-2-3",
         "s": null
       },
       "a": {
         "n": "FC Juarez",
         "f": "LLLLL",
-        "r": "1-0-8",
+        "r": "1-0-9",
         "s": null
       },
       "o": {
@@ -202,13 +154,13 @@
       "h": {
         "n": "Necaxa",
         "f": "DLLWW",
-        "r": "2-2-5",
+        "r": "2-2-6",
         "s": null
       },
       "a": {
         "n": "América",
         "f": "WWWDW",
-        "r": "5-2-1",
+        "r": "6-2-1",
         "s": null
       },
       "o": {
