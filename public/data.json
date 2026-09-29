@@ -1,100 +1,28 @@
 {
-  "fetchedAt": "2026-09-28T14:35:28.993Z",
-  "note": "Ligas atualizadas automaticamente: Liga MX.",
+  "fetchedAt": "2026-09-29T13:26:18.660Z",
+  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Liga Argentina.",
   "games": [
     {
-      "id": "401876959",
-      "lg": "Liga MX",
-      "d": "2026-09-26T22:50Z",
-      "v": "Estadio Banorte",
+      "id": "401841169",
+      "lg": "Brasileirão",
+      "d": "2026-10-02T23:00Z",
+      "v": "Estádio Cícero Pompeu de Toledo",
       "h": {
-        "n": "Cruz Azul",
-        "f": "LLLWW",
-        "r": "5-1-4",
+        "n": "São Paulo",
+        "f": "WWWDW",
+        "r": "10-6-11",
         "s": null
       },
       "a": {
-        "n": "Toluca",
-        "f": "WDWLW",
-        "r": "6-2-2",
-        "s": null
-      },
-      "o": {
-        "h": 2.42,
-        "d": 3.38,
-        "a": 2.5,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401876962",
-      "lg": "Liga MX",
-      "d": "2026-09-26T23:07Z",
-      "v": "Estadio Akron",
-      "h": {
-        "n": "Guadalajara",
-        "f": "WWDWL",
-        "r": "5-3-2",
-        "s": null
-      },
-      "a": {
-        "n": "Querétaro",
-        "f": "LDWWL",
-        "r": "5-2-2",
-        "s": null
-      },
-      "o": {
-        "h": 1.52,
-        "d": 4.05,
-        "a": 4.9,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401876961",
-      "lg": "Liga MX",
-      "d": "2026-09-27T03:05Z",
-      "v": "Estadio Corona",
-      "h": {
         "n": "Santos",
-        "f": "LLLLL",
-        "r": "3-1-6",
-        "s": null
-      },
-      "a": {
-        "n": "Pachuca",
-        "f": "DLLLW",
-        "r": "3-3-4",
+        "f": "DWLDL",
+        "r": "10-8-9",
         "s": null
       },
       "o": {
-        "h": 3,
-        "d": 3.48,
-        "a": 2.05,
-        "src": "betclic_fr"
-      }
-    },
-    {
-      "id": "401876960",
-      "lg": "Liga MX",
-      "d": "2026-09-27T03:10Z",
-      "v": "Estadio Universitario",
-      "h": {
-        "n": "Tigres UANL",
-        "f": "WLLDL",
-        "r": "2-4-4",
-        "s": null
-      },
-      "a": {
-        "n": "Puebla",
-        "f": "WWDLW",
-        "r": "4-2-4",
-        "s": null
-      },
-      "o": {
-        "h": 1.53,
-        "d": 3.98,
-        "a": 4.9,
+        "h": 1.96,
+        "d": 3.2,
+        "a": 3.5,
         "src": "betclic_fr"
       }
     },
@@ -167,6 +95,78 @@
         "h": 3.37,
         "d": 3.47,
         "a": 1.91,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841588",
+      "lg": "Liga Argentina",
+      "d": "2026-10-02T22:15Z",
+      "v": "Estadio Libertadores de América",
+      "h": {
+        "n": "Independiente",
+        "f": "WWDDD",
+        "r": "5-2-3",
+        "s": null
+      },
+      "a": {
+        "n": "Instituto (Córdoba)",
+        "f": "WLDLL",
+        "r": "7-1-2",
+        "s": null
+      },
+      "o": {
+        "h": 2.2,
+        "d": 2.92,
+        "a": 3.18,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841594",
+      "lg": "Liga Argentina",
+      "d": "2026-10-03T00:30Z",
+      "v": "Alberto José Armando (La Bombonera)",
+      "h": {
+        "n": "Boca Juniors",
+        "f": "DLWLW",
+        "r": "4-5-1",
+        "s": null
+      },
+      "a": {
+        "n": "Unión (Santa Fe)",
+        "f": "DLWLD",
+        "r": "4-1-5",
+        "s": null
+      },
+      "o": {
+        "h": 1.53,
+        "d": 3.68,
+        "a": 5.4,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841587",
+      "lg": "Liga Argentina",
+      "d": "2026-10-03T00:30Z",
+      "v": "Bautista Gargantini",
+      "h": {
+        "n": "Independiente Rivadavia",
+        "f": "LWWWW",
+        "r": "5-2-3",
+        "s": null
+      },
+      "a": {
+        "n": "Gimnasia La Plata",
+        "f": "DLWLW",
+        "r": "5-2-3",
+        "s": null
+      },
+      "o": {
+        "h": 1.78,
+        "d": 3.37,
+        "a": 3.98,
         "src": "betclic_fr"
       }
     }
