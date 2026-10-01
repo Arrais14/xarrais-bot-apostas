@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-30T13:04:44.152Z",
+  "fetchedAt": "2026-10-01T13:57:50.114Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga Argentina.",
   "games": [
     {
@@ -20,9 +20,9 @@
         "s": null
       },
       "o": {
-        "h": 1.96,
+        "h": 2,
         "d": 3.2,
-        "a": 3.5,
+        "a": 3.38,
         "src": "betclic_fr"
       }
     },
@@ -68,9 +68,9 @@
         "s": null
       },
       "o": {
-        "h": 2.2,
-        "d": 2.92,
-        "a": 3.18,
+        "h": 2.18,
+        "d": 2.95,
+        "a": 3.2,
         "src": "betclic_fr"
       }
     },
@@ -92,8 +92,8 @@
         "s": null
       },
       "o": {
-        "h": 1.52,
-        "d": 3.65,
+        "h": 1.51,
+        "d": 3.68,
         "a": 5.6,
         "src": "betclic_fr"
       }
@@ -116,9 +116,9 @@
         "s": null
       },
       "o": {
-        "h": 1.78,
-        "d": 3.37,
-        "a": 3.98,
+        "h": 1.77,
+        "d": 3.38,
+        "a": 4,
         "src": "betclic_fr"
       }
     },
@@ -140,9 +140,9 @@
         "s": null
       },
       "o": {
-        "h": 2.1,
-        "d": 2.9,
-        "a": 3.45,
+        "h": 2.07,
+        "d": 2.88,
+        "a": 3.55,
         "src": "betclic_fr"
       }
     },
@@ -164,9 +164,9 @@
         "s": null
       },
       "o": {
-        "h": 1.89,
-        "d": 2.93,
-        "a": 4.15,
+        "h": 1.86,
+        "d": 2.92,
+        "a": 4.35,
         "src": "betclic_fr"
       }
     },
@@ -191,6 +191,102 @@
         "h": 2.75,
         "d": 2.85,
         "a": 2.52,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841589",
+      "lg": "Liga Argentina",
+      "d": "2026-10-04T17:45Z",
+      "v": "Estadio Tomás Adolfo Ducó",
+      "h": {
+        "n": "Huracán",
+        "f": "WWDLD",
+        "r": "4-4-2",
+        "s": null
+      },
+      "a": {
+        "n": "Aldosivi",
+        "f": "LDLDD",
+        "r": "2-2-6",
+        "s": null
+      },
+      "o": {
+        "h": 1.62,
+        "d": 3.28,
+        "a": 5.25,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841584",
+      "lg": "Liga Argentina",
+      "d": "2026-10-04T20:00Z",
+      "v": "Mario Alberto Kempes",
+      "h": {
+        "n": "Talleres (Córdoba)",
+        "f": "WDLLW",
+        "r": "2-2-6",
+        "s": null
+      },
+      "a": {
+        "n": "Belgrano (Córdoba)",
+        "f": "WWDDW",
+        "r": "4-4-2",
+        "s": null
+      },
+      "o": {
+        "h": 2.4,
+        "d": 2.95,
+        "a": 2.8,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841597",
+      "lg": "Liga Argentina",
+      "d": "2026-10-04T22:15Z",
+      "v": "Diego Armando Maradona",
+      "h": {
+        "n": "Argentinos Juniors",
+        "f": "WLDDW",
+        "r": "5-3-2",
+        "s": null
+      },
+      "a": {
+        "n": "Tigre",
+        "f": "WWWDW",
+        "r": "3-3-4",
+        "s": null
+      },
+      "o": {
+        "h": 1.81,
+        "d": 3.05,
+        "a": 4.35,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841591",
+      "lg": "Liga Argentina",
+      "d": "2026-10-05T00:30Z",
+      "v": "Ciudad de Río Cuarto Antonio Candini",
+      "h": {
+        "n": "Estudiantes de Río Cuarto",
+        "f": "LLLDL",
+        "r": "1-3-6",
+        "s": null
+      },
+      "a": {
+        "n": "Racing Club",
+        "f": "WWLLL",
+        "r": "2-2-6",
+        "s": null
+      },
+      "o": {
+        "h": 3.88,
+        "d": 2.98,
+        "a": 1.94,
         "src": "betclic_fr"
       }
     }
