@@ -1,31 +1,7 @@
 {
-  "fetchedAt": "2026-10-04T12:53:16.236Z",
+  "fetchedAt": "2026-10-05T15:20:02.742Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga Argentina.",
   "games": [
-    {
-      "id": "401841169",
-      "lg": "Brasileirão",
-      "d": "2026-10-02T23:00Z",
-      "v": "Estádio Cícero Pompeu de Toledo",
-      "h": {
-        "n": "São Paulo",
-        "f": "WWWDW",
-        "r": "10-6-12",
-        "s": null
-      },
-      "a": {
-        "n": "Santos",
-        "f": "DWLDL",
-        "r": "11-8-9",
-        "s": null
-      },
-      "o": {
-        "h": 1.89,
-        "d": 3.2,
-        "a": 3.75,
-        "src": "betclic_fr"
-      }
-    },
     {
       "id": "401841168",
       "lg": "Brasileirão",
@@ -68,9 +44,9 @@
         "s": null
       },
       "o": {
-        "h": 2.03,
-        "d": 3.1,
-        "a": 3.4,
+        "h": 2.07,
+        "d": 3.13,
+        "a": 3.25,
         "src": "betclic_fr"
       }
     },
@@ -92,9 +68,9 @@
         "s": null
       },
       "o": {
-        "h": 1.72,
-        "d": 3.53,
-        "a": 4.1,
+        "h": 1.74,
+        "d": 3.5,
+        "a": 3.98,
         "src": "betclic_fr"
       }
     },
@@ -116,9 +92,9 @@
         "s": null
       },
       "o": {
-        "h": 2.08,
-        "d": 3.25,
-        "a": 3.12,
+        "h": 2.13,
+        "d": 3.23,
+        "a": 3.03,
         "src": "betclic_fr"
       }
     },
@@ -195,74 +171,98 @@
       }
     },
     {
-      "id": "401841588",
-      "lg": "Liga Argentina",
-      "d": "2026-10-02T22:15Z",
-      "v": "Estadio Libertadores de América",
+      "id": "401841251",
+      "lg": "Brasileirão",
+      "d": "2026-10-08T22:30Z",
+      "v": "Estádio Vila Belmiro (Urbano Caldeira)",
       "h": {
-        "n": "Independiente",
-        "f": "WWDDD",
-        "r": "5-2-4",
+        "n": "Santos",
+        "f": "DWLDL",
+        "r": "11-8-9",
         "s": null
       },
       "a": {
-        "n": "Instituto (Córdoba)",
-        "f": "WLDLL",
-        "r": "8-1-2",
+        "n": "Flamengo",
+        "f": "WWWDL",
+        "r": "18-6-4",
         "s": null
       },
       "o": {
-        "h": 2.35,
-        "d": 2.82,
-        "a": 3.03,
+        "h": 3.85,
+        "d": 3.5,
+        "a": 1.77,
         "src": "betclic_fr"
       }
     },
     {
-      "id": "401841594",
-      "lg": "Liga Argentina",
-      "d": "2026-10-03T00:30Z",
-      "v": "Alberto José Armando (La Bombonera)",
+      "id": "401841256",
+      "lg": "Brasileirão",
+      "d": "2026-10-08T23:00Z",
+      "v": "Arena da Baixada",
       "h": {
-        "n": "Boca Juniors",
-        "f": "DLWLW",
-        "r": "5-5-1",
+        "n": "Athletico-PR",
+        "f": "LDLWW",
+        "r": "14-7-7",
         "s": null
       },
       "a": {
-        "n": "Unión (Santa Fe)",
-        "f": "DLWLD",
-        "r": "4-1-6",
+        "n": "Atlético-MG",
+        "f": "WLDLD",
+        "r": "12-7-9",
         "s": null
       },
       "o": {
-        "h": 1.42,
-        "d": 4,
-        "a": 6.4,
+        "h": 2,
+        "d": 3.15,
+        "a": 3.42,
         "src": "betclic_fr"
       }
     },
     {
-      "id": "401841587",
-      "lg": "Liga Argentina",
-      "d": "2026-10-03T00:30Z",
-      "v": "Bautista Gargantini",
+      "id": "401841248",
+      "lg": "Brasileirão",
+      "d": "2026-10-09T00:30Z",
+      "v": "Estadio do Maracana",
       "h": {
-        "n": "Independiente Rivadavia",
-        "f": "LWWWW",
-        "r": "5-3-3",
+        "n": "Fluminense",
+        "f": "WLWDW",
+        "r": "13-9-6",
         "s": null
       },
       "a": {
-        "n": "Gimnasia La Plata",
-        "f": "DLWLW",
-        "r": "5-3-3",
+        "n": "Coritiba",
+        "f": "WLDWL",
+        "r": "10-8-10",
         "s": null
       },
       "o": {
-        "h": 1.98,
-        "d": 3.07,
-        "a": 3.6,
+        "h": 1.44,
+        "d": 4.05,
+        "a": 6,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841254",
+      "lg": "Brasileirão",
+      "d": "2026-10-09T00:30Z",
+      "v": "Allianz Parque",
+      "h": {
+        "n": "Palmeiras",
+        "f": "LWWWD",
+        "r": "16-9-3",
+        "s": null
+      },
+      "a": {
+        "n": "Bahia",
+        "f": "WDWDW",
+        "r": "12-10-6",
+        "s": null
+      },
+      "o": {
+        "h": 1.49,
+        "d": 4.05,
+        "a": 5.25,
         "src": "betclic_fr"
       }
     },
@@ -346,13 +346,13 @@
       "h": {
         "n": "Huracán",
         "f": "WWDLD",
-        "r": "4-4-2",
+        "r": "5-4-2",
         "s": null
       },
       "a": {
         "n": "Aldosivi",
         "f": "LDLDD",
-        "r": "2-2-6",
+        "r": "2-2-7",
         "s": null
       },
       "o": {
@@ -370,13 +370,13 @@
       "h": {
         "n": "Talleres (Córdoba)",
         "f": "WDLLW",
-        "r": "2-2-6",
+        "r": "2-2-7",
         "s": null
       },
       "a": {
         "n": "Belgrano (Córdoba)",
         "f": "WWDDW",
-        "r": "4-4-2",
+        "r": "5-4-2",
         "s": null
       },
       "o": {
@@ -394,13 +394,13 @@
       "h": {
         "n": "Argentinos Juniors",
         "f": "WLDDW",
-        "r": "5-3-2",
+        "r": "6-3-2",
         "s": null
       },
       "a": {
         "n": "Tigre",
         "f": "WWWDW",
-        "r": "3-3-4",
+        "r": "3-3-5",
         "s": null
       },
       "o": {
@@ -418,13 +418,13 @@
       "h": {
         "n": "Estudiantes de Río Cuarto",
         "f": "LLLDL",
-        "r": "1-3-6",
+        "r": "1-3-7",
         "s": null
       },
       "a": {
         "n": "Racing Club",
         "f": "WWLLL",
-        "r": "2-2-6",
+        "r": "3-2-6",
         "s": null
       },
       "o": {
@@ -453,8 +453,8 @@
       },
       "o": {
         "h": 1.82,
-        "d": 3.1,
-        "a": 4.25,
+        "d": 3.02,
+        "a": 4.4,
         "src": "betclic_fr"
       }
     },
@@ -476,9 +476,9 @@
         "s": null
       },
       "o": {
-        "h": 1.64,
-        "d": 3.37,
-        "a": 4.95,
+        "h": 1.62,
+        "d": 3.4,
+        "a": 5.1,
         "src": "betclic_fr"
       }
     },
@@ -500,9 +500,9 @@
         "s": null
       },
       "o": {
-        "h": 1.83,
+        "h": 1.81,
         "d": 2.95,
-        "a": 4.45,
+        "a": 4.6,
         "src": "betclic_fr"
       }
     },
@@ -524,9 +524,9 @@
         "s": null
       },
       "o": {
-        "h": 3.85,
-        "d": 3.15,
-        "a": 1.87,
+        "h": 3.98,
+        "d": 3.17,
+        "a": 1.84,
         "src": "betclic_fr"
       }
     }
