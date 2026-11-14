@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-13T14:56:59.028Z",
+  "fetchedAt": "2026-11-14T13:49:48.265Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX.",
   "games": [
     {
@@ -20,9 +20,9 @@
         "s": null
       },
       "o": {
-        "h": 1.84,
-        "d": 3.2,
-        "a": 3.32,
+        "h": 1.83,
+        "d": 3.32,
+        "a": 3.45,
         "src": "betclic_fr"
       }
     },
@@ -44,9 +44,9 @@
         "s": null
       },
       "o": {
-        "h": 5.75,
-        "d": 4.15,
-        "a": 1.34,
+        "h": 6.4,
+        "d": 4.4,
+        "a": 1.32,
         "src": "betclic_fr"
       }
     },
@@ -68,9 +68,9 @@
         "s": null
       },
       "o": {
-        "h": 3.23,
-        "d": 3.45,
-        "a": 1.85,
+        "h": 3.37,
+        "d": 3.28,
+        "a": 1.93,
         "src": "betclic_fr"
       }
     }
