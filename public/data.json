@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-14T13:49:48.265Z",
+  "fetchedAt": "2026-11-15T14:22:11.637Z",
   "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX.",
   "games": [
     {
@@ -10,13 +10,13 @@
       "h": {
         "n": "Mirassol",
         "f": "LDDDW",
-        "r": "10-10-14",
+        "r": "10-11-14",
         "s": null
       },
       "a": {
         "n": "Atlético-MG",
         "f": "WLDLD",
-        "r": "14-8-12",
+        "r": "14-9-12",
         "s": null
       },
       "o": {
@@ -34,19 +34,163 @@
       "h": {
         "n": "Chapecoense",
         "f": "DLDDW",
-        "r": "4-9-20",
+        "r": "4-9-21",
         "s": null
       },
       "a": {
         "n": "Vasco da Gama",
         "f": "WLLDL",
-        "r": "11-8-14",
+        "r": "12-8-14",
         "s": null
       },
       "o": {
         "h": 6.4,
         "d": 4.4,
         "a": 1.32,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841315",
+      "lg": "Brasileirão",
+      "d": "2026-11-18T22:30Z",
+      "v": "Couto Pereira",
+      "h": {
+        "n": "Coritiba",
+        "f": "WLDWL",
+        "r": "11-9-14",
+        "s": null
+      },
+      "a": {
+        "n": "Santos",
+        "f": "DWLDL",
+        "r": "12-11-11",
+        "s": null
+      },
+      "o": {
+        "h": 3.1,
+        "d": 3.25,
+        "a": 1.89,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841310",
+      "lg": "Brasileirão",
+      "d": "2026-11-18T23:00Z",
+      "v": "Mangueirão",
+      "h": {
+        "n": "Remo",
+        "f": "LDDDL",
+        "r": "6-11-17",
+        "s": null
+      },
+      "a": {
+        "n": "Chapecoense",
+        "f": "DLDDW",
+        "r": "4-9-21",
+        "s": null
+      },
+      "o": {
+        "h": 1.54,
+        "d": 3.63,
+        "a": 4.3,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841314",
+      "lg": "Brasileirão",
+      "d": "2026-11-18T23:30Z",
+      "v": "Estadio Mineirão",
+      "h": {
+        "n": "Cruzeiro",
+        "f": "LDDLL",
+        "r": "18-6-10",
+        "s": null
+      },
+      "a": {
+        "n": "Palmeiras",
+        "f": "LWWWD",
+        "r": "21-10-3",
+        "s": null
+      },
+      "o": {
+        "h": 2.68,
+        "d": 3.17,
+        "a": 2.12,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841313",
+      "lg": "Brasileirão",
+      "d": "2026-11-18T23:30Z",
+      "v": "Estadio do Maracana",
+      "h": {
+        "n": "Flamengo",
+        "f": "WWWDL",
+        "r": "23-7-4",
+        "s": null
+      },
+      "a": {
+        "n": "Athletico-PR",
+        "f": "LDLWW",
+        "r": "15-9-10",
+        "s": null
+      },
+      "o": {
+        "h": 1.17,
+        "d": 5.1,
+        "a": 9,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841316",
+      "lg": "Brasileirão",
+      "d": "2026-11-19T00:30Z",
+      "v": "Neo Química Arena",
+      "h": {
+        "n": "Corinthians",
+        "f": "LDWWL",
+        "r": "9-10-15",
+        "s": null
+      },
+      "a": {
+        "n": "Botafogo",
+        "f": "LLLLW",
+        "r": "11-9-14",
+        "s": null
+      },
+      "o": {
+        "h": 1.7,
+        "d": 3.28,
+        "a": 3.75,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401841312",
+      "lg": "Brasileirão",
+      "d": "2026-11-19T00:30Z",
+      "v": "Arena do Grêmio",
+      "h": {
+        "n": "Grêmio",
+        "f": "DWLWL",
+        "r": "9-10-15",
+        "s": null
+      },
+      "a": {
+        "n": "Bahia",
+        "f": "WDWDW",
+        "r": "14-11-9",
+        "s": null
+      },
+      "o": {
+        "h": 2.05,
+        "d": 3.23,
+        "a": 2.77,
         "src": "betclic_fr"
       }
     },
@@ -58,13 +202,13 @@
       "h": {
         "n": "Querétaro",
         "f": "LDWWL",
-        "r": "6-2-7",
+        "r": "6-2-8",
         "s": null
       },
       "a": {
         "n": "Monterrey",
         "f": "LWWLW",
-        "r": "6-3-6",
+        "r": "7-3-6",
         "s": null
       },
       "o": {
