@@ -1,6 +1,6 @@
 {
-  "fetchedAt": "2026-11-17T16:31:08.181Z",
-  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, La Liga, Bundesliga, Ligue 1, Liga Argentina.",
+  "fetchedAt": "2026-11-18T16:00:06.413Z",
+  "note": "Ligas atualizadas automaticamente: Brasileirão, Liga MX, Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Liga Argentina.",
   "games": [
     {
       "id": "401841315",
@@ -20,9 +20,9 @@
         "s": null
       },
       "o": {
-        "h": 3.05,
-        "d": 3.15,
-        "a": 1.95,
+        "h": 3.25,
+        "d": 3.33,
+        "a": 1.88,
         "src": "betclic_fr"
       }
     },
@@ -44,9 +44,9 @@
         "s": null
       },
       "o": {
-        "h": 1.47,
-        "d": 3.83,
-        "a": 4.55,
+        "h": 1.36,
+        "d": 4.15,
+        "a": 6.1,
         "src": "betclic_fr"
       }
     },
@@ -68,9 +68,9 @@
         "s": null
       },
       "o": {
-        "h": 2.53,
-        "d": 3.15,
-        "a": 2.23,
+        "h": 2.55,
+        "d": 3.25,
+        "a": 2.28,
         "src": "betclic_fr"
       }
     },
@@ -92,9 +92,9 @@
         "s": null
       },
       "o": {
-        "h": 1.18,
-        "d": 5.25,
-        "a": 8.5,
+        "h": 1.13,
+        "d": 6.1,
+        "a": 10.5,
         "src": "betclic_fr"
       }
     },
@@ -116,9 +116,9 @@
         "s": null
       },
       "o": {
-        "h": 1.71,
-        "d": 3.27,
-        "a": 3.73,
+        "h": 1.62,
+        "d": 3.5,
+        "a": 4.2,
         "src": "betclic_fr"
       }
     },
@@ -140,9 +140,9 @@
         "s": null
       },
       "o": {
-        "h": 2.05,
-        "d": 3.22,
-        "a": 2.77,
+        "h": 2.15,
+        "d": 3.35,
+        "a": 2.65,
         "src": "betclic_fr"
       }
     },
@@ -189,8 +189,8 @@
       },
       "o": {
         "h": 2.45,
-        "d": 3.15,
-        "a": 2.3,
+        "d": 3.13,
+        "a": 2.32,
         "src": "betclic_fr"
       }
     },
@@ -214,9 +214,66 @@
       "o": {
         "h": 2.13,
         "d": 2.97,
-        "a": 2.83,
+        "a": 2.82,
         "src": "betclic_fr"
       }
+    },
+    {
+      "id": "401841322",
+      "lg": "Brasileirão",
+      "d": "2026-11-21T19:30Z",
+      "v": "Allianz Parque",
+      "h": {
+        "n": "Palmeiras",
+        "f": "LWWWD",
+        "r": "21-10-3",
+        "s": null
+      },
+      "a": {
+        "n": "Flamengo",
+        "f": "WWWDL",
+        "r": "23-7-4",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841327",
+      "lg": "Brasileirão",
+      "d": "2026-11-21T20:30Z",
+      "v": "Arena Fonte Nova",
+      "h": {
+        "n": "Bahia",
+        "f": "WDWDW",
+        "r": "14-11-9",
+        "s": null
+      },
+      "a": {
+        "n": "Coritiba",
+        "f": "WLDWL",
+        "r": "11-9-14",
+        "s": null
+      },
+      "o": null
+    },
+    {
+      "id": "401841325",
+      "lg": "Brasileirão",
+      "d": "2026-11-22T00:00Z",
+      "v": "Arena Condá",
+      "h": {
+        "n": "Chapecoense",
+        "f": "DLDDW",
+        "r": "4-9-21",
+        "s": null
+      },
+      "a": {
+        "n": "Cruzeiro",
+        "f": "LDDLL",
+        "r": "18-6-10",
+        "s": null
+      },
+      "o": null
     },
     {
       "id": "401877054",
@@ -284,10 +341,274 @@
         "s": null
       },
       "o": {
-        "h": 1.57,
-        "d": 3.9,
-        "a": 4.2,
-        "src": "betano_uk"
+        "h": 1.54,
+        "d": 3.78,
+        "a": 4.45,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877050",
+      "lg": "Liga MX",
+      "d": "2026-11-21T22:50Z",
+      "v": "Estadio Hidalgo",
+      "h": {
+        "n": "Pachuca",
+        "f": "DLLLW",
+        "r": "6-4-6",
+        "s": null
+      },
+      "a": {
+        "n": "Toluca",
+        "f": "WDWLW",
+        "r": "7-6-3",
+        "s": null
+      },
+      "o": {
+        "h": 2.6,
+        "d": 3.68,
+        "a": 2.07,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877051",
+      "lg": "Liga MX",
+      "d": "2026-11-21T23:00Z",
+      "v": "Estadio Corona",
+      "h": {
+        "n": "Santos",
+        "f": "LLLLL",
+        "r": "8-1-7",
+        "s": null
+      },
+      "a": {
+        "n": "León",
+        "f": "WWWLL",
+        "r": "6-5-5",
+        "s": null
+      },
+      "o": {
+        "h": 2.25,
+        "d": 3.45,
+        "a": 2.45,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877049",
+      "lg": "Liga MX",
+      "d": "2026-11-22T01:00Z",
+      "v": "Estadio Olímpico Universitario",
+      "h": {
+        "n": "Pumas UNAM",
+        "f": "DDWWL",
+        "r": "5-6-5",
+        "s": null
+      },
+      "a": {
+        "n": "Monterrey",
+        "f": "LWWLW",
+        "r": "7-3-6",
+        "s": null
+      },
+      "o": {
+        "h": 2.4,
+        "d": 3.42,
+        "a": 2.32,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401877048",
+      "lg": "Liga MX",
+      "d": "2026-11-22T03:00Z",
+      "v": "Estadio Universitario",
+      "h": {
+        "n": "Tigres UANL",
+        "f": "WLLDL",
+        "r": "3-6-7",
+        "s": null
+      },
+      "a": {
+        "n": "América",
+        "f": "WWWDW",
+        "r": "8-6-2",
+        "s": null
+      },
+      "o": {
+        "h": 3.13,
+        "d": 3.38,
+        "a": 1.91,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401879233",
+      "lg": "Premier League",
+      "d": "2026-11-21T12:30Z",
+      "v": "Etihad Stadium",
+      "h": {
+        "n": "Manchester City",
+        "f": "WWWWW",
+        "r": "7-0-3",
+        "s": null
+      },
+      "a": {
+        "n": "Fulham",
+        "f": "DDLLL",
+        "r": "2-4-4",
+        "s": null
+      },
+      "o": {
+        "h": 1.3,
+        "d": 5,
+        "a": 6.6,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401879238",
+      "lg": "Premier League",
+      "d": "2026-11-21T15:00Z",
+      "v": "Vitality Stadium",
+      "h": {
+        "n": "AFC Bournemouth",
+        "f": "LDDDL",
+        "r": "4-3-3",
+        "s": null
+      },
+      "a": {
+        "n": "Nottingham Forest",
+        "f": "LWDDL",
+        "r": "2-3-5",
+        "s": null
+      },
+      "o": {
+        "h": 1.82,
+        "d": 3.4,
+        "a": 3.6,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401878756",
+      "lg": "Premier League",
+      "d": "2026-11-21T15:00Z",
+      "v": "Villa Park",
+      "h": {
+        "n": "Aston Villa",
+        "f": "WLDLL",
+        "r": "3-4-3",
+        "s": null
+      },
+      "a": {
+        "n": "Sunderland",
+        "f": "LLDWL",
+        "r": "2-2-6",
+        "s": null
+      },
+      "o": {
+        "h": 1.7,
+        "d": 3.58,
+        "a": 3.95,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401879236",
+      "lg": "Premier League",
+      "d": "2026-11-21T15:00Z",
+      "v": "Stamford Bridge",
+      "h": {
+        "n": "Chelsea",
+        "f": "LDLWW",
+        "r": "5-1-4",
+        "s": null
+      },
+      "a": {
+        "n": "Leeds United",
+        "f": "DWDDW",
+        "r": "3-5-2",
+        "s": null
+      },
+      "o": {
+        "h": 1.73,
+        "d": 3.6,
+        "a": 3.8,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401879235",
+      "lg": "Premier League",
+      "d": "2026-11-21T15:00Z",
+      "v": "Coventry Building Society Arena",
+      "h": {
+        "n": "Coventry City",
+        "f": "WLLLL",
+        "r": "3-0-7",
+        "s": null
+      },
+      "a": {
+        "n": "Crystal Palace",
+        "f": "DLWLL",
+        "r": "2-1-7",
+        "s": null
+      },
+      "o": {
+        "h": 2.23,
+        "d": 3.38,
+        "a": 2.65,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401878754",
+      "lg": "Premier League",
+      "d": "2026-11-21T15:00Z",
+      "v": "Tottenham Hotspur Stadium",
+      "h": {
+        "n": "Tottenham Hotspur",
+        "f": "LDDLL",
+        "r": "3-3-4",
+        "s": null
+      },
+      "a": {
+        "n": "Ipswich Town",
+        "f": "LWLLW",
+        "r": "3-2-5",
+        "s": null
+      },
+      "o": {
+        "h": 1.45,
+        "d": 4.25,
+        "a": 5.25,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401879232",
+      "lg": "Premier League",
+      "d": "2026-11-21T17:30Z",
+      "v": "St. James' Park",
+      "h": {
+        "n": "Newcastle United",
+        "f": "WLDWD",
+        "r": "3-3-4",
+        "s": null
+      },
+      "a": {
+        "n": "Arsenal",
+        "f": "LWWWW",
+        "r": "9-0-1",
+        "s": null
+      },
+      "o": {
+        "h": 5.25,
+        "d": 3.98,
+        "a": 1.47,
+        "src": "betclic_fr"
       }
     },
     {
@@ -310,6 +631,198 @@
       "o": null
     },
     {
+      "id": "401882806",
+      "lg": "La Liga",
+      "d": "2026-11-21T13:00Z",
+      "v": "Mendizorrotza",
+      "h": {
+        "n": "Alavés",
+        "f": "LWWDW",
+        "r": "3-4-5",
+        "s": null
+      },
+      "a": {
+        "n": "Deportivo",
+        "f": "DWWDD",
+        "r": "3-6-3",
+        "s": null
+      },
+      "o": {
+        "h": 2.05,
+        "d": 3.12,
+        "a": 3.1,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401882799",
+      "lg": "La Liga",
+      "d": "2026-11-21T15:15Z",
+      "v": "Estadio de Vallecas",
+      "h": {
+        "n": "Rayo Vallecano",
+        "f": "LWLDL",
+        "r": "3-3-5",
+        "s": null
+      },
+      "a": {
+        "n": "Valencia",
+        "f": "LLLLD",
+        "r": "2-3-7",
+        "s": null
+      },
+      "o": {
+        "h": 1.83,
+        "d": 3.3,
+        "a": 3.5,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401882797",
+      "lg": "La Liga",
+      "d": "2026-11-21T17:30Z",
+      "v": "Ramón Sánchez Pizjuán Stadium",
+      "h": {
+        "n": "Sevilla",
+        "f": "WDLWW",
+        "r": "5-3-4",
+        "s": null
+      },
+      "a": {
+        "n": "Real Betis",
+        "f": "WWLWW",
+        "r": "8-2-2",
+        "s": null
+      },
+      "o": {
+        "h": 2.55,
+        "d": 3.4,
+        "a": 2.2,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401882798",
+      "lg": "La Liga",
+      "d": "2026-11-21T20:00Z",
+      "v": "Santiago Bernabéu",
+      "h": {
+        "n": "Real Madrid",
+        "f": "WLWWW",
+        "r": "10-0-2",
+        "s": null
+      },
+      "a": {
+        "n": "Celta Vigo",
+        "f": "DDLLD",
+        "r": "2-7-3",
+        "s": null
+      },
+      "o": {
+        "h": 1.14,
+        "d": 7,
+        "a": 11,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401875056",
+      "lg": "Serie A",
+      "d": "2026-11-21T14:00Z",
+      "v": "Giuseppe Sinigaglia",
+      "h": {
+        "n": "Como",
+        "f": "LWWWD",
+        "r": "7-2-2",
+        "s": null
+      },
+      "a": {
+        "n": "Cagliari",
+        "f": "WWWLW",
+        "r": "5-1-5",
+        "s": null
+      },
+      "o": {
+        "h": 1.25,
+        "d": 5.25,
+        "a": 8,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401874981",
+      "lg": "Serie A",
+      "d": "2026-11-21T14:00Z",
+      "v": "Olimpico",
+      "h": {
+        "n": "Lazio",
+        "f": "WDWWW",
+        "r": "9-2-0",
+        "s": null
+      },
+      "a": {
+        "n": "Lecce",
+        "f": "LWLLW",
+        "r": "3-1-7",
+        "s": null
+      },
+      "o": {
+        "h": 1.33,
+        "d": 4.8,
+        "a": 6.5,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401874967",
+      "lg": "Serie A",
+      "d": "2026-11-21T17:00Z",
+      "v": "Ennio Tardini",
+      "h": {
+        "n": "Parma",
+        "f": "WLDLL",
+        "r": "2-2-7",
+        "s": null
+      },
+      "a": {
+        "n": "AS Roma",
+        "f": "DWWWW",
+        "r": "8-3-0",
+        "s": null
+      },
+      "o": {
+        "h": 8,
+        "d": 5.75,
+        "a": 1.22,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401875067",
+      "lg": "Serie A",
+      "d": "2026-11-21T19:45Z",
+      "v": "Stadio Diego Armando Maradona",
+      "h": {
+        "n": "Napoli",
+        "f": "DWLLW",
+        "r": "4-3-4",
+        "s": null
+      },
+      "a": {
+        "n": "Torino",
+        "f": "DLWLL",
+        "r": "4-2-5",
+        "s": null
+      },
+      "o": {
+        "h": 1.4,
+        "d": 4.4,
+        "a": 5.5,
+        "src": "betano_uk"
+      }
+    },
+    {
       "id": "401884736",
       "lg": "Bundesliga",
       "d": "2026-11-20T19:30Z",
@@ -327,6 +840,150 @@
         "s": null
       },
       "o": null
+    },
+    {
+      "id": "401884732",
+      "lg": "Bundesliga",
+      "d": "2026-11-21T14:30Z",
+      "v": "Stadion An der Alten Försterei",
+      "h": {
+        "n": "1. FC Union Berlin",
+        "f": "WLLLD",
+        "r": "1-4-4",
+        "s": null
+      },
+      "a": {
+        "n": "RB Leipzig",
+        "f": "WLWLW",
+        "r": "6-0-3",
+        "s": null
+      },
+      "o": {
+        "h": 4.85,
+        "d": 4.25,
+        "a": 1.47,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401884735",
+      "lg": "Bundesliga",
+      "d": "2026-11-21T14:30Z",
+      "v": "BayArena",
+      "h": {
+        "n": "Bayer Leverkusen",
+        "f": "WWDWL",
+        "r": "5-1-3",
+        "s": null
+      },
+      "a": {
+        "n": "SC Paderborn 07",
+        "f": "LWLLD",
+        "r": "2-4-3",
+        "s": null
+      },
+      "o": {
+        "h": 1.2,
+        "d": 6,
+        "a": 8.25,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401884731",
+      "lg": "Bundesliga",
+      "d": "2026-11-21T14:30Z",
+      "v": "BORUSSIA-PARK",
+      "h": {
+        "n": "Borussia Mönchengladbach",
+        "f": "LLLLL",
+        "r": "1-1-7",
+        "s": null
+      },
+      "a": {
+        "n": "Borussia Dortmund",
+        "f": "DWWWW",
+        "r": "6-3-0",
+        "s": null
+      },
+      "o": {
+        "h": 4.75,
+        "d": 4.3,
+        "a": 1.48,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401884734",
+      "lg": "Bundesliga",
+      "d": "2026-11-21T14:30Z",
+      "v": "Deutsche Bank Park",
+      "h": {
+        "n": "Eintracht Frankfurt",
+        "f": "LDWLD",
+        "r": "3-3-3",
+        "s": null
+      },
+      "a": {
+        "n": "TSG Hoffenheim",
+        "f": "LLWLL",
+        "r": "4-0-5",
+        "s": null
+      },
+      "o": {
+        "h": 2.15,
+        "d": 3.78,
+        "a": 2.58,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401884728",
+      "lg": "Bundesliga",
+      "d": "2026-11-21T14:30Z",
+      "v": "URSAPHARM-Arena an der Kaiserlinde",
+      "h": {
+        "n": "SV Elversberg",
+        "f": "LDLWW",
+        "r": "4-1-4",
+        "s": null
+      },
+      "a": {
+        "n": "SC Freiburg",
+        "f": "WDWWW",
+        "r": "6-1-2",
+        "s": null
+      },
+      "o": {
+        "h": 3.28,
+        "d": 3.58,
+        "a": 1.87,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401884729",
+      "lg": "Bundesliga",
+      "d": "2026-11-21T17:30Z",
+      "v": "Veltins Arena",
+      "h": {
+        "n": "Schalke 04",
+        "f": "LDWDL",
+        "r": "1-3-5",
+        "s": null
+      },
+      "a": {
+        "n": "VfB Stuttgart",
+        "f": "WLLWL",
+        "r": "4-0-5",
+        "s": null
+      },
+      "o": {
+        "h": 3.7,
+        "d": 3.85,
+        "a": 1.69,
+        "src": "betclic_fr"
+      }
     },
     {
       "id": "401876395",
@@ -353,6 +1010,126 @@
       }
     },
     {
+      "id": "401876398",
+      "lg": "Ligue 1",
+      "d": "2026-11-21T16:15Z",
+      "v": "Allianz Riviera",
+      "h": {
+        "n": "Nice",
+        "f": "WLDLD",
+        "r": "5-2-3",
+        "s": null
+      },
+      "a": {
+        "n": "Paris Saint-Germain",
+        "f": "WWLDD",
+        "r": "7-2-1",
+        "s": null
+      },
+      "o": {
+        "h": 5.75,
+        "d": 4.9,
+        "a": 1.35,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401876399",
+      "lg": "Ligue 1",
+      "d": "2026-11-21T19:45Z",
+      "v": "Stade Louis II",
+      "h": {
+        "n": "AS Monaco",
+        "f": "WDWWW",
+        "r": "4-4-2",
+        "s": null
+      },
+      "a": {
+        "n": "AJ Auxerre",
+        "f": "WWLLL",
+        "r": "3-1-6",
+        "s": null
+      },
+      "o": {
+        "h": 1.31,
+        "d": 5,
+        "a": 6.4,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401876403",
+      "lg": "Ligue 1",
+      "d": "2026-11-21T19:45Z",
+      "v": "Stade Bollaert-Delelis",
+      "h": {
+        "n": "Lens",
+        "f": "LDLLW",
+        "r": "4-1-5",
+        "s": null
+      },
+      "a": {
+        "n": "Toulouse",
+        "f": "WDLDL",
+        "r": "3-4-3",
+        "s": null
+      },
+      "o": {
+        "h": 1.72,
+        "d": 3.7,
+        "a": 3.73,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401876402",
+      "lg": "Ligue 1",
+      "d": "2026-11-21T19:45Z",
+      "v": "Decathlon Arena - Stade Pierre-Mauroy",
+      "h": {
+        "n": "Lille",
+        "f": "LWWDW",
+        "r": "6-3-1",
+        "s": null
+      },
+      "a": {
+        "n": "Lyon",
+        "f": "WDWDW",
+        "r": "5-2-3",
+        "s": null
+      },
+      "o": {
+        "h": 2.15,
+        "d": 3.25,
+        "a": 2.8,
+        "src": "betano_uk"
+      }
+    },
+    {
+      "id": "401876396",
+      "lg": "Ligue 1",
+      "d": "2026-11-21T19:45Z",
+      "v": "Stade de la Meinau",
+      "h": {
+        "n": "Strasbourg",
+        "f": "LDWWL",
+        "r": "3-1-6",
+        "s": null
+      },
+      "a": {
+        "n": "Brest",
+        "f": "LLWDD",
+        "r": "4-3-3",
+        "s": null
+      },
+      "o": {
+        "h": 2.08,
+        "d": 3.45,
+        "a": 2.87,
+        "src": "betclic_fr"
+      }
+    },
+    {
       "id": "401933760",
       "lg": "Liga Argentina",
       "d": "2026-11-20T23:00Z",
@@ -373,6 +1150,54 @@
         "h": 2,
         "d": 2.95,
         "a": 3.12,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401933758",
+      "lg": "Liga Argentina",
+      "d": "2026-11-21T18:00Z",
+      "v": "Norberto Tomaghello",
+      "h": {
+        "n": "Defensa y Justicia",
+        "f": "DWDWD",
+        "r": "8-4-4",
+        "s": null
+      },
+      "a": {
+        "n": "Barracas Central",
+        "f": "LWDDL",
+        "r": "7-5-4",
+        "s": null
+      },
+      "o": {
+        "h": 1.97,
+        "d": 2.87,
+        "a": 3.3,
+        "src": "betclic_fr"
+      }
+    },
+    {
+      "id": "401933755",
+      "lg": "Liga Argentina",
+      "d": "2026-11-21T20:00Z",
+      "v": "Diego Armando Maradona",
+      "h": {
+        "n": "Argentinos Juniors",
+        "f": "WLDDW",
+        "r": "9-4-3",
+        "s": null
+      },
+      "a": {
+        "n": "Independiente",
+        "f": "WWDDD",
+        "r": "6-5-5",
+        "s": null
+      },
+      "o": {
+        "h": 1.91,
+        "d": 2.85,
+        "a": 3.48,
         "src": "betclic_fr"
       }
     }
